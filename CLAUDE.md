@@ -31,6 +31,24 @@ cd backend && uv run uvicorn src.main:app --reload
 cd frontend && npm run dev
 ```
 
+## Development Workflow
+
+Use these skills when developing new features:
+
+| Task Type | Skill | When to Use |
+|-----------|-------|-------------|
+| New feature | `brainstorming` | Before writing any code - clarify requirements |
+| Implementation | `writing-plans` | After brainstorming, before coding |
+| Frontend work | `frontend-design` | UI components, pages, styling |
+| Bug fixing | `systematic-debugging` | Before proposing fixes |
+| Testing | `test-driven-development` | Write tests before implementation |
+| Finishing | `verification-before-completion` | Before claiming work is done |
+| Code review | `requesting-code-review` | After completing features |
+| Git workflow | `using-git-worktrees` | Isolate feature work from main |
+| Complex tasks | `dispatching-parallel-agents` | 2+ independent subtasks |
+
+**Key rule**: When in doubt, invoke the skill. Skills provide structure that prevents wasted effort.
+
 ## Architecture
 
 ### Data Flow: Receipt Upload
