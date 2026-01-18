@@ -20,9 +20,21 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+import os
+
+# Allow frontend origins
+allowed_origins = [
+    "http://localhost:3000",
+    "https://kjops-minne.vercel.app",
+    "https://kjopsminne.vercel.app",
+]
+# Add custom frontend URL if set
+if frontend_url := os.getenv("FRONTEND_URL"):
+    allowed_origins.append(frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
