@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-cream: #FAF9F6;
+  --color-paper: #FFFFFF;
+  --color-fjord: #2D4A5E;
+  --color-forest: #3D5A47;
+  --color-amber: #C4956A;
+  --color-stone: #6B7280;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background-color: var(--color-cream);
+  color: var(--color-fjord);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle paper texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  z-index: 9999;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+/* Typography refinements */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+/* Stagger animation delays */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }
+
+/* Paper card effect */
+.paper-card {
+  @apply bg-paper rounded-2xl shadow-paper transition-shadow duration-300;
+}
+
+.paper-card:hover {
+  @apply shadow-paper-hover;
+}
+
+/* Receipt paper effect */
+.receipt-paper {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  position: relative;
+}
+
+.receipt-paper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 4px,
+    #E5E7EB 4px,
+    #E5E7EB 8px
+  );
+}
+
+/* Input styling */
+input[type="text"],
+input[type="search"],
+input[type="email"],
+textarea {
+  @apply font-body;
+}
+
+/* Focus ring styling */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-fjord-300 focus:ring-offset-2 focus:ring-offset-cream;
+}
+
+/* Button base */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 focus-ring rounded-xl;
+}
+
+.btn-primary {
+  @apply btn bg-fjord-500 text-white hover:bg-fjord-600 active:bg-fjord-700 px-5 py-2.5;
+}
+
+.btn-secondary {
+  @apply btn bg-paper text-fjord-500 border border-fjord-200 hover:bg-fjord-50 hover:border-fjord-300 px-5 py-2.5;
+}
+
+.btn-ghost {
+  @apply btn text-fjord-500 hover:bg-fjord-50 px-4 py-2;
+}
+
+/* Drag and drop zone */
+.dropzone {
+  @apply border-2 border-dashed border-fjord-200 rounded-2xl transition-all duration-300;
+}
+
+.dropzone:hover,
+.dropzone.active {
+  @apply border-fjord-400 bg-fjord-50/50;
+}
+
+.dropzone.dragover {
+  @apply border-forest-400 bg-forest-50/50 scale-[1.01];
+}
+
+/* Number formatting */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Receipt item row */
+.receipt-item {
+  @apply flex justify-between items-baseline py-2 border-b border-fjord-100/50 last:border-b-0;
+}
+
+.receipt-item-name {
+  @apply text-fjord-600 truncate mr-4;
+}
+
+.receipt-item-price {
+  @apply text-fjord-800 font-medium tabular-nums whitespace-nowrap;
+}
+
+/* Category badge */
+.category-badge {
+  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+}
+
+/* Chart tooltip */
+.chart-tooltip {
+  @apply bg-fjord-800 text-white px-3 py-2 rounded-lg shadow-lg text-sm;
+}
+
+/* Skeleton loading */
+.skeleton {
+  @apply animate-pulse bg-fjord-100 rounded;
+}
+
+/* Norwegian Krone formatting */
+.nok {
+  @apply tabular-nums;
+}
+
+.nok::after {
+  content: ' kr';
+  @apply text-stone-light text-sm ml-0.5;
+}

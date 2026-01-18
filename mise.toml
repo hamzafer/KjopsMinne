@@ -1,0 +1,8 @@
+[tools]
+python = "3.12"
+node = "20"
+uv = "latest"
+
+[env]
+DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/kvitteringshvelv"
+USE_MOCK_OCR = "true"

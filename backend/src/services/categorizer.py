@@ -1,0 +1,68 @@
+"""Item categorization based on Norwegian grocery keywords."""
+
+CATEGORY_KEYWORDS: dict[str, list[str]] = {
+    "Meieri": [
+        "melk", "ost", "yoghurt", "skyr", "fløte", "rømme", "smør",
+        "cottage", "kremost", "norvegia", "jarlsberg", "brunost",
+    ],
+    "Kjøtt": [
+        "kjøtt", "bacon", "pølse", "kylling", "svin", "storfe", "lam",
+        "karbonader", "kjøttdeig", "entrecote", "biff", "koteletter",
+        "leverpostei", "skinke", "salami",
+    ],
+    "Fisk": [
+        "fisk", "laks", "torsk", "sei", "makrell", "reker", "krabbe",
+        "tun", "sild", "ansjos",
+    ],
+    "Brød": [
+        "brød", "rundstykke", "baguette", "ciabatta", "knekkebrød",
+        "lompe", "lefse", "toast",
+    ],
+    "Frukt": [
+        "eple", "banan", "appelsin", "drue", "mango", "ananas", "kiwi",
+        "jordbær", "blåbær", "bringebær", "pære", "sitron", "lime",
+    ],
+    "Grønnsaker": [
+        "tomat", "agurk", "paprika", "løk", "hvitløk", "gulrot", "brokkoli",
+        "blomkål", "spinat", "salat", "avokado", "squash", "aubergine",
+        "ruccola", "cherrytom",
+    ],
+    "Drikke": [
+        "cola", "fanta", "sprite", "pepsi", "brus", "juice", "saft",
+        "vann", "farris", "mineralvann", "kaffe", "te", "øl", "vin",
+    ],
+    "Tørrvarer": [
+        "pasta", "ris", "mel", "sukker", "salt", "pepper", "havregryn",
+        "müsli", "cornflakes", "spaghetti", "makaroni",
+    ],
+    "Frossen": [
+        "pizza", "frossenpizza", "is", "iskrem", "frosne", "findus",
+    ],
+    "Husholdning": [
+        "dopapir", "tørkepapir", "såpe", "vaskemiddel", "zalo", "tøymykner",
+        "rengjøring", "oppvask", "bleier",
+    ],
+    "Snacks": [
+        "chips", "popcorn", "nøtter", "sjokolade", "godteri", "kjeks",
+        "smågodt", "drops",
+    ],
+    "Pant": [
+        "pant",
+    ],
+}
+
+
+def categorize_item(item_name: str) -> str | None:
+    """
+    Categorize an item based on keyword matching.
+
+    Returns the category name or None if no match found.
+    """
+    name_lower = item_name.lower()
+
+    for category, keywords in CATEGORY_KEYWORDS.items():
+        for keyword in keywords:
+            if keyword in name_lower:
+                return category
+
+    return None
