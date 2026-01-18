@@ -2,11 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
 import { Receipt, Search, Calendar, ChevronRight, ShoppingBag } from "lucide-react";
 import { api, formatNOK, formatDate, type ReceiptListItem } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export default function ReceiptsPage() {
+  const t = useTranslations("Receipts");
+  const tEmpty = useTranslations("EmptyState");
+  const locale = useLocale();
+
   const [receipts, setReceipts] = useState<ReceiptListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -32,7 +37,7 @@ export default function ReceiptsPage() {
   );
 
   // Group by month
-  const groupedReceipts = groupByMonth(filteredReceipts);
+  const groupedReceipts = groupByMonth(filteredReceipts, locale);
 
   if (loading) {
     return <ReceiptsSkeleton />;
@@ -43,10 +48,10 @@ export default function ReceiptsPage() {
       {/* Header */}
       <div className="mb-8 animate-fade-in">
         <h1 className="text-3xl font-display text-fjord-800 mb-2">
-          Kvitteringer
+          {t("title")}
         </h1>
         <p className="text-stone">
-          {receipts.length} kvitteringer lagret i hvelvet
+          {t("storedInVault", { count: receipts.length })}
         </p>
       </div>
 
@@ -56,7 +61,7 @@ export default function ReceiptsPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-light" />
           <input
             type="search"
-            placeholder="Søk etter butikk eller sted..."
+            placeholder={t("searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-12 pr-4 py-3 rounded-xl bg-paper border border-fjord-100 focus-ring text-fjord-700 placeholder:text-stone-light"
@@ -66,7 +71,11 @@ export default function ReceiptsPage() {
 
       {/* Receipt List */}
       {filteredReceipts.length === 0 ? (
-        <EmptyState hasSearch={search.length > 0} />
+        <EmptyState
+          hasSearch={search.length > 0}
+          locale={locale}
+          tEmpty={tEmpty}
+        />
       ) : (
         <div className="space-y-8">
           {Object.entries(groupedReceipts).map(([month, monthReceipts], groupIndex) => (
@@ -77,15 +86,16 @@ export default function ReceiptsPage() {
                   {month}
                 </h2>
                 <span className="text-xs text-stone-light">
-                  {monthReceipts.length} kvitteringer · {formatNOK(
-                    monthReceipts.reduce((sum, r) => sum + r.total_amount, 0)
+                  {t("receiptsInMonth", { count: monthReceipts.length })} · {formatNOK(
+                    monthReceipts.reduce((sum, r) => sum + r.total_amount, 0),
+                    locale
                   )} kr
                 </span>
               </div>
 
               <div className="space-y-2">
                 {monthReceipts.map((receipt) => (
-                  <ReceiptCard key={receipt.id} receipt={receipt} />
+                  <ReceiptCard key={receipt.id} receipt={receipt} locale={locale} />
                 ))}
               </div>
             </section>
@@ -96,10 +106,12 @@ export default function ReceiptsPage() {
   );
 }
 
-function ReceiptCard({ receipt }: { receipt: ReceiptListItem }) {
+function ReceiptCard({ receipt, locale }: { receipt: ReceiptListItem; locale: string }) {
+  const t = useTranslations("Dashboard");
+
   return (
     <Link
-      href={`/receipts/${receipt.id}`}
+      href={`/${locale}/receipts/${receipt.id}`}
       className="paper-card flex items-center gap-4 p-4 group"
     >
       {/* Icon */}
@@ -116,18 +128,18 @@ function ReceiptCard({ receipt }: { receipt: ReceiptListItem }) {
         </div>
         <p className="text-sm text-stone truncate">
           {receipt.store_location && `${receipt.store_location} · `}
-          {formatDate(receipt.purchase_date)}
+          {formatDate(receipt.purchase_date, locale)}
         </p>
       </div>
 
       {/* Amount & Items */}
       <div className="text-right flex-shrink-0">
         <p className="font-display text-lg text-fjord-800 tabular-nums">
-          {formatNOK(receipt.total_amount)}
+          {formatNOK(receipt.total_amount, locale)}
           <span className="text-xs text-stone ml-1">kr</span>
         </p>
         <p className="text-xs text-stone">
-          {receipt.item_count} varer
+          {receipt.item_count} {t("items")}
         </p>
       </div>
 
@@ -137,24 +149,32 @@ function ReceiptCard({ receipt }: { receipt: ReceiptListItem }) {
   );
 }
 
-function EmptyState({ hasSearch }: { hasSearch: boolean }) {
+function EmptyState({
+  hasSearch,
+  locale,
+  tEmpty,
+}: {
+  hasSearch: boolean;
+  locale: string;
+  tEmpty: ReturnType<typeof useTranslations<"EmptyState">>;
+}) {
   return (
     <div className="paper-card p-12 text-center">
       <div className="w-16 h-16 rounded-2xl bg-fjord-50 flex items-center justify-center mx-auto mb-4">
         <ShoppingBag className="w-8 h-8 text-fjord-300" />
       </div>
       <h3 className="font-display text-xl text-fjord-700 mb-2">
-        {hasSearch ? "Ingen treff" : "Ingen kvitteringer ennå"}
+        {hasSearch ? tEmpty("noResults") : tEmpty("noReceipts")}
       </h3>
       <p className="text-stone">
         {hasSearch
-          ? "Prøv et annet søkeord"
-          : "Last opp din første kvittering for å komme i gang"
+          ? tEmpty("tryDifferentSearch")
+          : tEmpty("noReceiptsMessage")
         }
       </p>
       {!hasSearch && (
-        <Link href="/upload" className="btn-primary mt-6 inline-flex">
-          Last opp kvittering
+        <Link href={`/${locale}/upload`} className="btn-primary mt-6 inline-flex">
+          {tEmpty("uploadReceipt")}
         </Link>
       )}
     </div>
@@ -184,12 +204,13 @@ function ReceiptsSkeleton() {
   );
 }
 
-function groupByMonth(receipts: ReceiptListItem[]): Record<string, ReceiptListItem[]> {
+function groupByMonth(receipts: ReceiptListItem[], locale: string): Record<string, ReceiptListItem[]> {
   const groups: Record<string, ReceiptListItem[]> = {};
+  const localeCode = locale === "en" ? "en-GB" : "nb-NO";
 
   for (const receipt of receipts) {
     const date = new Date(receipt.purchase_date);
-    const month = new Intl.DateTimeFormat("nb-NO", {
+    const month = new Intl.DateTimeFormat(localeCode, {
       month: "long",
       year: "numeric",
     }).format(date);

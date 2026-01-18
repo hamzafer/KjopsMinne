@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Upload,
   Camera,
@@ -18,6 +19,9 @@ type UploadState = "idle" | "dragging" | "uploading" | "success" | "error";
 
 export default function UploadPage() {
   const router = useRouter();
+  const t = useTranslations("Upload");
+  const locale = useLocale();
+
   const [state, setState] = useState<UploadState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -27,7 +31,7 @@ export default function UploadPage() {
     // Validate file type
     const validTypes = ["image/jpeg", "image/png", "image/webp", "image/heic"];
     if (!validTypes.includes(file.type)) {
-      setError("Kun bilder (JPG, PNG, WebP, HEIC) er tillatt");
+      setError(t("onlyImagesAllowed"));
       setState("error");
       return;
     }
@@ -48,13 +52,13 @@ export default function UploadPage() {
 
       // Redirect after brief delay
       setTimeout(() => {
-        router.push(`/receipts/${receipt.id}`);
+        router.push(`/${locale}/receipts/${receipt.id}`);
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Opplasting feilet");
+      setError(err instanceof Error ? err.message : t("uploadFailed"));
       setState("error");
     }
-  }, [router]);
+  }, [router, locale, t]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -91,10 +95,10 @@ export default function UploadPage() {
       {/* Header */}
       <div className="mb-8 animate-fade-in">
         <h1 className="text-3xl font-display text-fjord-800 mb-2">
-          Last opp kvittering
+          {t("title")}
         </h1>
         <p className="text-stone">
-          Ta bilde av kvitteringen eller velg en fil fra enheten din.
+          {t("subtitle")}
         </p>
       </div>
 
@@ -116,7 +120,7 @@ export default function UploadPage() {
             <div className="relative rounded-xl overflow-hidden bg-white shadow-paper max-h-96">
               <img
                 src={preview}
-                alt="Forhåndsvisning"
+                alt={t("preview")}
                 className="w-full h-full object-contain"
               />
 
@@ -124,8 +128,8 @@ export default function UploadPage() {
               {state === "uploading" && (
                 <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center">
                   <Loader2 className="w-10 h-10 text-fjord-500 animate-spin mb-3" />
-                  <p className="text-fjord-600 font-medium">Behandler kvittering...</p>
-                  <p className="text-sm text-stone">Leser tekst og kategoriserer varer</p>
+                  <p className="text-fjord-600 font-medium">{t("processing")}</p>
+                  <p className="text-sm text-stone">{t("readingText")}</p>
                 </div>
               )}
 
@@ -134,8 +138,8 @@ export default function UploadPage() {
                   <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mb-3">
                     <Check className="w-8 h-8 text-forest-500" />
                   </div>
-                  <p className="text-white font-medium text-lg">Kvittering lagret!</p>
-                  <p className="text-forest-100 text-sm">Omdirigerer...</p>
+                  <p className="text-white font-medium text-lg">{t("saved")}</p>
+                  <p className="text-forest-100 text-sm">{t("redirecting")}</p>
                 </div>
               )}
 
@@ -159,7 +163,7 @@ export default function UploadPage() {
                     onClick={reset}
                     className="text-sm text-red-600 hover:text-red-800 mt-1"
                   >
-                    Prøv igjen
+                    {t("tryAgain")}
                   </button>
                 </div>
               </div>
@@ -174,17 +178,17 @@ export default function UploadPage() {
 
             {/* Text */}
             <h3 className="text-lg font-display text-fjord-700 mb-2">
-              Slipp kvitteringen her
+              {t("dropHere")}
             </h3>
             <p className="text-stone mb-6">
-              eller velg en fil fra enheten din
+              {t("orSelectFile")}
             </p>
 
             {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <label className="btn-primary cursor-pointer">
                 <Upload className="w-4 h-4" />
-                Velg fil
+                {t("selectFile")}
                 <input
                   type="file"
                   accept="image/*"
@@ -194,7 +198,7 @@ export default function UploadPage() {
               </label>
               <label className="btn-secondary cursor-pointer">
                 <Camera className="w-4 h-4" />
-                Ta bilde
+                {t("takePhoto")}
                 <input
                   type="file"
                   accept="image/*"
@@ -207,7 +211,7 @@ export default function UploadPage() {
 
             {/* Supported formats */}
             <p className="text-xs text-stone-light mt-6">
-              Støttede formater: JPG, PNG, WebP, HEIC
+              {t("supportedFormats")}
             </p>
           </div>
         )}
@@ -215,12 +219,12 @@ export default function UploadPage() {
 
       {/* Tips */}
       <div className="mt-8 paper-card p-6 animate-slide-up stagger-2">
-        <h3 className="font-display text-fjord-700 mb-4">Tips for bedre resultat</h3>
+        <h3 className="font-display text-fjord-700 mb-4">{t("tipsTitle")}</h3>
         <ul className="space-y-3">
-          <TipItem>Sørg for god belysning uten skygger</TipItem>
-          <TipItem>Hold kvitteringen flat og uten bretter</TipItem>
-          <TipItem>Pass på at all tekst er synlig og lesbar</TipItem>
-          <TipItem>Ta bildet rett ovenfra for best resultat</TipItem>
+          <TipItem>{t("tip1")}</TipItem>
+          <TipItem>{t("tip2")}</TipItem>
+          <TipItem>{t("tip3")}</TipItem>
+          <TipItem>{t("tip4")}</TipItem>
         </ul>
       </div>
     </div>

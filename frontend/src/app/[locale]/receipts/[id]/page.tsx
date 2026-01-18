@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
 import {
   ArrowLeft,
   Calendar,
@@ -21,6 +22,8 @@ export default function ReceiptDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const t = useTranslations("ReceiptDetail");
+  const locale = useLocale();
 
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,21 +36,21 @@ export default function ReceiptDetailPage() {
         setReceipt(data);
       } catch (error) {
         console.error("Failed to load receipt:", error);
-        router.push("/receipts");
+        router.push(`/${locale}/receipts`);
       } finally {
         setLoading(false);
       }
     }
     loadReceipt();
-  }, [id, router]);
+  }, [id, router, locale]);
 
   const handleDelete = async () => {
-    if (!confirm("Er du sikker på at du vil slette denne kvitteringen?")) return;
+    if (!confirm(t("confirmDelete"))) return;
 
     setDeleting(true);
     try {
       await api.deleteReceipt(id);
-      router.push("/receipts");
+      router.push(`/${locale}/receipts`);
     } catch (error) {
       console.error("Failed to delete receipt:", error);
       setDeleting(false);
@@ -72,11 +75,11 @@ export default function ReceiptDetailPage() {
     <div className="max-w-2xl mx-auto px-6 py-8">
       {/* Back link */}
       <Link
-        href="/receipts"
+        href={`/${locale}/receipts`}
         className="inline-flex items-center gap-2 text-stone hover:text-fjord-600 transition-colors mb-6 animate-fade-in"
       >
         <ArrowLeft className="w-4 h-4" />
-        Tilbake til kvitteringer
+        {t("backToReceipts")}
       </Link>
 
       {/* Receipt Card */}
@@ -97,7 +100,7 @@ export default function ReceiptDetailPage() {
                 )}
                 <span className="flex items-center gap-1.5">
                   <Calendar className="w-4 h-4" />
-                  {formatDate(receipt.purchase_date)}
+                  {formatDate(receipt.purchase_date, locale)}
                 </span>
               </div>
             </div>
@@ -126,12 +129,12 @@ export default function ReceiptDetailPage() {
         <div className="p-6">
           <h2 className="text-sm font-medium text-stone uppercase tracking-wider mb-4 flex items-center gap-2">
             <Package className="w-4 h-4" />
-            Varer ({receipt.items.length})
+            {t("items", { count: receipt.items.length })}
           </h2>
 
           <div className="space-y-4">
             {/* Categorized items grouped by category */}
-            {Object.entries(groupByCategory(categorizedItems)).map(([category, items]) => (
+            {Object.entries(groupByCategory(categorizedItems, t("other"))).map(([category, items]) => (
               <div key={category}>
                 <div className="flex items-center gap-2 mb-2">
                   <Tag className="w-3.5 h-3.5 text-stone-light" />
@@ -141,7 +144,7 @@ export default function ReceiptDetailPage() {
                 </div>
                 <div className="space-y-0">
                   {items.map((item) => (
-                    <ItemRow key={item.id} item={item} />
+                    <ItemRow key={item.id} item={item} locale={locale} />
                   ))}
                 </div>
               </div>
@@ -152,12 +155,12 @@ export default function ReceiptDetailPage() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs font-medium text-stone uppercase tracking-wider">
-                    Annet
+                    {t("other")}
                   </span>
                 </div>
                 <div className="space-y-0">
                   {uncategorizedItems.map((item) => (
-                    <ItemRow key={item.id} item={item} />
+                    <ItemRow key={item.id} item={item} locale={locale} />
                   ))}
                 </div>
               </div>
@@ -168,7 +171,7 @@ export default function ReceiptDetailPage() {
               <div className="pt-2 border-t border-fjord-100">
                 <div className="space-y-0">
                   {pantItems.map((item) => (
-                    <ItemRow key={item.id} item={item} isPant />
+                    <ItemRow key={item.id} item={item} locale={locale} isPant />
                   ))}
                 </div>
               </div>
@@ -181,7 +184,7 @@ export default function ReceiptDetailPage() {
                   <div key={item.id} className="receipt-item text-forest-600">
                     <span className="receipt-item-name">{item.raw_name}</span>
                     <span className="receipt-item-price">
-                      -{formatNOK(item.discount_amount)}
+                      -{formatNOK(item.discount_amount, locale)}
                     </span>
                   </div>
                 ))}
@@ -193,9 +196,9 @@ export default function ReceiptDetailPage() {
         {/* Total */}
         <div className="p-6 pt-4 bg-fjord-50/50 border-t border-fjord-100">
           <div className="flex justify-between items-baseline">
-            <span className="text-lg font-display text-fjord-700">Total</span>
+            <span className="text-lg font-display text-fjord-700">{t("total")}</span>
             <span className="text-3xl font-display text-fjord-800 tabular-nums">
-              {formatNOK(receipt.total_amount)}
+              {formatNOK(receipt.total_amount, locale)}
               <span className="text-base text-stone ml-1.5">kr</span>
             </span>
           </div>
@@ -207,9 +210,11 @@ export default function ReceiptDetailPage() {
 
 function ItemRow({
   item,
+  locale,
   isPant = false
 }: {
   item: Receipt["items"][0];
+  locale: string;
   isPant?: boolean;
 }) {
   return (
@@ -231,7 +236,7 @@ function ItemRow({
         </span>
       </div>
       <span className="receipt-item-price">
-        {formatNOK(item.total_price)}
+        {formatNOK(item.total_price, locale)}
       </span>
     </div>
   );
@@ -257,11 +262,11 @@ function ReceiptDetailSkeleton() {
   );
 }
 
-function groupByCategory(items: Receipt["items"]): Record<string, Receipt["items"]> {
+function groupByCategory(items: Receipt["items"], otherLabel: string): Record<string, Receipt["items"]> {
   const groups: Record<string, Receipt["items"]> = {};
 
   for (const item of items) {
-    const category = item.category?.name || "Annet";
+    const category = item.category?.name || otherLabel;
     if (!groups[category]) groups[category] = [];
     groups[category].push(item);
   }

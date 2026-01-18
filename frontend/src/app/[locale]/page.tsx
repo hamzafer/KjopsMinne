@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Receipt,
   TrendingUp,
@@ -14,6 +15,11 @@ import { api, formatNOK, formatRelativeDate, type Summary, type ReceiptListItem 
 import { cn } from "@/lib/utils";
 
 export default function Dashboard() {
+  const t = useTranslations("Dashboard");
+  const tEmpty = useTranslations("EmptyState");
+  const tCommon = useTranslations("Common");
+  const locale = useLocale();
+
   const [summary, setSummary] = useState<Summary | null>(null);
   const [recentReceipts, setRecentReceipts] = useState<ReceiptListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,15 +48,22 @@ export default function Dashboard() {
 
   const hasData = summary && summary.total_receipts > 0;
 
+  // Create relative date formatter with translations
+  const relativeTranslations = {
+    today: tCommon("today"),
+    yesterday: tCommon("yesterday"),
+    daysAgo: (days: number) => tCommon("daysAgo", { days }),
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
       {/* Header */}
       <div className="mb-10 animate-fade-in">
         <h1 className="text-3xl md:text-4xl font-display text-fjord-800 mb-2">
-          God dag
+          {t("greeting")}
         </h1>
         <p className="text-stone text-lg">
-          Her er oversikten over dine kvitteringer og forbruk.
+          {t("subtitle")}
         </p>
       </div>
 
@@ -60,25 +73,25 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
             <StatCard
               icon={Receipt}
-              label="Kvitteringer"
+              label={t("receipts")}
               value={summary.total_receipts.toString()}
-              subtitle="totalt lagret"
+              subtitle={t("totalStored")}
               color="fjord"
               delay={1}
             />
             <StatCard
               icon={TrendingUp}
-              label="Totalt forbruk"
-              value={formatNOK(summary.total_spent)}
-              subtitle="kr"
+              label={t("totalSpending")}
+              value={formatNOK(summary.total_spent, locale)}
+              subtitle={t("currency")}
               color="forest"
               delay={2}
             />
             <StatCard
               icon={ShoppingCart}
-              label="Gjennomsnitt"
-              value={formatNOK(summary.avg_receipt_amount)}
-              subtitle="kr per handel"
+              label={t("average")}
+              value={formatNOK(summary.avg_receipt_amount, locale)}
+              subtitle={t("perPurchase")}
               color="amber"
               delay={3}
             />
@@ -88,26 +101,33 @@ export default function Dashboard() {
           <section className="animate-slide-up stagger-4">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-xl font-display text-fjord-700">
-                Siste kvitteringer
+                {t("recentReceipts")}
               </h2>
               <Link
-                href="/receipts"
+                href={`/${locale}/receipts`}
                 className="flex items-center gap-1.5 text-sm text-fjord-500 hover:text-fjord-700 transition-colors"
               >
-                Se alle
+                {t("viewAll")}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
 
             <div className="space-y-3">
               {recentReceipts.map((receipt, index) => (
-                <ReceiptRow key={receipt.id} receipt={receipt} index={index} />
+                <ReceiptRow
+                  key={receipt.id}
+                  receipt={receipt}
+                  index={index}
+                  locale={locale}
+                  itemsLabel={t("items")}
+                  relativeTranslations={relativeTranslations}
+                />
               ))}
             </div>
           </section>
         </>
       ) : (
-        <EmptyState />
+        <EmptyState locale={locale} tEmpty={tEmpty} />
       )}
     </div>
   );
@@ -169,10 +189,26 @@ function StatCard({
   );
 }
 
-function ReceiptRow({ receipt, index }: { receipt: ReceiptListItem; index: number }) {
+function ReceiptRow({
+  receipt,
+  index,
+  locale,
+  itemsLabel,
+  relativeTranslations,
+}: {
+  receipt: ReceiptListItem;
+  index: number;
+  locale: string;
+  itemsLabel: string;
+  relativeTranslations: {
+    today: string;
+    yesterday: string;
+    daysAgo: (days: number) => string;
+  };
+}) {
   return (
     <Link
-      href={`/receipts/${receipt.id}`}
+      href={`/${locale}/receipts/${receipt.id}`}
       className={cn(
         "paper-card flex items-center justify-between p-4 group animate-slide-up",
         `stagger-${index + 5}`
@@ -187,13 +223,13 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptListItem; index: numbe
             {receipt.merchant_name}
           </p>
           <p className="text-sm text-stone">
-            {formatRelativeDate(receipt.purchase_date)} · {receipt.item_count} varer
+            {formatRelativeDate(receipt.purchase_date, relativeTranslations, locale)} · {receipt.item_count} {itemsLabel}
           </p>
         </div>
       </div>
       <div className="text-right">
         <p className="font-display text-lg text-fjord-800 tabular-nums">
-          {formatNOK(receipt.total_amount)}
+          {formatNOK(receipt.total_amount, locale)}
           <span className="text-xs text-stone ml-1">kr</span>
         </p>
       </div>
@@ -201,21 +237,27 @@ function ReceiptRow({ receipt, index }: { receipt: ReceiptListItem; index: numbe
   );
 }
 
-function EmptyState() {
+function EmptyState({
+  locale,
+  tEmpty,
+}: {
+  locale: string;
+  tEmpty: ReturnType<typeof useTranslations<"EmptyState">>;
+}) {
   return (
     <div className="paper-card p-12 text-center animate-scale-in">
       <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-fjord-100 to-fjord-50 flex items-center justify-center mx-auto mb-6">
         <Sparkles className="w-10 h-10 text-fjord-400" />
       </div>
       <h2 className="text-2xl font-display text-fjord-700 mb-3">
-        Velkommen til Kvitteringshvelv
+        {tEmpty("welcome")}
       </h2>
       <p className="text-stone max-w-md mx-auto mb-8">
-        Last opp din første kvittering for å begynne å holde oversikt over forbruket ditt og få innsikt i handlevanene dine.
+        {tEmpty("welcomeMessage")}
       </p>
-      <Link href="/upload" className="btn-primary">
+      <Link href={`/${locale}/upload`} className="btn-primary">
         <Upload className="w-4 h-4" />
-        Last opp kvittering
+        {tEmpty("uploadReceipt")}
       </Link>
     </div>
   );

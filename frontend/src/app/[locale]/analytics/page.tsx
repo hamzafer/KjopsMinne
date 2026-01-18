@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import {
   BarChart3,
   TrendingUp,
@@ -24,6 +25,10 @@ import { api, formatNOK, type Summary, type ByCategory } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export default function AnalyticsPage() {
+  const t = useTranslations("Analytics");
+  const tEmpty = useTranslations("EmptyState");
+  const locale = useLocale();
+
   const [summary, setSummary] = useState<Summary | null>(null);
   const [byCategory, setByCategory] = useState<ByCategory | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,7 +67,7 @@ export default function AnalyticsPage() {
 
   if (byCategory && byCategory.uncategorized_total > 0) {
     pieData.push({
-      name: "Ukategorisert",
+      name: t("uncategorized"),
       value: byCategory.uncategorized_total,
       color: "#9CA3AF",
       count: byCategory.uncategorized_count,
@@ -77,10 +82,10 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="mb-8 animate-fade-in">
         <h1 className="text-3xl font-display text-fjord-800 mb-2">
-          Forbruksanalyse
+          {t("title")}
         </h1>
         <p className="text-stone">
-          Oversikt over handlevanene dine fordelt på kategorier.
+          {t("subtitle")}
         </p>
       </div>
 
@@ -90,26 +95,26 @@ export default function AnalyticsPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
             <StatCard
               icon={Receipt}
-              label="Kvitteringer"
+              label={t("receipts")}
               value={summary.total_receipts.toString()}
               delay={1}
             />
             <StatCard
               icon={TrendingUp}
-              label="Totalt forbruk"
-              value={`${formatNOK(summary.total_spent)} kr`}
+              label={t("totalSpending")}
+              value={`${formatNOK(summary.total_spent, locale)} kr`}
               delay={2}
             />
             <StatCard
               icon={ShoppingCart}
-              label="Varer kjøpt"
+              label={t("itemsPurchased")}
               value={summary.total_items.toString()}
               delay={3}
             />
             <StatCard
               icon={BarChart3}
-              label="Gjennomsnitt"
-              value={`${formatNOK(summary.avg_receipt_amount)} kr`}
+              label={t("average")}
+              value={`${formatNOK(summary.avg_receipt_amount, locale)} kr`}
               delay={4}
             />
           </div>
@@ -120,7 +125,7 @@ export default function AnalyticsPage() {
             <div className="paper-card p-6 animate-slide-up stagger-5">
               <h2 className="text-lg font-display text-fjord-700 mb-6 flex items-center gap-2">
                 <PieChart className="w-5 h-5 text-stone" />
-                Forbruk per kategori
+                {t("spendingByCategory")}
               </h2>
 
               {pieData.length > 0 ? (
@@ -140,7 +145,7 @@ export default function AnalyticsPage() {
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip content={<CustomTooltip />} />
+                      <Tooltip content={<CustomTooltip locale={locale} itemsLabel={t("items")} />} />
                       <Legend
                         formatter={(value) => (
                           <span className="text-sm text-fjord-600">{value}</span>
@@ -150,7 +155,7 @@ export default function AnalyticsPage() {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <EmptyChart />
+                <EmptyChart label={t("noDataToShow")} />
               )}
             </div>
 
@@ -158,7 +163,7 @@ export default function AnalyticsPage() {
             <div className="paper-card p-6 animate-slide-up stagger-6">
               <h2 className="text-lg font-display text-fjord-700 mb-6 flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-stone" />
-                Forbruk rangert
+                {t("spendingRanked")}
               </h2>
 
               {barData.length > 0 ? (
@@ -184,7 +189,7 @@ export default function AnalyticsPage() {
                         axisLine={false}
                         tickLine={false}
                       />
-                      <Tooltip content={<CustomTooltip />} />
+                      <Tooltip content={<CustomTooltip locale={locale} itemsLabel={t("items")} />} />
                       <Bar
                         dataKey="value"
                         radius={[0, 6, 6, 0]}
@@ -197,7 +202,7 @@ export default function AnalyticsPage() {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <EmptyChart />
+                <EmptyChart label={t("noDataToShow")} />
               )}
             </div>
           </div>
@@ -205,7 +210,7 @@ export default function AnalyticsPage() {
           {/* Category Breakdown Table */}
           <div className="paper-card p-6 mt-6 animate-slide-up stagger-7">
             <h2 className="text-lg font-display text-fjord-700 mb-6">
-              Detaljert oversikt
+              {t("detailedOverview")}
             </h2>
 
             <div className="overflow-x-auto">
@@ -213,16 +218,16 @@ export default function AnalyticsPage() {
                 <thead>
                   <tr className="border-b border-fjord-100">
                     <th className="text-left text-xs font-medium text-stone uppercase tracking-wider pb-3">
-                      Kategori
+                      {t("category")}
                     </th>
                     <th className="text-right text-xs font-medium text-stone uppercase tracking-wider pb-3">
-                      Varer
+                      {t("items")}
                     </th>
                     <th className="text-right text-xs font-medium text-stone uppercase tracking-wider pb-3">
-                      Beløp
+                      {t("amount")}
                     </th>
                     <th className="text-right text-xs font-medium text-stone uppercase tracking-wider pb-3">
-                      Andel
+                      {t("share")}
                     </th>
                   </tr>
                 </thead>
@@ -249,7 +254,7 @@ export default function AnalyticsPage() {
                           {cat.count}
                         </td>
                         <td className="py-3 text-right font-medium text-fjord-700 tabular-nums">
-                          {formatNOK(cat.value)} kr
+                          {formatNOK(cat.value, locale)} kr
                         </td>
                         <td className="py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -276,7 +281,7 @@ export default function AnalyticsPage() {
           </div>
         </>
       ) : (
-        <EmptyState />
+        <EmptyState tEmpty={tEmpty} />
       )}
     </div>
   );
@@ -304,38 +309,48 @@ function StatCard({
   );
 }
 
-function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: { name: string; value: number; count: number } }> }) {
+function CustomTooltip({
+  active,
+  payload,
+  locale,
+  itemsLabel,
+}: {
+  active?: boolean;
+  payload?: Array<{ payload: { name: string; value: number; count: number } }>;
+  locale: string;
+  itemsLabel: string;
+}) {
   if (!active || !payload || !payload.length) return null;
 
   const data = payload[0].payload;
   return (
     <div className="chart-tooltip">
       <p className="font-medium mb-1">{data.name}</p>
-      <p className="text-sm opacity-90">{formatNOK(data.value)} kr</p>
-      <p className="text-xs opacity-75">{data.count} varer</p>
+      <p className="text-sm opacity-90">{formatNOK(data.value, locale)} kr</p>
+      <p className="text-xs opacity-75">{data.count} {itemsLabel}</p>
     </div>
   );
 }
 
-function EmptyChart() {
+function EmptyChart({ label }: { label: string }) {
   return (
     <div className="h-80 flex items-center justify-center">
-      <p className="text-stone">Ingen data å vise</p>
+      <p className="text-stone">{label}</p>
     </div>
   );
 }
 
-function EmptyState() {
+function EmptyState({ tEmpty }: { tEmpty: ReturnType<typeof useTranslations<"EmptyState">> }) {
   return (
     <div className="paper-card p-12 text-center">
       <div className="w-16 h-16 rounded-2xl bg-fjord-50 flex items-center justify-center mx-auto mb-4">
         <BarChart3 className="w-8 h-8 text-fjord-300" />
       </div>
       <h3 className="font-display text-xl text-fjord-700 mb-2">
-        Ingen data ennå
+        {tEmpty("noData")}
       </h3>
       <p className="text-stone">
-        Last opp kvitteringer for å se forbruksanalysen din.
+        {tEmpty("noDataMessage")}
       </p>
     </div>
   );

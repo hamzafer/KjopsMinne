@@ -1,0 +1,95 @@
+{
+  "Metadata": {
+    "title": "Receipt Vault",
+    "description": "Your personal receipt vault with shopping intelligence"
+  },
+  "Navigation": {
+    "dashboard": "Dashboard",
+    "upload": "Upload",
+    "receipts": "Receipts",
+    "analytics": "Analytics",
+    "appName": "Receipt Vault"
+  },
+  "Dashboard": {
+    "greeting": "Good day",
+    "subtitle": "Here is an overview of your receipts and spending.",
+    "receipts": "Receipts",
+    "totalStored": "total stored",
+    "totalSpending": "Total spending",
+    "average": "Average",
+    "perPurchase": "per purchase",
+    "recentReceipts": "Recent receipts",
+    "viewAll": "View all",
+    "items": "items",
+    "currency": "NOK"
+  },
+  "EmptyState": {
+    "welcome": "Welcome to Receipt Vault",
+    "welcomeMessage": "Upload your first receipt to start tracking your spending and gain insights into your shopping habits.",
+    "uploadReceipt": "Upload receipt",
+    "noReceipts": "No receipts yet",
+    "noReceiptsMessage": "Upload your first receipt to get started",
+    "noData": "No data yet",
+    "noDataMessage": "Upload receipts to see your spending analysis.",
+    "noResults": "No results",
+    "tryDifferentSearch": "Try a different search term"
+  },
+  "Upload": {
+    "title": "Upload receipt",
+    "subtitle": "Take a photo of your receipt or select a file from your device.",
+    "dropHere": "Drop receipt here",
+    "orSelectFile": "or select a file from your device",
+    "selectFile": "Select file",
+    "takePhoto": "Take photo",
+    "supportedFormats": "Supported formats: JPG, PNG, WebP, HEIC",
+    "onlyImagesAllowed": "Only images (JPG, PNG, WebP, HEIC) are allowed",
+    "uploadFailed": "Upload failed",
+    "processing": "Processing receipt...",
+    "readingText": "Reading text and categorizing items",
+    "saved": "Receipt saved!",
+    "redirecting": "Redirecting...",
+    "tryAgain": "Try again",
+    "preview": "Preview",
+    "tipsTitle": "Tips for better results",
+    "tip1": "Ensure good lighting without shadows",
+    "tip2": "Keep the receipt flat and without folds",
+    "tip3": "Make sure all text is visible and readable",
+    "tip4": "Take the photo from directly above for best results"
+  },
+  "Receipts": {
+    "title": "Receipts",
+    "storedInVault": "{count} receipts stored in vault",
+    "searchPlaceholder": "Search by store or location...",
+    "receiptsInMonth": "{count} receipts"
+  },
+  "ReceiptDetail": {
+    "backToReceipts": "Back to receipts",
+    "items": "Items ({count})",
+    "other": "Other",
+    "total": "Total",
+    "confirmDelete": "Are you sure you want to delete this receipt?"
+  },
+  "Analytics": {
+    "title": "Spending Analysis",
+    "subtitle": "Overview of your shopping habits by category.",
+    "receipts": "Receipts",
+    "totalSpending": "Total spending",
+    "itemsPurchased": "Items purchased",
+    "average": "Average",
+    "spendingByCategory": "Spending by category",
+    "spendingRanked": "Spending ranked",
+    "detailedOverview": "Detailed overview",
+    "category": "Category",
+    "items": "Items",
+    "amount": "Amount",
+    "share": "Share",
+    "uncategorized": "Uncategorized",
+    "noDataToShow": "No data to show"
+  },
+  "Common": {
+    "currency": "NOK",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{days} days ago"
+  }
+}

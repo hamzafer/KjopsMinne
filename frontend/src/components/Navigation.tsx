@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -10,16 +11,19 @@ import {
   BarChart3,
   Vault
 } from "lucide-react";
-
-const navItems = [
-  { href: "/", label: "Oversikt", icon: LayoutDashboard },
-  { href: "/upload", label: "Last opp", icon: Upload },
-  { href: "/receipts", label: "Kvitteringer", icon: Receipt },
-  { href: "/analytics", label: "Analyse", icon: BarChart3 },
-];
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function Navigation() {
   const pathname = usePathname();
+  const t = useTranslations("Navigation");
+  const locale = useLocale();
+
+  const navItems = [
+    { href: `/${locale}`, label: t("dashboard"), icon: LayoutDashboard },
+    { href: `/${locale}/upload`, label: t("upload"), icon: Upload },
+    { href: `/${locale}/receipts`, label: t("receipts"), icon: Receipt },
+    { href: `/${locale}/analytics`, label: t("analytics"), icon: BarChart3 },
+  ];
 
   return (
     <header className="sticky top-0 z-50 bg-cream/80 backdrop-blur-md border-b border-fjord-100/50">
@@ -27,41 +31,45 @@ export function Navigation() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link
-            href="/"
+            href={`/${locale}`}
             className="flex items-center gap-2.5 group"
           >
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-fjord-500 to-fjord-600 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
               <Vault className="w-5 h-5 text-white" />
             </div>
-            <span className="font-display text-xl text-fjord-700 tracking-tight">
-              Kvitteringshvelv
+            <span className="font-display text-xl text-fjord-700 tracking-tight hidden sm:inline">
+              {t("appName")}
             </span>
           </Link>
 
-          {/* Navigation */}
-          <nav className="flex items-center gap-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href ||
-                (item.href !== "/" && pathname.startsWith(item.href));
+          {/* Navigation + Language Switcher */}
+          <div className="flex items-center gap-3">
+            <nav className="flex items-center gap-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href ||
+                  (item.href !== `/${locale}` && pathname.startsWith(item.href));
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200",
-                    isActive
-                      ? "bg-fjord-500 text-white shadow-sm"
-                      : "text-fjord-600 hover:bg-fjord-50 hover:text-fjord-700"
-                  )}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200",
+                      isActive
+                        ? "bg-fjord-500 text-white shadow-sm"
+                        : "text-fjord-600 hover:bg-fjord-50 hover:text-fjord-700"
+                    )}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="hidden sm:inline">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <LanguageSwitcher />
+          </div>
         </div>
       </div>
     </header>

@@ -1,0 +1,95 @@
+{
+  "Metadata": {
+    "title": "Kvitteringshvelv",
+    "description": "Din personlige kvitteringshvelv med handleintelligens"
+  },
+  "Navigation": {
+    "dashboard": "Oversikt",
+    "upload": "Last opp",
+    "receipts": "Kvitteringer",
+    "analytics": "Analyse",
+    "appName": "Kvitteringshvelv"
+  },
+  "Dashboard": {
+    "greeting": "God dag",
+    "subtitle": "Her er oversikten over dine kvitteringer og forbruk.",
+    "receipts": "Kvitteringer",
+    "totalStored": "totalt lagret",
+    "totalSpending": "Totalt forbruk",
+    "average": "Gjennomsnitt",
+    "perPurchase": "kr per handel",
+    "recentReceipts": "Siste kvitteringer",
+    "viewAll": "Se alle",
+    "items": "varer",
+    "currency": "kr"
+  },
+  "EmptyState": {
+    "welcome": "Velkommen til Kvitteringshvelv",
+    "welcomeMessage": "Last opp din første kvittering for å begynne å holde oversikt over forbruket ditt og få innsikt i handlevanene dine.",
+    "uploadReceipt": "Last opp kvittering",
+    "noReceipts": "Ingen kvitteringer ennå",
+    "noReceiptsMessage": "Last opp din første kvittering for å komme i gang",
+    "noData": "Ingen data ennå",
+    "noDataMessage": "Last opp kvitteringer for å se forbruksanalysen din.",
+    "noResults": "Ingen treff",
+    "tryDifferentSearch": "Prøv et annet søkeord"
+  },
+  "Upload": {
+    "title": "Last opp kvittering",
+    "subtitle": "Ta bilde av kvitteringen eller velg en fil fra enheten din.",
+    "dropHere": "Slipp kvitteringen her",
+    "orSelectFile": "eller velg en fil fra enheten din",
+    "selectFile": "Velg fil",
+    "takePhoto": "Ta bilde",
+    "supportedFormats": "Støttede formater: JPG, PNG, WebP, HEIC",
+    "onlyImagesAllowed": "Kun bilder (JPG, PNG, WebP, HEIC) er tillatt",
+    "uploadFailed": "Opplasting feilet",
+    "processing": "Behandler kvittering...",
+    "readingText": "Leser tekst og kategoriserer varer",
+    "saved": "Kvittering lagret!",
+    "redirecting": "Omdirigerer...",
+    "tryAgain": "Prøv igjen",
+    "preview": "Forhåndsvisning",
+    "tipsTitle": "Tips for bedre resultat",
+    "tip1": "Sørg for god belysning uten skygger",
+    "tip2": "Hold kvitteringen flat og uten bretter",
+    "tip3": "Pass på at all tekst er synlig og lesbar",
+    "tip4": "Ta bildet rett ovenfra for best resultat"
+  },
+  "Receipts": {
+    "title": "Kvitteringer",
+    "storedInVault": "{count} kvitteringer lagret i hvelvet",
+    "searchPlaceholder": "Søk etter butikk eller sted...",
+    "receiptsInMonth": "{count} kvitteringer"
+  },
+  "ReceiptDetail": {
+    "backToReceipts": "Tilbake til kvitteringer",
+    "items": "Varer ({count})",
+    "other": "Annet",
+    "total": "Total",
+    "confirmDelete": "Er du sikker på at du vil slette denne kvitteringen?"
+  },
+  "Analytics": {
+    "title": "Forbruksanalyse",
+    "subtitle": "Oversikt over handlevanene dine fordelt på kategorier.",
+    "receipts": "Kvitteringer",
+    "totalSpending": "Totalt forbruk",
+    "itemsPurchased": "Varer kjøpt",
+    "average": "Gjennomsnitt",
+    "spendingByCategory": "Forbruk per kategori",
+    "spendingRanked": "Forbruk rangert",
+    "detailedOverview": "Detaljert oversikt",
+    "category": "Kategori",
+    "items": "Varer",
+    "amount": "Beløp",
+    "share": "Andel",
+    "uncategorized": "Ukategorisert",
+    "noDataToShow": "Ingen data å vise"
+  },
+  "Common": {
+    "currency": "kr",
+    "today": "I dag",
+    "yesterday": "I går",
+    "daysAgo": "{days} dager siden"
+  }
+}

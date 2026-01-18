@@ -147,32 +147,52 @@ class ApiClient {
 
 export const api = new ApiClient(API_URL);
 
-// Format Norwegian Krone
-export function formatNOK(amount: number): string {
-  return new Intl.NumberFormat("nb-NO", {
+// Format Norwegian Krone (locale-aware)
+export function formatNOK(amount: number, locale: string = "nb"): string {
+  const localeCode = locale === "en" ? "en-NO" : "nb-NO";
+  return new Intl.NumberFormat(localeCode, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
 }
 
-// Format date in Norwegian style
-export function formatDate(dateString: string): string {
+// Format date (locale-aware)
+export function formatDate(dateString: string, locale: string = "nb"): string {
   const date = new Date(dateString);
-  return new Intl.DateTimeFormat("nb-NO", {
+  const localeCode = locale === "en" ? "en-GB" : "nb-NO";
+  return new Intl.DateTimeFormat(localeCode, {
     day: "numeric",
     month: "short",
     year: "numeric",
   }).format(date);
 }
 
-// Format relative date
-export function formatRelativeDate(dateString: string): string {
+// Format relative date (requires translation function)
+export function formatRelativeDate(
+  dateString: string,
+  translations: {
+    today: string;
+    yesterday: string;
+    daysAgo: (days: number) => string;
+  },
+  locale: string = "nb"
+): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return "I dag";
-  if (diffDays === 1) return "I går";
-  if (diffDays < 7) return `${diffDays} dager siden`;
-  return formatDate(dateString);
+  if (diffDays === 0) return translations.today;
+  if (diffDays === 1) return translations.yesterday;
+  if (diffDays < 7) return translations.daysAgo(diffDays);
+  return formatDate(dateString, locale);
+}
+
+// Format month for grouping (locale-aware)
+export function formatMonth(dateString: string, locale: string = "nb"): string {
+  const date = new Date(dateString);
+  const localeCode = locale === "en" ? "en-GB" : "nb-NO";
+  return new Intl.DateTimeFormat(localeCode, {
+    month: "long",
+    year: "numeric",
+  }).format(date);
 }
