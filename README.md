@@ -1,67 +1,124 @@
-# Kvitteringshvelv 🧾
+# Kvitteringshvelv
 
 Norwegian Receipt Vault with grocery intelligence for households.
 
-## Overview
+## Live Demo
 
-Kvitteringshvelv ("Receipt Vault" in Norwegian) is a full-stack application for digitizing, storing, and analyzing grocery receipts. Upload a receipt image, and the system extracts items, categorizes them, and provides spending analytics.
+| Service | URL |
+|---------|-----|
+| Frontend | https://kjops-minne.vercel.app |
+| Backend API | https://kvitteringshvelv-api.onrender.com |
+| API Docs | https://kvitteringshvelv-api.onrender.com/docs |
+
+## Quick Start
+
+```bash
+# Start all services with logs
+make dev
+
+# Or run in background
+make up
+```
+
+Then open:
+- **Frontend**: http://localhost:3000
+- **API**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
+
+## Commands
+
+### Docker
+
+| Command | Description |
+|---------|-------------|
+| `make dev` | Start with logs + file watching (Ctrl+C stops all) |
+| `make up` | Start in background |
+| `make down` | Stop all services |
+| `make logs` | Follow container logs |
+| `make ps` | Show container status |
+| `make restart` | Restart without rebuild |
+| `make rebuild` | Force rebuild (no cache) |
+| `make reset` | Nuclear: remove containers, volumes, images |
+| `make clean` | Remove containers, volumes, node_modules, .venv |
+
+### Container Access
+
+| Command | Description |
+|---------|-------------|
+| `make shell-backend` | Bash into backend container |
+| `make shell-db` | PostgreSQL shell |
+
+### Database
+
+```bash
+# Run migrations
+cd backend && uv run alembic upgrade head
+
+# Seed categories
+cd backend && uv run python -m src.db.seed
+```
+
+### Testing & Linting
+
+| Command | Description |
+|---------|-------------|
+| `make test` | Run all tests |
+| `make lint` | Lint backend and frontend |
+| `make fmt` | Format code |
+| `make install` | Install all dependencies |
+
+### Local Development (without Docker)
+
+```bash
+# Backend
+cd backend && uv run uvicorn src.main:app --reload
+
+# Frontend
+cd frontend && npm run dev
+```
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | Next.js 15, TypeScript, Tailwind CSS |
+| Frontend | Next.js 15, TypeScript, Tailwind CSS, next-intl |
 | Backend | FastAPI, Python 3.12+, Pydantic v2 |
 | Database | PostgreSQL 16, SQLAlchemy 2.0 (async) |
 | Migrations | Alembic |
 | OCR | Mock (swappable to AWS Textract) |
 | Containers | Docker, docker-compose |
-| Package Mgmt | uv (Python), npm (Node) |
 
 ## Project Structure
 
 ```
 kvitteringshvelv/
-├── Makefile              # Task runner
-├── mise.toml             # Tool versions
+├── Makefile              # All commands
 ├── docker-compose.yml    # Services: db, backend, frontend
-├── .env.example
-│
 ├── backend/
-│   ├── pyproject.toml
-│   ├── alembic/          # Database migrations
+│   ├── src/
+│   │   ├── api/          # Route handlers
+│   │   ├── services/     # OCR, parser, categorizer
+│   │   └── db/           # Models, migrations
+│   └── alembic/          # Migration versions
+├── frontend/
 │   └── src/
-│       ├── main.py       # FastAPI app
-│       ├── config.py     # Settings
-│       ├── db/           # Models, engine, session
-│       ├── api/          # Route handlers
-│       ├── services/     # OCR, parser, categorizer
-│       └── schemas/      # Pydantic models
-│
-└── frontend/
-    ├── package.json
-    └── src/
-        ├── app/          # Next.js pages
-        ├── components/   # React components
-        └── lib/          # API client, utilities
+│       ├── app/[locale]/ # i18n routes (nb, en)
+│       ├── components/   # React components
+│       ├── messages/     # Translation files
+│       └── lib/          # API client
+└── docs/                 # Documentation
+    ├── api/              # API reference
+    ├── architecture/     # System design
+    ├── deployment/       # Vercel, Render guides
+    └── features/         # Feature specs
 ```
 
-## Quick Start
+## Environment Variables
 
 ```bash
-# Start all services
-docker-compose up -d
-
-# Run database migrations
-docker-compose exec backend uv run alembic upgrade head
-
-# Seed categories
-docker-compose exec backend uv run python -m src.db.seed
-
-# Access the app
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:8000
-# API Docs: http://localhost:8000/docs
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/kvitteringshvelv
+USE_MOCK_OCR=true              # Set false for AWS Textract
+NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
 ## API Endpoints
@@ -70,61 +127,40 @@ docker-compose exec backend uv run python -m src.db.seed
 |--------|----------|-------------|
 | GET | `/health` | Health check |
 | POST | `/api/receipts/upload` | Upload receipt image |
-| GET | `/api/receipts` | List all receipts |
+| GET | `/api/receipts` | List receipts |
 | GET | `/api/receipts/{id}` | Get receipt details |
-| DELETE | `/api/receipts/{id}` | Delete a receipt |
+| DELETE | `/api/receipts/{id}` | Delete receipt |
 | GET | `/api/categories` | List categories |
 | GET | `/api/analytics/summary` | Spending summary |
-| GET | `/api/analytics/by-category` | Spending by category |
+| GET | `/api/analytics/by-category` | By category |
+
+See [docs/api/](./docs/api/) for full reference.
 
 ## Categories
 
-Norwegian grocery categories with emoji icons:
+Norwegian grocery categories:
 
-| Category | Icon | Description |
-|----------|------|-------------|
-| Meieri | 🥛 | Dairy products |
-| Kjøtt | 🥩 | Meat |
-| Fisk | 🐟 | Fish & seafood |
-| Brød | 🍞 | Bread & bakery |
-| Frukt | 🍎 | Fruits |
-| Grønnsaker | 🥬 | Vegetables |
-| Drikke | 🥤 | Beverages |
-| Tørrvarer | 🌾 | Dry goods |
-| Frossen | ❄️ | Frozen foods |
-| Husholdning | 🧹 | Household items |
-| Snacks | 🍿 | Snacks & candy |
-| Pant | ♻️ | Bottle deposits |
+| Category | Norwegian | Icon |
+|----------|-----------|------|
+| Meieri | Dairy | 🥛 |
+| Kjøtt | Meat | 🥩 |
+| Fisk | Fish | 🐟 |
+| Brød | Bread | 🍞 |
+| Frukt | Fruit | 🍎 |
+| Grønnsaker | Vegetables | 🥬 |
+| Drikke | Beverages | 🥤 |
+| Tørrvarer | Dry goods | 🌾 |
+| Frossen | Frozen | ❄️ |
+| Husholdning | Household | 🧹 |
+| Snacks | Snacks | 🍿 |
+| Pant | Deposits | ♻️ |
 
-## Development
+## Documentation
 
-```bash
-# Install dependencies locally
-cd backend && uv sync
-cd frontend && npm install
-
-# Run backend locally
-cd backend && uv run uvicorn src.main:app --reload
-
-# Run frontend locally
-cd frontend && npm run dev
-
-# Run tests
-make test
-
-# Format code
-make fmt
-
-# Lint code
-make lint
-```
-
-## Frontend Design
-
-The UI follows a **Nordic Paper Journal** aesthetic:
-- Typography: Fraunces (display) + DM Sans (body)
-- Colors: Warm cream background, fjord blue accents, forest green for success
-- Effects: Paper textures, soft shadows, staggered animations
+- [API Reference](./docs/api/)
+- [Architecture](./docs/architecture/)
+- [Deployment](./docs/deployment/)
+- [Feature Specs](./docs/features/)
 
 ## License
 

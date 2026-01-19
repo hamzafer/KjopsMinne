@@ -1,139 +1,70 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Instructions for Claude Code when working with this repository.
 
-## Project Overview
+> **Commands & Setup**: See [README.md](./README.md)
+> **Detailed Docs**: See [docs/](./docs/)
 
-Kvitteringshvelv ("Receipt Vault") is a Norwegian receipt digitization and grocery analytics application. Users upload receipt images, which are processed via OCR to extract items, auto-categorize them into Norwegian grocery categories, and provide spending analytics.
-
-## Deployment
-
-| Service | URL | Platform |
-|---------|-----|----------|
-| Frontend | https://kjops-minne.vercel.app | Vercel |
-| Backend API | https://kvitteringshvelv-api.onrender.com | Render |
-| API Docs | https://kvitteringshvelv-api.onrender.com/docs | Render |
-
-**Notes:**
-- Frontend auto-deploys on push to `main` branch (Vercel)
-- Backend auto-deploys on push to `main` branch (Render)
-- Backend has ~30s cold start on first request (Render free tier)
-- `USE_MOCK_OCR=true` on backend - returns sample KIWI receipt data
-- i18n supported: `/nb` (Norwegian), `/en` (English)
-
-## Commands
+## Quick Reference
 
 ```bash
-# Start all services (postgres, backend, frontend)
-make dev           # Foreground with logs + file watching (Ctrl+C stops all)
-make up            # Detached mode (background)
-make down          # Stop all services
-make logs          # Follow container logs
-make ps            # Show container status
-make restart       # Restart services without rebuild
-make rebuild       # Force rebuild images (no cache)
-make reset         # Nuclear: remove containers, volumes, AND images
-make clean         # Remove containers, volumes, node_modules, .venv
-
-# Container shells
-make shell-backend # Bash into backend container
-make shell-db      # PostgreSQL shell
-
-# Hot reload is enabled for both backend and frontend in Docker:
-# - Backend: ./backend mounted to /app
-# - Frontend: ./frontend mounted to /app (node_modules/.next preserved in volumes)
-# Edit files locally and changes reflect automatically.
-
-# Run migrations and seed data
-cd backend && uv run alembic upgrade head
-cd backend && uv run python -m src.db.seed
-
-# Run tests
-cd backend && uv run pytest
-cd frontend && npm test
-
-# Lint and format
-cd backend && uv run ruff check .
-cd backend && uv run ruff format .
-cd frontend && npm run lint
-cd frontend && npm run format
-
-# Local development (outside Docker)
-cd backend && uv run uvicorn src.main:app --reload
-cd frontend && npm run dev
+make dev     # Start with logs (Ctrl+C stops all)
+make rebuild # Force rebuild without cache
+make reset   # Nuclear: remove everything
 ```
 
 ## Development Workflow
 
-Use these skills when developing new features:
+Use these skills when developing:
 
-| Task Type | Skill | When to Use |
-|-----------|-------|-------------|
-| New feature | `brainstorming` | Before writing any code - clarify requirements |
-| Implementation | `writing-plans` | After brainstorming, before coding |
-| Frontend work | `frontend-design` | UI components, pages, styling |
-| Bug fixing | `systematic-debugging` | Before proposing fixes |
-| Testing | `test-driven-development` | Write tests before implementation |
-| Finishing | `verification-before-completion` | Before claiming work is done |
-| Code review | `requesting-code-review` | After completing features |
-| Git workflow | `using-git-worktrees` | Isolate feature work from main |
-| Complex tasks | `dispatching-parallel-agents` | 2+ independent subtasks |
+| Task | Skill |
+|------|-------|
+| New feature | `brainstorming` → `writing-plans` |
+| Frontend UI | `frontend-design` |
+| Bug fixing | `systematic-debugging` |
+| Testing | `test-driven-development` |
+| Before commit | `verification-before-completion` |
+| Code review | `requesting-code-review` |
+| Parallel work | `dispatching-parallel-agents` |
 
-**Key rule**: When in doubt, invoke the skill. Skills provide structure that prevents wasted effort.
+**Rule**: When in doubt, invoke the skill.
 
 ## Architecture
 
+See [docs/architecture/](./docs/architecture/) for details.
+
 ### Data Flow: Receipt Upload
-1. `POST /api/receipts/upload` receives image → `upload.py`
-2. OCRService (`mock_ocr.py` or `textract_ocr.py`) extracts text
-3. `parser.py` converts OCR output → `ParsedReceipt` with Norwegian name normalization
-4. `categorizer.py` matches items to categories via keyword lookup
-5. Receipt + Items saved to PostgreSQL with category associations
+1. `POST /api/receipts/upload` → `upload.py`
+2. OCR Service extracts text (mock or Textract)
+3. `parser.py` → Norwegian normalization (PANT, RABATT, abbreviations)
+4. `categorizer.py` → keyword-based category matching
+5. Save to PostgreSQL
 
-### Backend Structure (`backend/src/`)
-- **api/deps.py**: FastAPI dependency injection for `DbSession` and `OCRServiceDep`
-- **services/ocr.py**: Abstract `OCRService` protocol - swap implementations via `USE_MOCK_OCR` env var
-- **services/parser.py**: Norwegian receipt parsing (handles PANT/deposits, RABATT/discounts, date formats, abbreviations)
-- **services/categorizer.py**: `CATEGORY_KEYWORDS` dict maps Norwegian grocery terms → 12 categories
-- **db/models.py**: SQLAlchemy 2.0 async models (Receipt, Item, Category) with UUID primary keys
-  - Receipt model includes: `warranty_months`, `return_window_days`, `raw_ocr` (JSONB), audit timestamps
+### Key Files
 
-### Frontend Structure (`frontend/src/`)
-- **lib/api.ts**: Typed API client with `Receipt`, `Item`, `Category` interfaces
-  - Includes `formatNOK()`, `formatDate()`, `formatRelativeDate()` utilities
-- **app/[locale]/**: Next.js 15 App Router pages with i18n
-  - `/` - Dashboard
-  - `/upload` - Receipt upload
-  - `/receipts` - Receipts list
-  - `/receipts/[id]` - Receipt detail
-  - `/analytics` - Spending analytics
-- **components/**: `Navigation.tsx`, `LanguageSwitcher.tsx`
-- Uses Recharts for analytics visualizations
-
-### i18n (Internationalization)
-- **next-intl**: Framework for translations
-- **Locales**: `nb` (Norwegian), `en` (English)
-- **Message files**: `frontend/src/messages/nb.json`, `frontend/src/messages/en.json`
-- **Routing**: `frontend/src/i18n/routing.ts` defines locale routing
-- **Middleware**: `frontend/src/middleware.ts` handles locale detection and redirects
-- **Components**: `LanguageSwitcher.tsx` for UI language toggle
+| Area | Files |
+|------|-------|
+| API routes | `backend/src/api/*.py` |
+| OCR/parsing | `backend/src/services/` |
+| DB models | `backend/src/db/models.py` |
+| Frontend API | `frontend/src/lib/api.ts` |
+| i18n | `frontend/src/messages/{nb,en}.json` |
+| Routes | `frontend/src/app/[locale]/` |
 
 ### Key Patterns
-- All database operations are async (SQLAlchemy + asyncpg)
-- Alembic migrations in `backend/alembic/versions/`
-- OCR is pluggable: `MockOCRService` returns fixture data, `TextractOCRService` for production
-- Norwegian-first: NOK currency, nb-NO date formatting, Norwegian category names
-
-## Environment Variables
-
-```bash
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/kvitteringshvelv
-USE_MOCK_OCR=true              # Set false to use AWS Textract
-NEXT_PUBLIC_API_URL=http://localhost:8000
-```
+- Async everywhere (SQLAlchemy + asyncpg)
+- OCR is pluggable via `USE_MOCK_OCR` env var
+- next-intl for i18n with `nb` (default) and `en` locales
 
 ## Norwegian Domain Context
 
-- **Pant**: Bottle/can deposit (handled as special item type)
-- **Rabatt**: Discount (negative price line items)
-- **Categories**: Meieri (dairy), Kjøtt (meat), Fisk (fish), Brød (bread), Frukt (fruit), Grønnsaker (vegetables), Drikke (beverages), Tørrvarer (dry goods), Frossen (frozen), Husholdning (household), Snacks, Pant
+| Term | Meaning |
+|------|---------|
+| Pant | Bottle/can deposit |
+| Rabatt | Discount |
+| Meieri | Dairy |
+| Kjøtt | Meat |
+| Tørrvarer | Dry goods |
+| Husholdning | Household |
+
+12 categories total - see [README.md](./README.md#categories).
