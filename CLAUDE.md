@@ -25,9 +25,19 @@ Kvitteringshvelv ("Receipt Vault") is a Norwegian receipt digitization and groce
 
 ```bash
 # Start all services (postgres, backend, frontend)
-make dev           # Runs docker-compose up -d, shows URLs
-make logs          # Show Docker container logs
-make clean         # Remove containers and volumes
+make dev           # Foreground with logs + file watching (Ctrl+C stops all)
+make up            # Detached mode (background)
+make down          # Stop all services
+make logs          # Follow container logs
+make ps            # Show container status
+make restart       # Restart services without rebuild
+make rebuild       # Force rebuild images (no cache)
+make reset         # Nuclear: remove containers, volumes, AND images
+make clean         # Remove containers, volumes, node_modules, .venv
+
+# Container shells
+make shell-backend # Bash into backend container
+make shell-db      # PostgreSQL shell
 
 # Hot reload is enabled for both backend and frontend in Docker:
 # - Backend: ./backend mounted to /app

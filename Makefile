@@ -1,4 +1,4 @@
-.PHONY: dev up down migrate seed test lint fmt install
+.PHONY: dev up down rebuild restart reset ps shell-backend shell-db logs migrate seed test lint fmt install clean
 
 dev:
 	@echo "Backend: http://localhost:8000"
@@ -12,6 +12,25 @@ up:
 
 down:
 	docker-compose down
+
+rebuild:
+	docker-compose build --no-cache
+
+restart:
+	docker-compose restart
+
+reset:
+	docker-compose down -v --rmi all
+	@echo "All containers, volumes, and images removed"
+
+ps:
+	docker-compose ps
+
+shell-backend:
+	docker-compose exec backend bash
+
+shell-db:
+	docker-compose exec db psql -U postgres kvitteringshvelv
 
 logs:
 	docker-compose logs -f
