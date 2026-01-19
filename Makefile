@@ -1,8 +1,11 @@
 .PHONY: dev up down migrate seed test lint fmt install
 
-dev: up
+dev:
 	@echo "Backend: http://localhost:8000"
 	@echo "Frontend: http://localhost:3000"
+	@echo "Ctrl+C to stop all services"
+	@echo ""
+	docker-compose up --watch
 
 up:
 	docker-compose up -d

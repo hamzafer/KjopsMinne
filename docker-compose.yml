@@ -28,6 +28,11 @@ services:
     volumes:
       - ./backend:/app
       - ./uploads:/app/uploads
+    develop:
+      watch:
+        - action: sync
+          path: ./backend/src
+          target: /app/src
 
   frontend:
     build: ./frontend
@@ -41,6 +46,11 @@ services:
       - ./frontend:/app
       - /app/node_modules
       - /app/.next
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/src
+          target: /app/src
 
 volumes:
   pgdata:
