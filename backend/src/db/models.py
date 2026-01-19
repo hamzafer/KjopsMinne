@@ -47,6 +47,31 @@ class User(Base):
     __table_args__ = (Index("idx_users_household", "household_id"),)
 
 
+class Ingredient(Base):
+    __tablename__ = "ingredients"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    canonical_name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    default_unit: Mapped[str] = mapped_column(Text, default="g")  # g, ml, pcs
+    aliases: Mapped[list[str]] = mapped_column(JSONB, default=list)
+    category_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("categories.id"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=func.now(), nullable=False
+    )
+
+    category: Mapped["Category | None"] = relationship("Category")
+
+    __table_args__ = (
+        Index("idx_ingredients_canonical", canonical_name),
+        Index("idx_ingredients_category", category_id),
+    )
+
+
 class Category(Base):
     __tablename__ = "categories"
 
@@ -115,11 +140,23 @@ class Item(Base):
     )
     is_pant: Mapped[bool] = mapped_column(Boolean, default=False)
     discount_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=Decimal("0"))
+    ingredient_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ingredients.id"), nullable=True
+    )
+    ingredient_confidence: Mapped[Decimal | None] = mapped_column(
+        Numeric(3, 2), nullable=True
+    )  # 0.00 to 1.00
+    inventory_lot_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), nullable=True
+    )  # FK added later when InventoryLot exists
+    skip_inventory: Mapped[bool] = mapped_column(Boolean, default=False)
 
     receipt: Mapped["Receipt"] = relationship("Receipt", back_populates="items")
     category: Mapped["Category | None"] = relationship("Category", back_populates="items")
+    ingredient: Mapped["Ingredient | None"] = relationship("Ingredient")
 
     __table_args__ = (
         Index("idx_items_receipt", receipt_id),
         Index("idx_items_category", category_id),
+        Index("idx_items_ingredient", ingredient_id),
     )
