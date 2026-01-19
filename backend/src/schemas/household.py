@@ -34,3 +34,10 @@ class UserResponse(BaseModel):
 
 class HouseholdWithUsers(HouseholdResponse):
     users: list[UserResponse] = []
+
+
+class HouseholdCreateRequest(BaseModel):
+    """Combined request for creating a household with its owner."""
+
+    household: HouseholdCreate
+    owner: UserCreate
