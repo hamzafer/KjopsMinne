@@ -23,15 +23,24 @@ import {
 } from "recharts";
 import { api, formatNOK, type Summary, type ByCategory } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/components/ThemeProvider";
 
 export default function AnalyticsPage() {
   const t = useTranslations("Analytics");
   const tEmpty = useTranslations("EmptyState");
   const locale = useLocale();
+  const { resolvedTheme } = useTheme();
 
   const [summary, setSummary] = useState<Summary | null>(null);
   const [byCategory, setByCategory] = useState<ByCategory | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Theme-aware chart colors
+  const chartColors = {
+    axisText: resolvedTheme === "dark" ? "#e2e8f0" : "#374151",
+    axisTextMuted: resolvedTheme === "dark" ? "#94a3b8" : "#6B7280",
+    legendText: resolvedTheme === "dark" ? "#cbd5e1" : "#4B5563",
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -153,7 +162,7 @@ export default function AnalyticsPage() {
                       <Tooltip content={<CustomTooltip locale={locale} itemsLabel={t("items")} />} />
                       <Legend
                         formatter={(value) => (
-                          <span className="text-sm text-fjord-600">{value}</span>
+                          <span className="text-sm" style={{ color: chartColors.legendText }}>{value}</span>
                         )}
                       />
                     </RechartsPie>
@@ -182,7 +191,7 @@ export default function AnalyticsPage() {
                       <XAxis
                         type="number"
                         tickFormatter={(v) => `${v.toFixed(0)}`}
-                        tick={{ fill: "#6B7280", fontSize: 12 }}
+                        tick={{ fill: chartColors.axisTextMuted, fontSize: 12 }}
                         axisLine={false}
                         tickLine={false}
                       />
@@ -190,7 +199,7 @@ export default function AnalyticsPage() {
                         type="category"
                         dataKey="name"
                         width={100}
-                        tick={{ fill: "#374151", fontSize: 12 }}
+                        tick={{ fill: chartColors.axisText, fontSize: 12 }}
                         axisLine={false}
                         tickLine={false}
                       />
