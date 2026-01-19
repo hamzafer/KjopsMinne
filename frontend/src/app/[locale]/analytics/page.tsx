@@ -57,18 +57,23 @@ export default function AnalyticsPage() {
 
   const hasData = summary && summary.total_receipts > 0;
 
-  // Prepare chart data
+  // Parse summary values (API returns strings for decimal fields)
+  const totalSpent = parseFloat(String(summary?.total_spent)) || 0;
+  const avgReceiptAmount = parseFloat(String(summary?.avg_receipt_amount)) || 0;
+
+  // Prepare chart data - parse string values to numbers for charts
   const pieData = byCategory?.categories.map((cat) => ({
     name: cat.category_name,
-    value: cat.total_spent,
+    value: parseFloat(String(cat.total_spent)) || 0,
     color: cat.category_color || "#6B7280",
     count: cat.item_count,
   })) || [];
 
-  if (byCategory && byCategory.uncategorized_total > 0) {
+  const uncategorizedTotal = parseFloat(String(byCategory?.uncategorized_total)) || 0;
+  if (byCategory && uncategorizedTotal > 0) {
     pieData.push({
       name: t("uncategorized"),
-      value: byCategory.uncategorized_total,
+      value: uncategorizedTotal,
       color: "#9CA3AF",
       count: byCategory.uncategorized_count,
     });
@@ -102,7 +107,7 @@ export default function AnalyticsPage() {
             <StatCard
               icon={TrendingUp}
               label={t("totalSpending")}
-              value={`${formatNOK(summary.total_spent, locale)} kr`}
+              value={`${formatNOK(totalSpent, locale)} kr`}
               delay={2}
             />
             <StatCard
@@ -114,7 +119,7 @@ export default function AnalyticsPage() {
             <StatCard
               icon={BarChart3}
               label={t("average")}
-              value={`${formatNOK(summary.avg_receipt_amount, locale)} kr`}
+              value={`${formatNOK(avgReceiptAmount, locale)} kr`}
               delay={4}
             />
           </div>
@@ -233,8 +238,8 @@ export default function AnalyticsPage() {
                 </thead>
                 <tbody className="divide-y divide-fjord-50">
                   {pieData.map((cat) => {
-                    const percentage = summary.total_spent > 0
-                      ? (cat.value / summary.total_spent) * 100
+                    const percentage = totalSpent > 0
+                      ? (cat.value / totalSpent) * 100
                       : 0;
 
                     return (
