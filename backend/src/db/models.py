@@ -11,6 +11,42 @@ class Base(DeclarativeBase):
     pass
 
 
+class Household(Base):
+    __tablename__ = "households"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=func.now(), nullable=False
+    )
+
+    users: Mapped[list["User"]] = relationship("User", back_populates="household")
+    receipts: Mapped[list["Receipt"]] = relationship("Receipt", back_populates="household")
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    household_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("households.id"), nullable=False
+    )
+    role: Mapped[str] = mapped_column(Text, default="member")  # "owner" | "member"
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=func.now(), nullable=False
+    )
+
+    household: Mapped["Household"] = relationship("Household", back_populates="users")
+
+    __table_args__ = (Index("idx_users_household", "household_id"),)
+
+
 class Category(Base):
     __tablename__ = "categories"
 
@@ -30,6 +66,10 @@ class Receipt(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
+    household_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("households.id"), nullable=True
+    )
+    inventory_status: Mapped[str] = mapped_column(Text, default="pending")  # "pending" | "reviewed" | "skipped"
     merchant_name: Mapped[str] = mapped_column(Text, nullable=False)
     store_location: Mapped[str | None] = mapped_column(Text, nullable=True)
     purchase_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
@@ -50,6 +90,7 @@ class Receipt(Base):
     items: Mapped[list["Item"]] = relationship(
         "Item", back_populates="receipt", cascade="all, delete-orphan"
     )
+    household: Mapped["Household | None"] = relationship("Household", back_populates="receipts")
 
     __table_args__ = (Index("idx_receipts_date", purchase_date.desc()),)
 
