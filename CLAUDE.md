@@ -6,11 +6,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Kvitteringshvelv ("Receipt Vault") is a Norwegian receipt digitization and grocery analytics application. Users upload receipt images, which are processed via OCR to extract items, auto-categorize them into Norwegian grocery categories, and provide spending analytics.
 
+## Deployment
+
+| Service | URL | Platform |
+|---------|-----|----------|
+| Frontend | https://kjops-minne.vercel.app | Vercel |
+| Backend API | https://kvitteringshvelv-api.onrender.com | Render |
+| API Docs | https://kvitteringshvelv-api.onrender.com/docs | Render |
+
+**Notes:**
+- Frontend auto-deploys on push to `main` branch (Vercel)
+- Backend auto-deploys on push to `main` branch (Render)
+- Backend has ~30s cold start on first request (Render free tier)
+- `USE_MOCK_OCR=true` on backend - returns sample KIWI receipt data
+- i18n supported: `/nb` (Norwegian), `/en` (English)
+
 ## Commands
 
 ```bash
 # Start all services (postgres, backend, frontend)
 make dev           # Runs docker-compose up -d, shows URLs
+
+# Hot reload is enabled for both backend and frontend in Docker:
+# - Backend: ./backend mounted to /app
+# - Frontend: ./frontend mounted to /app (node_modules/.next preserved in volumes)
+# Edit files locally and changes reflect automatically.
 
 # Run migrations and seed data
 cd backend && uv run alembic upgrade head
