@@ -13,6 +13,15 @@
   --color-stone: #6B7280;
 }
 
+html.dark {
+  --color-cream: #1a2332;
+  --color-paper: #243447;
+  --color-fjord: #94a3b8;
+  --color-forest: #78A287;
+  --color-amber: #d4a574;
+  --color-stone: #9CA3AF;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -27,6 +36,7 @@ body {
   color: var(--color-fjord);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Subtle paper texture overlay */
@@ -41,6 +51,11 @@ body::before {
   opacity: 0.015;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   z-index: 9999;
+}
+
+html.dark body::before {
+  opacity: 0.03;
+  filter: invert(1);
 }
 
 /* Custom scrollbar */
@@ -62,6 +77,14 @@ body::before {
   background: #9CA3AF;
 }
 
+html.dark ::-webkit-scrollbar-thumb {
+  background: #3d4f63;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #4d6177;
+}
+
 /* Typography refinements */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Fraunces', Georgia, serif;
@@ -79,11 +102,22 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Paper card effect */
 .paper-card {
-  @apply bg-paper rounded-2xl shadow-paper transition-shadow duration-300;
+  @apply bg-paper rounded-2xl shadow-paper transition-all duration-300;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .paper-card:hover {
   @apply shadow-paper-hover;
+}
+
+html.dark .paper-card {
+  background-color: #243447 !important;
+  border: 1px solid rgba(148, 163, 184, 0.15) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2) !important;
+}
+
+html.dark .paper-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.25) !important;
 }
 
 /* Receipt paper effect */
@@ -91,6 +125,7 @@ h1, h2, h3, h4, h5, h6 {
   background: linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%);
   border: 1px solid rgba(0, 0, 0, 0.04);
   position: relative;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .receipt-paper::before {
@@ -109,6 +144,21 @@ h1, h2, h3, h4, h5, h6 {
   );
 }
 
+html.dark .receipt-paper {
+  background: linear-gradient(180deg, #243447 0%, #1e2d3d 100%);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+html.dark .receipt-paper::before {
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 4px,
+    #3d4f63 4px,
+    #3d4f63 8px
+  );
+}
+
 /* Input styling */
 input[type="text"],
 input[type="search"],
@@ -120,6 +170,10 @@ textarea {
 /* Focus ring styling */
 .focus-ring {
   @apply focus:outline-none focus:ring-2 focus:ring-fjord-300 focus:ring-offset-2 focus:ring-offset-cream;
+}
+
+html.dark .focus-ring {
+  --tw-ring-offset-color: #1a2332;
 }
 
 /* Button base */
@@ -135,8 +189,23 @@ textarea {
   @apply btn bg-paper text-fjord-500 border border-fjord-200 hover:bg-fjord-50 hover:border-fjord-300 px-5 py-2.5;
 }
 
+html.dark .btn-secondary {
+  background-color: #243447;
+  color: #94a3b8;
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+html.dark .btn-secondary:hover {
+  background-color: #2d3f52;
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
 .btn-ghost {
   @apply btn text-fjord-500 hover:bg-fjord-50 px-4 py-2;
+}
+
+html.dark .btn-ghost:hover {
+  background-color: rgba(148, 163, 184, 0.1);
 }
 
 /* Drag and drop zone */
@@ -153,6 +222,21 @@ textarea {
   @apply border-forest-400 bg-forest-50/50 scale-[1.01];
 }
 
+html.dark .dropzone {
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+html.dark .dropzone:hover,
+html.dark .dropzone.active {
+  border-color: rgba(148, 163, 184, 0.5);
+  background-color: rgba(148, 163, 184, 0.05);
+}
+
+html.dark .dropzone.dragover {
+  border-color: #78A287;
+  background-color: rgba(120, 162, 135, 0.1);
+}
+
 /* Number formatting */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
@@ -163,12 +247,24 @@ textarea {
   @apply flex justify-between items-baseline py-2 border-b border-fjord-100/50 last:border-b-0;
 }
 
+html.dark .receipt-item {
+  border-color: rgba(148, 163, 184, 0.1);
+}
+
 .receipt-item-name {
   @apply text-fjord-600 truncate mr-4;
 }
 
+html.dark .receipt-item-name {
+  color: #cbd5e1;
+}
+
 .receipt-item-price {
   @apply text-fjord-800 font-medium tabular-nums whitespace-nowrap;
+}
+
+html.dark .receipt-item-price {
+  color: #e2e8f0;
 }
 
 /* Category badge */
@@ -181,9 +277,18 @@ textarea {
   @apply bg-fjord-800 text-white px-3 py-2 rounded-lg shadow-lg text-sm;
 }
 
+html.dark .chart-tooltip {
+  background-color: #0f1a24;
+  color: #e2e8f0;
+}
+
 /* Skeleton loading */
 .skeleton {
   @apply animate-pulse bg-fjord-100 rounded;
+}
+
+html.dark .skeleton {
+  background-color: #2d3f52;
 }
 
 /* Norwegian Krone formatting */
@@ -194,4 +299,126 @@ textarea {
 .nok::after {
   content: ' kr';
   @apply text-stone-light text-sm ml-0.5;
+}
+
+html.dark .nok::after {
+  color: #6b7a8f;
+}
+
+/* ===========================================
+   Dark Mode Text Color Overrides
+   =========================================== */
+
+/* Primary headings and important text */
+html.dark .text-fjord-800 {
+  color: #e2e8f0 !important;
+}
+
+html.dark .text-fjord-700 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-fjord-600 {
+  color: #94a3b8 !important;
+}
+
+html.dark .text-fjord-500 {
+  color: #38bdf8 !important; /* Bright sky blue for icons */
+}
+
+/* Stone/muted text */
+html.dark .text-stone {
+  color: #9ca3af !important;
+}
+
+html.dark .text-stone-dark {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-stone-light {
+  color: #64748b !important;
+}
+
+/* ===========================================
+   Dark Mode Background Color Overrides
+   =========================================== */
+
+/* Light backgrounds become dark */
+html.dark .bg-fjord-50 {
+  background-color: #1e3a5f !important;
+}
+
+html.dark .bg-fjord-100 {
+  background-color: #1c3654 !important;
+}
+
+html.dark .bg-fjord-50\/50 {
+  background-color: rgba(30, 58, 95, 0.5) !important;
+}
+
+html.dark .bg-forest-50 {
+  background-color: #1a3d2e !important;
+}
+
+html.dark .bg-amber-light\/30 {
+  background-color: rgba(139, 105, 20, 0.3) !important;
+}
+
+/* White backgrounds */
+html.dark .bg-white {
+  background-color: #243447 !important;
+}
+
+html.dark .bg-paper {
+  background-color: #243447 !important;
+}
+
+/* Gradient backgrounds */
+html.dark .bg-gradient-to-br.from-fjord-100.to-fjord-50 {
+  background: linear-gradient(to bottom right, #1c3654, #1e3a5f) !important;
+}
+
+/* ===========================================
+   Dark Mode Border Color Overrides
+   =========================================== */
+
+html.dark .border-fjord-100 {
+  border-color: rgba(148, 163, 184, 0.15) !important;
+}
+
+html.dark .border-fjord-100\/50 {
+  border-color: rgba(148, 163, 184, 0.1) !important;
+}
+
+/* ===========================================
+   Dark Mode Hover State Overrides
+   =========================================== */
+
+html.dark .hover\:bg-fjord-100:hover {
+  background-color: #243d5a !important;
+}
+
+html.dark .group:hover .group-hover\:bg-fjord-100 {
+  background-color: #243d5a !important;
+}
+
+html.dark .group:hover .group-hover\:text-fjord-800 {
+  color: #f1f5f9 !important;
+}
+
+/* ===========================================
+   Dark Mode Icon Color Overrides
+   Make stat card icons more vibrant
+   =========================================== */
+
+html.dark .text-fjord-400 {
+  color: #7dd3fc !important; /* Bright sky blue */
+}
+
+html.dark .text-forest-500 {
+  color: #4ade80 !important; /* Bright green */
+}
+
+html.dark .text-amber-dark {
+  color: #fbbf24 !important; /* Bright amber/gold */
 }

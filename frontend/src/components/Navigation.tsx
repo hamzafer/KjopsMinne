@@ -12,6 +12,7 @@ import {
   Vault
 } from "lucide-react";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { ThemeSwitcher } from "./ThemeSwitcher";
 
 export function Navigation() {
   const pathname = usePathname();
@@ -26,7 +27,7 @@ export function Navigation() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-cream/80 backdrop-blur-md border-b border-fjord-100/50">
+    <header className="sticky top-0 z-50 bg-cream/80 dark:bg-[#1a2332]/80 backdrop-blur-md border-b border-fjord-100/50 dark:border-fjord-700/50 transition-colors duration-200">
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -37,7 +38,7 @@ export function Navigation() {
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-fjord-500 to-fjord-600 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
               <Vault className="w-5 h-5 text-white" />
             </div>
-            <span className="font-display text-xl text-fjord-700 tracking-tight hidden sm:inline">
+            <span className="font-display text-xl text-fjord-700 dark:text-fjord-200 tracking-tight hidden sm:inline">
               {t("appName")}
             </span>
           </Link>
@@ -58,7 +59,7 @@ export function Navigation() {
                       "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200",
                       isActive
                         ? "bg-fjord-500 text-white shadow-sm"
-                        : "text-fjord-600 hover:bg-fjord-50 hover:text-fjord-700"
+                        : "text-fjord-600 dark:text-fjord-300 hover:bg-fjord-50 dark:hover:bg-fjord-800/50 hover:text-fjord-700 dark:hover:text-fjord-100"
                     )}
                   >
                     <Icon className="w-4 h-4" />
@@ -68,6 +69,7 @@ export function Navigation() {
               })}
             </nav>
 
+            <ThemeSwitcher />
             <LanguageSwitcher />
           </div>
         </div>

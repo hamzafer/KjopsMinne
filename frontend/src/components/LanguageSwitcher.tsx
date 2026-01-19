@@ -26,16 +26,16 @@ export function LanguageSwitcher() {
   };
 
   return (
-    <div className="flex items-center gap-0.5 bg-fjord-50 rounded-lg p-0.5">
+    <div className="flex items-center gap-0.5 bg-fjord-100 dark:bg-slate-800 rounded-lg p-0.5 transition-colors duration-200">
       {routing.locales.map((loc) => (
         <button
           key={loc}
           onClick={() => switchLocale(loc)}
           className={cn(
-            "px-2.5 py-1 text-xs font-medium rounded-md transition-all",
+            "px-2.5 py-1 text-xs font-medium rounded-md transition-all duration-200",
             locale === loc
-              ? "bg-white text-fjord-700 shadow-sm"
-              : "text-fjord-400 hover:text-fjord-600"
+              ? "bg-white dark:bg-slate-700 text-fjord-700 dark:text-slate-100 shadow-sm"
+              : "text-fjord-400 hover:text-fjord-600 dark:text-slate-400 dark:hover:text-slate-200"
           )}
         >
           {localeLabels[loc]}
