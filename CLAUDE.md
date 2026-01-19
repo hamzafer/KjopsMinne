@@ -2,8 +2,8 @@
 
 Instructions for Claude Code when working with this repository.
 
-> **Commands & Setup**: See [README.md](./README.md)
-> **Detailed Docs**: See [docs/](./docs/)
+> **Commands & Setup**: See @README.md
+> **Detailed Docs**: See @docs/
 
 ## Quick Reference
 
