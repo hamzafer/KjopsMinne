@@ -26,6 +26,8 @@ Kvitteringshvelv ("Receipt Vault") is a Norwegian receipt digitization and groce
 ```bash
 # Start all services (postgres, backend, frontend)
 make dev           # Runs docker-compose up -d, shows URLs
+make logs          # Show Docker container logs
+make clean         # Remove containers and volumes
 
 # Hot reload is enabled for both backend and frontend in Docker:
 # - Backend: ./backend mounted to /app
@@ -84,11 +86,27 @@ Use these skills when developing new features:
 - **services/parser.py**: Norwegian receipt parsing (handles PANT/deposits, RABATT/discounts, date formats, abbreviations)
 - **services/categorizer.py**: `CATEGORY_KEYWORDS` dict maps Norwegian grocery terms → 12 categories
 - **db/models.py**: SQLAlchemy 2.0 async models (Receipt, Item, Category) with UUID primary keys
+  - Receipt model includes: `warranty_months`, `return_window_days`, `raw_ocr` (JSONB), audit timestamps
 
 ### Frontend Structure (`frontend/src/`)
 - **lib/api.ts**: Typed API client with `Receipt`, `Item`, `Category` interfaces
-- **app/**: Next.js 15 App Router pages (dashboard, upload, receipts, analytics)
+  - Includes `formatNOK()`, `formatDate()`, `formatRelativeDate()` utilities
+- **app/[locale]/**: Next.js 15 App Router pages with i18n
+  - `/` - Dashboard
+  - `/upload` - Receipt upload
+  - `/receipts` - Receipts list
+  - `/receipts/[id]` - Receipt detail
+  - `/analytics` - Spending analytics
+- **components/**: `Navigation.tsx`, `LanguageSwitcher.tsx`
 - Uses Recharts for analytics visualizations
+
+### i18n (Internationalization)
+- **next-intl**: Framework for translations
+- **Locales**: `nb` (Norwegian), `en` (English)
+- **Message files**: `frontend/src/messages/nb.json`, `frontend/src/messages/en.json`
+- **Routing**: `frontend/src/i18n/routing.ts` defines locale routing
+- **Middleware**: `frontend/src/middleware.ts` handles locale detection and redirects
+- **Components**: `LanguageSwitcher.tsx` for UI language toggle
 
 ### Key Patterns
 - All database operations are async (SQLAlchemy + asyncpg)
