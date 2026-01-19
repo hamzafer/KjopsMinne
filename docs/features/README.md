@@ -20,6 +20,7 @@ Kvitteringshvelv transforms paper and digital receipts into actionable financial
 | 08 | [Integrations](./08-integrations.md) | REMA API, Trumf, Coop, Vipps connections | Not Started |
 | 09 | [Auth & Security](./09-auth-security.md) | BankID login, PSD2/SCA compliance | Not Started |
 | 10 | [Business Mode](./10-business-mode.md) | ENK/SMB features, accounting export | Not Started |
+| 11 | [Internationalization](./11-i18n.md) | Multi-language support (Norwegian, English) | Implemented |
 
 ## Implementation Phases
 
