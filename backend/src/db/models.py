@@ -72,6 +72,25 @@ class Ingredient(Base):
     )
 
 
+class UnitConversion(Base):
+    __tablename__ = "unit_conversions"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    from_unit: Mapped[str] = mapped_column(Text, nullable=False)
+    to_unit: Mapped[str] = mapped_column(Text, nullable=False)
+    factor: Mapped[Decimal] = mapped_column(Numeric(10, 6), nullable=False)
+    ingredient_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ingredients.id"), nullable=True
+    )  # NULL = generic conversion, not ingredient-specific
+
+    __table_args__ = (
+        Index("idx_unit_conversions_from", from_unit),
+        Index("idx_unit_conversions_ingredient", ingredient_id),
+    )
+
+
 class Category(Base):
     __tablename__ = "categories"
 
