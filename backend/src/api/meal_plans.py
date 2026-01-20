@@ -43,7 +43,13 @@ async def create_meal_plan(
     db.add(meal_plan)
     await db.flush()
 
-    await db.refresh(meal_plan, ["recipe"])
+    # Re-select with proper eager loading for nested relationships
+    result = await db.execute(
+        select(MealPlan)
+        .where(MealPlan.id == meal_plan.id)
+        .options(selectinload(MealPlan.recipe).selectinload(Recipe.ingredients))
+    )
+    meal_plan = result.scalar_one()
 
     return MealPlanResponse.model_validate(meal_plan)
 
@@ -125,7 +131,14 @@ async def update_meal_plan(
         setattr(meal_plan, key, value)
 
     await db.flush()
-    await db.refresh(meal_plan, ["recipe"])
+
+    # Re-select with proper eager loading for nested relationships
+    result = await db.execute(
+        select(MealPlan)
+        .where(MealPlan.id == meal_plan.id)
+        .options(selectinload(MealPlan.recipe).selectinload(Recipe.ingredients))
+    )
+    meal_plan = result.scalar_one()
 
     return MealPlanResponse.model_validate(meal_plan)
 
@@ -274,7 +287,14 @@ async def cook_meal_plan(
         meal_plan.is_leftover_source = True
 
     await db.flush()
-    await db.refresh(meal_plan, ["recipe"])
+
+    # Re-select with proper eager loading for nested relationships
+    result = await db.execute(
+        select(MealPlan)
+        .where(MealPlan.id == meal_plan.id)
+        .options(selectinload(MealPlan.recipe).selectinload(Recipe.ingredients))
+    )
+    meal_plan = result.scalar_one()
 
     return CookResponse(
         meal_plan=MealPlanResponse.model_validate(meal_plan),

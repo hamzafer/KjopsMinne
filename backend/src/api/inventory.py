@@ -7,7 +7,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
 from src.api.deps import DbSession
-from src.db.models import Household, Ingredient, InventoryEvent, InventoryLot
+from src.db.models import Category, Household, Ingredient, InventoryEvent, InventoryLot
 from src.schemas.inventory import (
     ConsumeRequest,
     DiscardRequest,
@@ -85,7 +85,7 @@ async def list_inventory_lots(
     """List all inventory lots for a household."""
     query = (
         select(InventoryLot)
-        .options(selectinload(InventoryLot.ingredient))
+        .options(selectinload(InventoryLot.ingredient).selectinload(Ingredient.category))
         .where(InventoryLot.household_id == household_id)
         .where(InventoryLot.quantity > 0)
     )
@@ -106,7 +106,7 @@ async def get_inventory_lot(lot_id: uuid.UUID, db: DbSession):
     """Get a specific inventory lot."""
     result = await db.execute(
         select(InventoryLot)
-        .options(selectinload(InventoryLot.ingredient))
+        .options(selectinload(InventoryLot.ingredient).selectinload(Ingredient.category))
         .where(InventoryLot.id == lot_id)
     )
     lot = result.scalar_one_or_none()
@@ -173,7 +173,7 @@ async def create_inventory_lot(
     # Reload with ingredient
     result = await db.execute(
         select(InventoryLot)
-        .options(selectinload(InventoryLot.ingredient))
+        .options(selectinload(InventoryLot.ingredient).selectinload(Ingredient.category))
         .where(InventoryLot.id == lot.id)
     )
     return result.scalar_one()
@@ -204,7 +204,7 @@ async def update_inventory_lot(
     # Reload with ingredient
     result = await db.execute(
         select(InventoryLot)
-        .options(selectinload(InventoryLot.ingredient))
+        .options(selectinload(InventoryLot.ingredient).selectinload(Ingredient.category))
         .where(InventoryLot.id == lot.id)
     )
     return result.scalar_one()
@@ -250,7 +250,7 @@ async def consume_from_lot(
     # Reload with ingredient
     result = await db.execute(
         select(InventoryLot)
-        .options(selectinload(InventoryLot.ingredient))
+        .options(selectinload(InventoryLot.ingredient).selectinload(Ingredient.category))
         .where(InventoryLot.id == lot.id)
     )
     return result.scalar_one()
@@ -292,7 +292,7 @@ async def discard_lot(
     # Reload with ingredient
     result = await db.execute(
         select(InventoryLot)
-        .options(selectinload(InventoryLot.ingredient))
+        .options(selectinload(InventoryLot.ingredient).selectinload(Ingredient.category))
         .where(InventoryLot.id == lot.id)
     )
     return result.scalar_one()
@@ -339,7 +339,7 @@ async def transfer_lot(
     # Reload with ingredient
     result = await db.execute(
         select(InventoryLot)
-        .options(selectinload(InventoryLot.ingredient))
+        .options(selectinload(InventoryLot.ingredient).selectinload(Ingredient.category))
         .where(InventoryLot.id == lot.id)
     )
     return result.scalar_one()
