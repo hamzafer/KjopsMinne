@@ -937,7 +937,7 @@ async def create_recipes() -> dict[str, uuid.UUID]:
     """Create Norwegian recipes with ingredients."""
     ingredients = await get_ingredient_map()
 
-    # Recipe data: (name, servings, prep_time, cook_time, instructions, tags, ingredients_list)
+    # Recipe data: (name, servings, prep_time, cook_time, instructions, tags, image_url, ingredients_list)
     # Ingredients: (raw_text, qty, unit, ing_key, notes)
     recipes_data = [
         (
@@ -951,6 +951,7 @@ async def create_recipes() -> dict[str, uuid.UUID]:
             "4. Legg kjøttbollene i sausen og la småkoke i 15 min.\n"
             "5. Server med poteter og tyttebærsyltetøy.",
             ["middag", "norsk", "klassisk"],
+            "https://images.unsplash.com/photo-1529042410759-befb1204b468?w=800&q=80",
             [
                 ("500g kjøttdeig", Decimal("500"), "g", "kjottdeig", None),
                 ("2 egg", Decimal("2"), "pcs", "egg", None),
@@ -972,6 +973,7 @@ async def create_recipes() -> dict[str, uuid.UUID]:
             "4. Hell fløteblandingen over fisken.\n"
             "5. Gratiner i ovn på 200°C i 25-30 min.",
             ["middag", "fisk", "grateng"],
+            "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=800&q=80",
             [
                 ("400g torsk", Decimal("400"), "g", "torsk", "i biter"),
                 ("300g pasta", Decimal("300"), "g", "pasta", None),
@@ -992,6 +994,7 @@ async def create_recipes() -> dict[str, uuid.UUID]:
             "4. Hell på vann til det dekker.\n"
             "5. La småkoke i 45-60 min til alt er mørt.",
             ["middag", "norsk", "gryte", "comfort"],
+            "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&q=80",
             [
                 ("400g kjøttdeig", Decimal("400"), "g", "kjottdeig", None),
                 ("600g poteter", Decimal("600"), "g", "potet", "i terninger"),
@@ -1012,6 +1015,7 @@ async def create_recipes() -> dict[str, uuid.UUID]:
             "4. Tilsett paprika og hvitløk til kyllingen.\n"
             "5. Server kylling over ris med grønnsaker.",
             ["middag", "kylling", "enkel"],
+            "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=800&q=80",
             [
                 ("500g kyllingfilet", Decimal("500"), "g", "kyllingfilet", "i biter"),
                 ("300g ris", Decimal("300"), "g", "ris", None),
@@ -1033,6 +1037,7 @@ async def create_recipes() -> dict[str, uuid.UUID]:
             "5. Rør inn eggblanding utenfor varme.\n"
             "6. Server umiddelbart med pepper.",
             ["middag", "pasta", "italiensk", "rask"],
+            "https://images.unsplash.com/photo-1612874742237-6526221588e3?w=800&q=80",
             [
                 ("400g spaghetti", Decimal("400"), "g", "pasta", None),
                 ("150g bacon", Decimal("150"), "g", "bacon", "i biter"),
@@ -1053,6 +1058,7 @@ async def create_recipes() -> dict[str, uuid.UUID]:
             "5. Kok forsiktig til fisken er gjennomstekt.\n"
             "6. Smak til med salt og pepper.",
             ["middag", "fisk", "suppe"],
+            "https://images.unsplash.com/photo-1594041680534-e8c8cdebd659?w=800&q=80",
             [
                 ("300g torsk", Decimal("300"), "g", "torsk", "i biter"),
                 ("150g reker", Decimal("150"), "g", "reker", "pillede"),
@@ -1075,6 +1081,7 @@ async def create_recipes() -> dict[str, uuid.UUID]:
             cook_time,
             instructions,
             tags,
+            image_url,
             recipe_ingredients,
         ) in recipes_data:
             recipe = Recipe(
@@ -1086,6 +1093,7 @@ async def create_recipes() -> dict[str, uuid.UUID]:
                 cook_time_minutes=cook_time,
                 instructions=instructions,
                 tags=tags,
+                image_url=image_url,
             )
             session.add(recipe)
             recipe_map[name] = recipe.id
