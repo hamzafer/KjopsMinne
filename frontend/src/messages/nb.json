@@ -88,7 +88,62 @@
     "amount": "Beløp",
     "share": "Andel",
     "uncategorized": "Ukategorisert",
-    "noDataToShow": "Ingen data å vise"
+    "noDataToShow": "Ingen data å vise",
+    "costPerMeal": {
+      "title": "Kostnad per måltid",
+      "mealsTracked": "{count, plural, =1 {# måltid} other {# måltider}} sporet",
+      "noMeals": "Ingen måltider ennå",
+      "recentMeals": "Siste måltider",
+      "servings": "{count, plural, =1 {porsjon} other {porsjoner}}",
+      "perServing": "porsjon",
+      "totalSpent": "Totalt brukt"
+    },
+    "waste": {
+      "title": "Matsvinn",
+      "noWaste": "Ingen svinn",
+      "itemsWasted": "{inventory} varer, {leftovers} porsjoner",
+      "keepItUp": "Fortsett sånn!",
+      "inventoryTab": "Lagervarer",
+      "leftoversTab": "Matrester",
+      "noInventoryWaste": "Ingen lagervarer kastet",
+      "noLeftoverWaste": "Ingen matrester kastet",
+      "unknownItem": "Ukjent vare",
+      "discardedOn": "Kastet {date}",
+      "unknown": "ukjent",
+      "servings": "porsjoner",
+      "totalWasteValue": "Total svinnverdi"
+    },
+    "spendTrend": {
+      "title": "Forbrukstrend",
+      "noData": "Ingen data ennå",
+      "granularity": {
+        "daily": "Daglig forbruk",
+        "weekly": "Ukentlig forbruk",
+        "monthly": "Månedlig forbruk"
+      },
+      "periodBreakdown": "Periodefordeling",
+      "receipts": "kvitteringer",
+      "meals": "måltider",
+      "savingMoney": "Du sparer penger",
+      "spendingMore": "Du bruker mer",
+      "stable": "Stabilt forbruk",
+      "less": "mindre",
+      "more": "mer"
+    },
+    "restock": {
+      "title": "Påfylling trengs",
+      "itemsRunningLow": "varer går snart tom",
+      "allStocked": "Alt er på lager",
+      "critical": "kritisk",
+      "soon": "snart",
+      "remaining": "igjen",
+      "today": "I dag",
+      "tomorrow": "I morgen",
+      "daysLeft": "{days} dager",
+      "unknown": "Ukjent",
+      "restockBy": "Fyll på innen {date}",
+      "tip": "Basert på ditt forbruksmønster"
+    }
   },
   "Recipes": {
     "title": "Oppskrifter",

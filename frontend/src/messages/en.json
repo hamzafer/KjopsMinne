@@ -88,7 +88,62 @@
     "amount": "Amount",
     "share": "Share",
     "uncategorized": "Uncategorized",
-    "noDataToShow": "No data to show"
+    "noDataToShow": "No data to show",
+    "costPerMeal": {
+      "title": "Cost Per Meal",
+      "mealsTracked": "{count, plural, =1 {# meal} other {# meals}} tracked",
+      "noMeals": "No meals yet",
+      "recentMeals": "Recent meals",
+      "servings": "{count, plural, =1 {serving} other {servings}}",
+      "perServing": "serving",
+      "totalSpent": "Total spent"
+    },
+    "waste": {
+      "title": "Food Waste",
+      "noWaste": "No waste",
+      "itemsWasted": "{inventory} items, {leftovers} servings",
+      "keepItUp": "Keep it up!",
+      "inventoryTab": "Inventory",
+      "leftoversTab": "Leftovers",
+      "noInventoryWaste": "No inventory items discarded",
+      "noLeftoverWaste": "No leftovers discarded",
+      "unknownItem": "Unknown item",
+      "discardedOn": "Discarded on {date}",
+      "unknown": "unknown",
+      "servings": "servings",
+      "totalWasteValue": "Total waste value"
+    },
+    "spendTrend": {
+      "title": "Spend Trend",
+      "noData": "No data yet",
+      "granularity": {
+        "daily": "Daily spending",
+        "weekly": "Weekly spending",
+        "monthly": "Monthly spending"
+      },
+      "periodBreakdown": "Period breakdown",
+      "receipts": "receipts",
+      "meals": "meals",
+      "savingMoney": "You're saving money",
+      "spendingMore": "You're spending more",
+      "stable": "Stable spending",
+      "less": "less",
+      "more": "more"
+    },
+    "restock": {
+      "title": "Restock Needed",
+      "itemsRunningLow": "items running low",
+      "allStocked": "All items stocked",
+      "critical": "critical",
+      "soon": "soon",
+      "remaining": "remaining",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "daysLeft": "{days} days",
+      "unknown": "Unknown",
+      "restockBy": "Restock by {date}",
+      "tip": "Based on your usage patterns"
+    }
   },
   "Recipes": {
     "title": "Recipes",
