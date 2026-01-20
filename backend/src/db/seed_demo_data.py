@@ -1302,14 +1302,15 @@ async def create_shopping_lists():
         print(f"Created shopping list with {len(shopping_items_data)} items")
 
 
-async def seed_demo_data():
+async def seed_demo_data(clear_first: bool = True):
     """Main function to seed all demo data."""
     print("=" * 50)
     print("Seeding demo data...")
     print("=" * 50)
 
     # Clear existing demo data first
-    await clear_demo_data()
+    if clear_first:
+        await clear_demo_data()
 
     # Create entities in order
     await create_household_and_users()

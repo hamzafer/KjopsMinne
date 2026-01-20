@@ -1,6 +1,7 @@
+import secrets
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
@@ -53,3 +54,15 @@ def get_restock_predictor() -> RestockPredictor:
 
 
 RestockPredictorDep = Annotated[RestockPredictor, Depends(get_restock_predictor)]
+
+
+async def verify_admin_key(x_admin_key: str = Header(..., alias="X-Admin-Key")) -> None:
+    """Verify admin API key from header."""
+    if not settings.admin_api_key:
+        raise HTTPException(status_code=503, detail="Admin API disabled")
+    if not secrets.compare_digest(x_admin_key, settings.admin_api_key):
+        raise HTTPException(status_code=403, detail="Invalid admin key")
+
+
+# Admin authentication dependency - use as endpoint parameter to require X-Admin-Key header
+AdminAuth = Annotated[None, Depends(verify_admin_key)]

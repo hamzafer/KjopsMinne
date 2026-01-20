@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.api import (
+    admin,
     analytics,
     categories,
     households,
@@ -60,6 +61,7 @@ app.include_router(inventory.router, prefix="/api", tags=["inventory"])
 app.include_router(meal_plans.router, prefix="/api", tags=["meal-plans"])
 app.include_router(recipes.router, prefix="/api", tags=["recipes"])
 app.include_router(shopping_lists.router, prefix="/api", tags=["shopping-lists"])
+app.include_router(admin.router, prefix="/api", tags=["admin"])
 
 
 @app.get("/health")
