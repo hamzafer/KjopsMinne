@@ -1,7 +1,6 @@
 """Tests for shopping list generator service."""
-import pytest
-from decimal import Decimal
 from datetime import datetime
+from decimal import Decimal
 from uuid import uuid4
 
 from src.services.shopping_generator import ShoppingGenerator
