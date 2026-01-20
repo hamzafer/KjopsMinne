@@ -28,7 +28,7 @@ CONVERSIONS = [
 
     # Count to pcs
     {"from_unit": "stk", "to_unit": "pcs", "factor": Decimal("1")},  # Norwegian: stykk
-    {"from_unit": "pk", "to_unit": "pcs", "factor": Decimal("1")},   # Norwegian: pakke (treated as 1 unit)
+    {"from_unit": "pk", "to_unit": "pcs", "factor": Decimal("1")},   # pakke
     {"from_unit": "bx", "to_unit": "pcs", "factor": Decimal("1")},   # box
 
     # Identity conversions (canonical to canonical)

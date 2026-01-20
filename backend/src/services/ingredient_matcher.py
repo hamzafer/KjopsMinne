@@ -70,7 +70,9 @@ class IngredientMatcher:
 
         return name
 
-    def match_against_ingredient(self, normalized_name: str, ingredient: IngredientLike) -> MatchResult | None:
+    def match_against_ingredient(
+        self, normalized_name: str, ingredient: IngredientLike
+    ) -> MatchResult | None:
         """
         Try to match a normalized name against a single ingredient.
 

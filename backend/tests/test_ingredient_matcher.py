@@ -1,8 +1,9 @@
 # backend/tests/test_ingredient_matcher.py
-import pytest
+import uuid
 from decimal import Decimal
 from unittest.mock import MagicMock
-import uuid
+
+import pytest
 
 from src.services.ingredient_matcher import IngredientMatcher
 

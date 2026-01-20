@@ -188,9 +188,12 @@ def parse_lines(lines: list[str]) -> ParsedReceipt:
                 if pant_match:
                     quantity = Decimal(pant_match.group(1))
 
+                canonical = None
+                if not is_pant and not is_discount:
+                    canonical = normalize_name(name)
                 items.append(ParsedItem(
                     raw_name=name,
-                    canonical_name=normalize_name(name) if not is_pant and not is_discount else None,
+                    canonical_name=canonical,
                     quantity=quantity,
                     unit=None,
                     unit_price=abs(price) / quantity if quantity else None,

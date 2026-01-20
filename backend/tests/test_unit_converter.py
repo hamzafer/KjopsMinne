@@ -1,5 +1,4 @@
 # backend/tests/test_unit_converter.py
-import pytest
 from decimal import Decimal
 
 from src.services.unit_converter import UnitConverter

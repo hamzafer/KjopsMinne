@@ -7,66 +7,82 @@ from sqlalchemy import select
 from src.db.engine import async_session_factory
 from src.db.models import Category, Ingredient
 
+
+def _ing(name: str, canonical: str, unit: str, aliases: list[str], cat: str) -> dict:
+    """Helper to create ingredient dict."""
+    return {
+        "name": name,
+        "canonical_name": canonical,
+        "default_unit": unit,
+        "aliases": aliases,
+        "category": cat,
+    }
+
+
 # Common Norwegian ingredients with aliases
 INGREDIENTS = [
     # Meieri (Dairy)
-    {"name": "Melk", "canonical_name": "melk", "default_unit": "ml", "aliases": ["milk", "helmelk", "lettmelk", "skummet"], "category": "Meieri"},
-    {"name": "Ost", "canonical_name": "ost", "default_unit": "g", "aliases": ["cheese", "norvegia", "jarlsberg", "gulost"], "category": "Meieri"},
-    {"name": "Smør", "canonical_name": "smor", "default_unit": "g", "aliases": ["butter", "meierismør"], "category": "Meieri"},
-    {"name": "Yoghurt", "canonical_name": "yoghurt", "default_unit": "g", "aliases": ["youghurt", "yogurt"], "category": "Meieri"},
-    {"name": "Rømme", "canonical_name": "romme", "default_unit": "ml", "aliases": ["sour cream", "lettrømme"], "category": "Meieri"},
-    {"name": "Fløte", "canonical_name": "flote", "default_unit": "ml", "aliases": ["cream", "matfløte", "kremfløte"], "category": "Meieri"},
-    {"name": "Egg", "canonical_name": "egg", "default_unit": "pcs", "aliases": ["eggs", "eggehvite"], "category": "Meieri"},
+    _ing("Melk", "melk", "ml", ["milk", "helmelk", "lettmelk", "skummet"], "Meieri"),
+    _ing("Ost", "ost", "g", ["cheese", "norvegia", "jarlsberg", "gulost"], "Meieri"),
+    _ing("Smor", "smor", "g", ["butter", "meierismor"], "Meieri"),
+    _ing("Yoghurt", "yoghurt", "g", ["youghurt", "yogurt"], "Meieri"),
+    _ing("Romme", "romme", "ml", ["sour cream", "lettromme"], "Meieri"),
+    _ing("Flote", "flote", "ml", ["cream", "matflote", "kremflote"], "Meieri"),
+    _ing("Egg", "egg", "pcs", ["eggs", "eggehvite"], "Meieri"),
 
-    # Kjøtt (Meat)
-    {"name": "Kyllingfilet", "canonical_name": "kyllingfilet", "default_unit": "g", "aliases": ["chicken breast", "kylling", "kyl filet"], "category": "Kjøtt"},
-    {"name": "Kjøttdeig", "canonical_name": "kjottdeig", "default_unit": "g", "aliases": ["minced meat", "deig", "storfedeig"], "category": "Kjøtt"},
-    {"name": "Bacon", "canonical_name": "bacon", "default_unit": "g", "aliases": ["bakon"], "category": "Kjøtt"},
-    {"name": "Pølser", "canonical_name": "polser", "default_unit": "pcs", "aliases": ["sausages", "grillpølser", "wiener"], "category": "Kjøtt"},
-    {"name": "Skinke", "canonical_name": "skinke", "default_unit": "g", "aliases": ["ham", "kokt skinke"], "category": "Kjøtt"},
+    # Kjott (Meat)
+    _ing("Kyllingfilet", "kyllingfilet", "g",
+         ["chicken breast", "kylling", "kyl filet"], "Kjott"),
+    _ing("Kjottdeig", "kjottdeig", "g",
+         ["minced meat", "deig", "storfedeig"], "Kjott"),
+    _ing("Bacon", "bacon", "g", ["bakon"], "Kjott"),
+    _ing("Polser", "polser", "pcs", ["sausages", "grillpolser", "wiener"], "Kjott"),
+    _ing("Skinke", "skinke", "g", ["ham", "kokt skinke"], "Kjott"),
 
     # Fisk (Fish)
-    {"name": "Laks", "canonical_name": "laks", "default_unit": "g", "aliases": ["salmon", "laksefilet"], "category": "Fisk"},
-    {"name": "Torsk", "canonical_name": "torsk", "default_unit": "g", "aliases": ["cod", "torskefilet"], "category": "Fisk"},
-    {"name": "Reker", "canonical_name": "reker", "default_unit": "g", "aliases": ["shrimp", "prawns"], "category": "Fisk"},
+    _ing("Laks", "laks", "g", ["salmon", "laksefilet"], "Fisk"),
+    _ing("Torsk", "torsk", "g", ["cod", "torskefilet"], "Fisk"),
+    _ing("Reker", "reker", "g", ["shrimp", "prawns"], "Fisk"),
 
-    # Grønnsaker (Vegetables)
-    {"name": "Tomat", "canonical_name": "tomat", "default_unit": "g", "aliases": ["tomato", "tomater", "cherrytomater"], "category": "Grønnsaker"},
-    {"name": "Løk", "canonical_name": "lok", "default_unit": "pcs", "aliases": ["onion", "rødløk", "gul løk"], "category": "Grønnsaker"},
-    {"name": "Hvitløk", "canonical_name": "hvitlok", "default_unit": "pcs", "aliases": ["garlic", "hvitløksfedd"], "category": "Grønnsaker"},
-    {"name": "Gulrot", "canonical_name": "gulrot", "default_unit": "g", "aliases": ["carrot", "gulrøtter"], "category": "Grønnsaker"},
-    {"name": "Paprika", "canonical_name": "paprika", "default_unit": "pcs", "aliases": ["bell pepper", "rød paprika", "gul paprika"], "category": "Grønnsaker"},
-    {"name": "Agurk", "canonical_name": "agurk", "default_unit": "pcs", "aliases": ["cucumber", "slangeagurk"], "category": "Grønnsaker"},
-    {"name": "Salat", "canonical_name": "salat", "default_unit": "pcs", "aliases": ["lettuce", "isbergsalat", "romaine"], "category": "Grønnsaker"},
-    {"name": "Brokkoli", "canonical_name": "brokkoli", "default_unit": "g", "aliases": ["broccoli"], "category": "Grønnsaker"},
-    {"name": "Spinat", "canonical_name": "spinat", "default_unit": "g", "aliases": ["spinach"], "category": "Grønnsaker"},
-    {"name": "Potet", "canonical_name": "potet", "default_unit": "g", "aliases": ["potato", "poteter", "mandelpoteter"], "category": "Grønnsaker"},
+    # Gronnsaker (Vegetables)
+    _ing("Tomat", "tomat", "g", ["tomato", "tomater", "cherrytomater"], "Gronnsaker"),
+    _ing("Lok", "lok", "pcs", ["onion", "rodlok", "gul lok"], "Gronnsaker"),
+    _ing("Hvitlok", "hvitlok", "pcs", ["garlic", "hvitloksfedd"], "Gronnsaker"),
+    _ing("Gulrot", "gulrot", "g", ["carrot", "gulrotter"], "Gronnsaker"),
+    _ing("Paprika", "paprika", "pcs",
+         ["bell pepper", "rod paprika", "gul paprika"], "Gronnsaker"),
+    _ing("Agurk", "agurk", "pcs", ["cucumber", "slangeagurk"], "Gronnsaker"),
+    _ing("Salat", "salat", "pcs", ["lettuce", "isbergsalat", "romaine"], "Gronnsaker"),
+    _ing("Brokkoli", "brokkoli", "g", ["broccoli"], "Gronnsaker"),
+    _ing("Spinat", "spinat", "g", ["spinach"], "Gronnsaker"),
+    _ing("Potet", "potet", "g", ["potato", "poteter", "mandelpoteter"], "Gronnsaker"),
 
     # Frukt (Fruit)
-    {"name": "Banan", "canonical_name": "banan", "default_unit": "pcs", "aliases": ["banana", "bananer"], "category": "Frukt"},
-    {"name": "Eple", "canonical_name": "eple", "default_unit": "pcs", "aliases": ["apple", "epler"], "category": "Frukt"},
-    {"name": "Appelsin", "canonical_name": "appelsin", "default_unit": "pcs", "aliases": ["orange", "appelsiner"], "category": "Frukt"},
-    {"name": "Sitron", "canonical_name": "sitron", "default_unit": "pcs", "aliases": ["lemon", "sitroner"], "category": "Frukt"},
-    {"name": "Avokado", "canonical_name": "avokado", "default_unit": "pcs", "aliases": ["avocado"], "category": "Frukt"},
+    _ing("Banan", "banan", "pcs", ["banana", "bananer"], "Frukt"),
+    _ing("Eple", "eple", "pcs", ["apple", "epler"], "Frukt"),
+    _ing("Appelsin", "appelsin", "pcs", ["orange", "appelsiner"], "Frukt"),
+    _ing("Sitron", "sitron", "pcs", ["lemon", "sitroner"], "Frukt"),
+    _ing("Avokado", "avokado", "pcs", ["avocado"], "Frukt"),
 
-    # Brød (Bread)
-    {"name": "Brød", "canonical_name": "brod", "default_unit": "pcs", "aliases": ["bread", "grovbrød", "loff"], "category": "Brød"},
-    {"name": "Rundstykker", "canonical_name": "rundstykker", "default_unit": "pcs", "aliases": ["rolls", "rundstykke"], "category": "Brød"},
+    # Brod (Bread)
+    _ing("Brod", "brod", "pcs", ["bread", "grovbrod", "loff"], "Brod"),
+    _ing("Rundstykker", "rundstykker", "pcs", ["rolls", "rundstykke"], "Brod"),
 
-    # Tørrvarer (Dry goods)
-    {"name": "Pasta", "canonical_name": "pasta", "default_unit": "g", "aliases": ["spaghetti", "penne", "makaroni"], "category": "Tørrvarer"},
-    {"name": "Ris", "canonical_name": "ris", "default_unit": "g", "aliases": ["rice", "jasminris", "basmati"], "category": "Tørrvarer"},
-    {"name": "Mel", "canonical_name": "mel", "default_unit": "g", "aliases": ["flour", "hvetemel"], "category": "Tørrvarer"},
-    {"name": "Sukker", "canonical_name": "sukker", "default_unit": "g", "aliases": ["sugar", "melis"], "category": "Tørrvarer"},
-    {"name": "Salt", "canonical_name": "salt", "default_unit": "g", "aliases": ["sea salt", "havsalt"], "category": "Tørrvarer"},
-    {"name": "Pepper", "canonical_name": "pepper", "default_unit": "g", "aliases": ["black pepper", "sort pepper"], "category": "Tørrvarer"},
-    {"name": "Olivenolje", "canonical_name": "olivenolje", "default_unit": "ml", "aliases": ["olive oil", "extra virgin"], "category": "Tørrvarer"},
-    {"name": "Hermetiske tomater", "canonical_name": "hermetiske_tomater", "default_unit": "g", "aliases": ["canned tomatoes", "hakkede tomater"], "category": "Tørrvarer"},
+    # Torrvarer (Dry goods)
+    _ing("Pasta", "pasta", "g", ["spaghetti", "penne", "makaroni"], "Torrvarer"),
+    _ing("Ris", "ris", "g", ["rice", "jasminris", "basmati"], "Torrvarer"),
+    _ing("Mel", "mel", "g", ["flour", "hvetemel"], "Torrvarer"),
+    _ing("Sukker", "sukker", "g", ["sugar", "melis"], "Torrvarer"),
+    _ing("Salt", "salt", "g", ["sea salt", "havsalt"], "Torrvarer"),
+    _ing("Pepper", "pepper", "g", ["black pepper", "sort pepper"], "Torrvarer"),
+    _ing("Olivenolje", "olivenolje", "ml", ["olive oil", "extra virgin"], "Torrvarer"),
+    _ing("Hermetiske tomater", "hermetiske_tomater", "g",
+         ["canned tomatoes", "hakkede tomater"], "Torrvarer"),
 
     # Drikke (Beverages)
-    {"name": "Kaffe", "canonical_name": "kaffe", "default_unit": "g", "aliases": ["coffee", "filterkaffe"], "category": "Drikke"},
-    {"name": "Te", "canonical_name": "te", "default_unit": "pcs", "aliases": ["tea", "teposer"], "category": "Drikke"},
-    {"name": "Juice", "canonical_name": "juice", "default_unit": "ml", "aliases": ["appelsinjuice", "eplejuice"], "category": "Drikke"},
+    _ing("Kaffe", "kaffe", "g", ["coffee", "filterkaffe"], "Drikke"),
+    _ing("Te", "te", "pcs", ["tea", "teposer"], "Drikke"),
+    _ing("Juice", "juice", "ml", ["appelsinjuice", "eplejuice"], "Drikke"),
 ]
 
 
@@ -81,7 +97,9 @@ async def seed_ingredients():
         for ing_data in INGREDIENTS:
             # Check if exists
             result = await session.execute(
-                select(Ingredient).where(Ingredient.canonical_name == ing_data["canonical_name"])
+                select(Ingredient).where(
+                    Ingredient.canonical_name == ing_data["canonical_name"]
+                )
             )
             if not result.scalar_one_or_none():
                 category_id = categories.get(ing_data.get("category"))

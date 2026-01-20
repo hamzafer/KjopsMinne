@@ -113,7 +113,8 @@ class Receipt(Base):
     household_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("households.id"), nullable=True
     )
-    inventory_status: Mapped[str] = mapped_column(Text, default="pending")  # "pending" | "reviewed" | "skipped"
+    # Status: "pending" | "reviewed" | "skipped"
+    inventory_status: Mapped[str] = mapped_column(Text, default="pending")
     merchant_name: Mapped[str] = mapped_column(Text, nullable=False)
     store_location: Mapped[str | None] = mapped_column(Text, nullable=True)
     purchase_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)

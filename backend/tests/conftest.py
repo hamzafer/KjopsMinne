@@ -15,8 +15,8 @@ def sample_receipt_item():
 @pytest.fixture
 def sample_ingredients():
     """Sample ingredients for testing matching."""
-    from unittest.mock import MagicMock
     import uuid
+    from unittest.mock import MagicMock
 
     melk = MagicMock()
     melk.id = uuid.uuid4()

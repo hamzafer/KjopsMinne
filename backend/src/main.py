@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -19,8 +20,6 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
-
-import os
 
 # Allow frontend origins
 allowed_origins = [

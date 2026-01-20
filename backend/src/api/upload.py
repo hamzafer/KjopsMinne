@@ -3,6 +3,8 @@ from pathlib import Path
 
 import aiofiles
 from fastapi import APIRouter, HTTPException, UploadFile
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from src.api.deps import DbSession, OCRServiceDep
 from src.config import settings
@@ -10,8 +12,6 @@ from src.db.models import Category, Item, Receipt
 from src.schemas.receipt import ReceiptResponse
 from src.services.categorizer import categorize_item
 from src.services.parser import parse_ocr_result
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 
 router = APIRouter()
 
