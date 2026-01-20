@@ -115,3 +115,65 @@ async def get_inventory_lot(lot_id: uuid.UUID, db: DbSession):
         raise HTTPException(status_code=404, detail="Inventory lot not found")
 
     return lot
+
+
+@router.post("/inventory/lots", response_model=InventoryLotResponse)
+async def create_inventory_lot(
+    data: InventoryLotCreate,
+    household_id: uuid.UUID = Query(..., description="Household ID"),
+    db: DbSession = None,
+):
+    """Create a new inventory lot manually."""
+    # Verify household exists
+    result = await db.execute(
+        select(Household).where(Household.id == household_id)
+    )
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Household not found")
+
+    # Verify ingredient exists
+    result = await db.execute(
+        select(Ingredient).where(Ingredient.id == data.ingredient_id)
+    )
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Ingredient not found")
+
+    # Create lot
+    lot = InventoryLot(
+        id=uuid.uuid4(),
+        household_id=household_id,
+        ingredient_id=data.ingredient_id,
+        quantity=data.quantity,
+        unit=data.unit,
+        location=data.location,
+        purchase_date=data.purchase_date,
+        expiry_date=data.expiry_date,
+        unit_cost=data.unit_cost,
+        total_cost=data.total_cost,
+        currency=data.currency,
+        confidence=data.confidence,
+        source_type=data.source_type,
+        source_id=data.source_id,
+    )
+    db.add(lot)
+
+    # Create initial "add" event
+    event = InventoryEvent(
+        id=uuid.uuid4(),
+        lot_id=lot.id,
+        event_type="add",
+        quantity_delta=data.quantity,
+        unit=data.unit,
+        reason="initial",
+    )
+    db.add(event)
+
+    await db.flush()
+
+    # Reload with ingredient
+    result = await db.execute(
+        select(InventoryLot)
+        .options(selectinload(InventoryLot.ingredient))
+        .where(InventoryLot.id == lot.id)
+    )
+    return result.scalar_one()
