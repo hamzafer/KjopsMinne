@@ -186,6 +186,52 @@ export interface LeftoverListResponse {
   total: number;
 }
 
+// Shopping List types
+export interface ShoppingListItem {
+  id: string;
+  shopping_list_id: string;
+  ingredient_id: string;
+  required_quantity: number;
+  required_unit: string;
+  on_hand_quantity: number;
+  to_buy_quantity: number;
+  is_checked: boolean;
+  actual_quantity: number | null;
+  notes: string | null;
+  source_meal_plans: string[];
+  ingredient_name: string | null;
+}
+
+export interface ShoppingList {
+  id: string;
+  household_id: string;
+  name: string;
+  date_range_start: string;
+  date_range_end: string;
+  status: "active" | "completed" | "archived";
+  created_at: string;
+  updated_at: string;
+  items: ShoppingListItem[];
+}
+
+export interface ShoppingListListResponse {
+  shopping_lists: ShoppingList[];
+  total: number;
+}
+
+export interface GenerateShoppingListRequest {
+  household_id: string;
+  start_date: string;
+  end_date: string;
+  name?: string;
+}
+
+export interface GenerateShoppingListResponse {
+  shopping_list: ShoppingList;
+  meal_plans_included: number;
+  ingredients_aggregated: number;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -380,6 +426,62 @@ class ApiClient {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
+  }
+
+  // Shopping Lists
+  async getShoppingLists(
+    householdId: string,
+    status?: string,
+    page = 1,
+    pageSize = 20
+  ): Promise<ShoppingListListResponse> {
+    const params = new URLSearchParams();
+    params.append("household_id", householdId);
+    if (status) params.append("status", status);
+    params.append("page", page.toString());
+    params.append("page_size", pageSize.toString());
+    return this.fetch(`/api/shopping-lists?${params.toString()}`);
+  }
+
+  async getShoppingList(id: string): Promise<ShoppingList> {
+    return this.fetch(`/api/shopping-lists/${id}`);
+  }
+
+  async generateShoppingList(
+    data: GenerateShoppingListRequest
+  ): Promise<GenerateShoppingListResponse> {
+    return this.fetch("/api/shopping-lists/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateShoppingList(
+    id: string,
+    data: { name?: string; status?: string }
+  ): Promise<ShoppingList> {
+    return this.fetch(`/api/shopping-lists/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateShoppingListItem(
+    listId: string,
+    itemId: string,
+    data: { is_checked?: boolean; actual_quantity?: number; notes?: string }
+  ): Promise<ShoppingListItem> {
+    return this.fetch(`/api/shopping-lists/${listId}/items/${itemId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteShoppingList(id: string): Promise<void> {
+    await this.fetch(`/api/shopping-lists/${id}`, { method: "DELETE" });
   }
 }
 
