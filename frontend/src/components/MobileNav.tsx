@@ -46,8 +46,8 @@ export function MobileNav() {
 
   const navItems = [
     { href: `/${locale}`, label: t("dashboard"), icon: LayoutDashboard },
-    { href: `/${locale}/upload`, label: t("upload"), icon: Upload },
     { href: `/${locale}/receipts`, label: t("receipts"), icon: Receipt },
+    { href: `/${locale}/upload`, label: t("upload"), icon: Upload },
     { href: `/${locale}/recipes`, label: t("recipes"), icon: ChefHat },
     { href: `/${locale}/plan`, label: t("plan"), icon: CalendarDays },
     { href: `/${locale}/shopping`, label: t("shopping"), icon: ShoppingCart },
