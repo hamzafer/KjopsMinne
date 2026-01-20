@@ -14,13 +14,9 @@ class Base(DeclarativeBase):
 class Household(Base):
     __tablename__ = "households"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(Text, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=func.now(), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), nullable=False)
 
     users: Mapped[list["User"]] = relationship("User", back_populates="household")
     receipts: Mapped[list["Receipt"]] = relationship("Receipt", back_populates="household")
@@ -29,18 +25,14 @@ class Household(Base):
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     name: Mapped[str] = mapped_column(Text, nullable=False)
     household_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("households.id"), nullable=False
     )
     role: Mapped[str] = mapped_column(Text, default="member")  # "owner" | "member"
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=func.now(), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), nullable=False)
 
     household: Mapped["Household"] = relationship("Household", back_populates="users")
 
@@ -50,9 +42,7 @@ class User(Base):
 class Ingredient(Base):
     __tablename__ = "ingredients"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(Text, nullable=False)
     canonical_name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     default_unit: Mapped[str] = mapped_column(Text, default="g")  # g, ml, pcs
@@ -60,9 +50,7 @@ class Ingredient(Base):
     category_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("categories.id"), nullable=True
     )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=func.now(), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), nullable=False)
 
     category: Mapped["Category | None"] = relationship("Category")
 
@@ -75,9 +63,7 @@ class Ingredient(Base):
 class UnitConversion(Base):
     __tablename__ = "unit_conversions"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     from_unit: Mapped[str] = mapped_column(Text, nullable=False)
     to_unit: Mapped[str] = mapped_column(Text, nullable=False)
     factor: Mapped[Decimal] = mapped_column(Numeric(10, 6), nullable=False)
@@ -94,9 +80,7 @@ class UnitConversion(Base):
 class InventoryLot(Base):
     __tablename__ = "inventory_lots"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     household_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("households.id"), nullable=False
     )
@@ -113,21 +97,15 @@ class InventoryLot(Base):
     currency: Mapped[str] = mapped_column(Text, default="NOK")
     confidence: Mapped[Decimal] = mapped_column(Numeric(3, 2), default=Decimal("1.0"))
     source_type: Mapped[str] = mapped_column(Text, nullable=False)  # receipt|manual|barcode
-    source_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), nullable=True
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=func.now(), nullable=False
-    )
+    source_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=func.now(), onupdate=func.now(), nullable=False
     )
 
     household: Mapped["Household"] = relationship("Household")
     ingredient: Mapped["Ingredient"] = relationship("Ingredient")
-    events: Mapped[list["InventoryEvent"]] = relationship(
-        "InventoryEvent", back_populates="lot"
-    )
+    events: Mapped[list["InventoryEvent"]] = relationship("InventoryEvent", back_populates="lot")
 
     __table_args__ = (
         Index("idx_inventory_lots_household", "household_id"),
@@ -140,9 +118,7 @@ class InventoryLot(Base):
 class InventoryEvent(Base):
     __tablename__ = "inventory_events"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     lot_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("inventory_lots.id"), nullable=False
     )
@@ -155,9 +131,7 @@ class InventoryEvent(Base):
     created_by: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
     )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=func.now(), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), nullable=False)
 
     lot: Mapped["InventoryLot"] = relationship("InventoryLot", back_populates="events")
     user: Mapped["User | None"] = relationship("User")
@@ -172,9 +146,7 @@ class InventoryEvent(Base):
 class Recipe(Base):
     __tablename__ = "recipes"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     household_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("households.id"), nullable=False
     )
@@ -186,12 +158,8 @@ class Recipe(Base):
     instructions: Mapped[str] = mapped_column(Text, nullable=False)
     tags: Mapped[list[str]] = mapped_column(JSONB, default=list)
     image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
-    import_confidence: Mapped[Decimal | None] = mapped_column(
-        Numeric(3, 2), nullable=True
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=func.now(), nullable=False
-    )
+    import_confidence: Mapped[Decimal | None] = mapped_column(Numeric(3, 2), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=func.now(), onupdate=func.now(), nullable=False
     )
@@ -210,9 +178,7 @@ class Recipe(Base):
 class RecipeIngredient(Base):
     __tablename__ = "recipe_ingredients"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     recipe_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("recipes.id", ondelete="CASCADE"), nullable=False
     )
@@ -236,9 +202,7 @@ class RecipeIngredient(Base):
 class MealPlan(Base):
     __tablename__ = "meal_plans"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     household_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("households.id"), nullable=False
     )
@@ -246,9 +210,7 @@ class MealPlan(Base):
         UUID(as_uuid=True), ForeignKey("recipes.id"), nullable=False
     )
     planned_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    meal_type: Mapped[str] = mapped_column(
-        Text, nullable=False
-    )  # breakfast|lunch|dinner|snack
+    meal_type: Mapped[str] = mapped_column(Text, nullable=False)  # breakfast|lunch|dinner|snack
     servings: Mapped[int] = mapped_column(default=2)
     status: Mapped[str] = mapped_column(Text, default="planned")  # planned|cooked|skipped
     is_leftover_source: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -257,12 +219,8 @@ class MealPlan(Base):
     )
     cooked_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     actual_cost: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
-    cost_per_serving: Mapped[Decimal | None] = mapped_column(
-        Numeric(10, 2), nullable=True
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=func.now(), nullable=False
-    )
+    cost_per_serving: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=func.now(), onupdate=func.now(), nullable=False
     )
@@ -283,9 +241,7 @@ class MealPlan(Base):
 class Leftover(Base):
     __tablename__ = "leftovers"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     household_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("households.id"), nullable=False
     )
@@ -296,12 +252,8 @@ class Leftover(Base):
         UUID(as_uuid=True), ForeignKey("recipes.id"), nullable=False
     )
     remaining_servings: Mapped[int] = mapped_column(nullable=False)
-    status: Mapped[str] = mapped_column(
-        Text, default="available"
-    )  # available|consumed|discarded
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=func.now(), nullable=False
-    )
+    status: Mapped[str] = mapped_column(Text, default="available")  # available|consumed|discarded
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
 
     household: Mapped["Household"] = relationship("Household")
@@ -315,12 +267,38 @@ class Leftover(Base):
     )
 
 
+class ShoppingList(Base):
+    __tablename__ = "shopping_lists"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    household_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("households.id"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    date_range_start: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    date_range_end: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    status: Mapped[str] = mapped_column(Text, default="active")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    household: Mapped["Household"] = relationship("Household")
+    items: Mapped[list["ShoppingListItem"]] = relationship(  # noqa: F821
+        "ShoppingListItem", back_populates="shopping_list", cascade="all, delete-orphan"
+    )
+
+    __table_args__ = (
+        Index("idx_shopping_lists_household", "household_id"),
+        Index("idx_shopping_lists_status", "status"),
+        Index("idx_shopping_lists_date_range", "date_range_start", "date_range_end"),
+    )
+
+
 class Category(Base):
     __tablename__ = "categories"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     icon: Mapped[str | None] = mapped_column(Text, nullable=True)
     color: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -331,9 +309,7 @@ class Category(Base):
 class Receipt(Base):
     __tablename__ = "receipts"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     household_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("households.id"), nullable=True
     )
@@ -349,9 +325,7 @@ class Receipt(Base):
     return_window_days: Mapped[int | None] = mapped_column(nullable=True)
     image_path: Mapped[str | None] = mapped_column(Text, nullable=True)
     raw_ocr: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=func.now(), nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=func.now(), onupdate=func.now(), nullable=False
     )
@@ -367,9 +341,7 @@ class Receipt(Base):
 class Item(Base):
     __tablename__ = "items"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     receipt_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("receipts.id", ondelete="CASCADE"), nullable=False
     )
