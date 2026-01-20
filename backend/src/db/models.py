@@ -169,6 +169,44 @@ class InventoryEvent(Base):
     )
 
 
+class Recipe(Base):
+    __tablename__ = "recipes"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    household_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("households.id"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    source_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    servings: Mapped[int] = mapped_column(default=2)
+    prep_time_minutes: Mapped[int | None] = mapped_column(nullable=True)
+    cook_time_minutes: Mapped[int | None] = mapped_column(nullable=True)
+    instructions: Mapped[str] = mapped_column(Text, nullable=False)
+    tags: Mapped[list[str]] = mapped_column(JSONB, default=list)
+    image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    import_confidence: Mapped[Decimal | None] = mapped_column(
+        Numeric(3, 2), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    household: Mapped["Household"] = relationship("Household")
+    ingredients: Mapped[list["RecipeIngredient"]] = relationship(
+        "RecipeIngredient", back_populates="recipe", cascade="all, delete-orphan"
+    )
+
+    __table_args__ = (
+        Index("idx_recipes_household", "household_id"),
+        Index("idx_recipes_name", "name"),
+    )
+
+
 class Category(Base):
     __tablename__ = "categories"
 
