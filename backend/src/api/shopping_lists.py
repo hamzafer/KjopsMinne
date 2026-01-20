@@ -1,0 +1,103 @@
+"""API routes for shopping lists."""
+from uuid import UUID
+
+from fastapi import APIRouter, HTTPException, Query
+from sqlalchemy import func, select
+from sqlalchemy.orm import selectinload
+
+from src.api.deps import DbSession
+from src.db.models import ShoppingList, ShoppingListItem
+from src.schemas.shopping_list import (
+    ShoppingListItemResponse,
+    ShoppingListListResponse,
+    ShoppingListResponse,
+)
+
+router = APIRouter()
+
+
+@router.get("/shopping-lists", response_model=ShoppingListListResponse)
+async def list_shopping_lists(
+    db: DbSession,
+    household_id: UUID = Query(..., description="Household ID"),
+    status: str | None = Query(None, description="Filter by status"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+) -> ShoppingListListResponse:
+    """List shopping lists for a household."""
+    query = select(ShoppingList).where(ShoppingList.household_id == household_id)
+
+    if status:
+        query = query.where(ShoppingList.status == status)
+
+    count_query = select(func.count()).select_from(query.subquery())
+    total = await db.scalar(count_query)
+
+    query = query.options(
+        selectinload(ShoppingList.items).selectinload(ShoppingListItem.ingredient)
+    )
+    query = query.order_by(ShoppingList.created_at.desc())
+    query = query.offset((page - 1) * page_size).limit(page_size)
+
+    result = await db.execute(query)
+    shopping_lists = result.scalars().all()
+
+    return ShoppingListListResponse(
+        shopping_lists=[_to_response(sl) for sl in shopping_lists],
+        total=total or 0,
+    )
+
+
+@router.get("/shopping-lists/{shopping_list_id}", response_model=ShoppingListResponse)
+async def get_shopping_list(
+    db: DbSession,
+    shopping_list_id: UUID,
+) -> ShoppingListResponse:
+    """Get a shopping list by ID."""
+    query = (
+        select(ShoppingList)
+        .where(ShoppingList.id == shopping_list_id)
+        .options(
+            selectinload(ShoppingList.items).selectinload(ShoppingListItem.ingredient)
+        )
+    )
+    result = await db.execute(query)
+    shopping_list = result.scalar_one_or_none()
+
+    if not shopping_list:
+        raise HTTPException(status_code=404, detail="Shopping list not found")
+
+    return _to_response(shopping_list)
+
+
+def _to_response(shopping_list: ShoppingList) -> ShoppingListResponse:
+    """Convert ShoppingList model to response with ingredient names."""
+    items = [
+        ShoppingListItemResponse(
+            id=item.id,
+            shopping_list_id=item.shopping_list_id,
+            ingredient_id=item.ingredient_id,
+            required_quantity=item.required_quantity,
+            required_unit=item.required_unit,
+            on_hand_quantity=item.on_hand_quantity,
+            to_buy_quantity=item.to_buy_quantity,
+            is_checked=item.is_checked,
+            actual_quantity=item.actual_quantity,
+            notes=item.notes,
+            source_meal_plans=item.source_meal_plans or [],
+            ingredient_name=item.ingredient.name if item.ingredient else None,
+        )
+        for item in shopping_list.items
+    ]
+
+    return ShoppingListResponse(
+        id=shopping_list.id,
+        household_id=shopping_list.household_id,
+        name=shopping_list.name,
+        date_range_start=shopping_list.date_range_start,
+        date_range_end=shopping_list.date_range_end,
+        status=shopping_list.status,
+        created_at=shopping_list.created_at,
+        updated_at=shopping_list.updated_at,
+        items=items,
+    )
