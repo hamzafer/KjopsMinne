@@ -13,6 +13,7 @@ from src.db.models import InventoryEvent, InventoryLot, Leftover, MealPlan, Reci
 from src.schemas.meal_plan import (
     CookRequest,
     CookResponse,
+    LeftoverListResponse,
     LeftoverResponse,
     MealPlanCreate,
     MealPlanListResponse,
@@ -281,3 +282,55 @@ async def cook_meal_plan(
         inventory_consumed=inventory_consumed,
         leftover=leftover_response,
     )
+
+
+@router.get("/leftovers", response_model=LeftoverListResponse)
+async def list_leftovers(
+    db: DbSession,
+    household_id: UUID = Query(..., description="Household ID"),
+    status: str | None = Query(None, description="Filter by status"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+) -> LeftoverListResponse:
+    """List leftovers for a household."""
+    query = select(Leftover).where(Leftover.household_id == household_id)
+
+    if status:
+        query = query.where(Leftover.status == status)
+
+    count_query = select(func.count()).select_from(query.subquery())
+    total = await db.scalar(count_query)
+
+    query = query.order_by(Leftover.expires_at.asc())
+    query = query.offset((page - 1) * page_size).limit(page_size)
+
+    result = await db.execute(query)
+    leftovers = result.scalars().all()
+
+    return LeftoverListResponse(
+        leftovers=[LeftoverResponse.model_validate(lo) for lo in leftovers],
+        total=total or 0,
+    )
+
+
+@router.patch("/leftovers/{leftover_id}", response_model=LeftoverResponse)
+async def update_leftover(
+    db: DbSession,
+    leftover_id: UUID,
+    status: str = Query(..., description="New status: available, consumed, or discarded"),
+) -> LeftoverResponse:
+    """Update leftover status (consumed/discarded)."""
+    query = select(Leftover).where(Leftover.id == leftover_id)
+    result = await db.execute(query)
+    leftover = result.scalar_one_or_none()
+
+    if not leftover:
+        raise HTTPException(status_code=404, detail="Leftover not found")
+
+    if status not in ("available", "consumed", "discarded"):
+        raise HTTPException(status_code=400, detail="Invalid status")
+
+    leftover.status = status
+    await db.flush()
+
+    return LeftoverResponse.model_validate(leftover)
