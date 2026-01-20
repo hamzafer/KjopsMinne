@@ -2,7 +2,7 @@
 from decimal import Decimal
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
@@ -12,8 +12,10 @@ from src.schemas.shopping_list import (
     GenerateShoppingListRequest,
     GenerateShoppingListResponse,
     ShoppingListItemResponse,
+    ShoppingListItemUpdate,
     ShoppingListListResponse,
     ShoppingListResponse,
+    ShoppingListUpdate,
 )
 
 router = APIRouter()
@@ -183,6 +185,106 @@ async def get_shopping_list(
         raise HTTPException(status_code=404, detail="Shopping list not found")
 
     return _to_response(shopping_list)
+
+
+@router.patch("/shopping-lists/{shopping_list_id}", response_model=ShoppingListResponse)
+async def update_shopping_list(
+    db: DbSession,
+    shopping_list_id: UUID,
+    update_data: ShoppingListUpdate,
+) -> ShoppingListResponse:
+    """Update a shopping list."""
+    query = (
+        select(ShoppingList)
+        .where(ShoppingList.id == shopping_list_id)
+        .options(
+            selectinload(ShoppingList.items).selectinload(ShoppingListItem.ingredient)
+        )
+    )
+    result = await db.execute(query)
+    shopping_list = result.scalar_one_or_none()
+
+    if not shopping_list:
+        raise HTTPException(status_code=404, detail="Shopping list not found")
+
+    data = update_data.model_dump(exclude_unset=True)
+
+    if "status" in data:
+        if data["status"] not in ("active", "completed", "archived"):
+            raise HTTPException(status_code=400, detail="Invalid status")
+
+    for key, value in data.items():
+        setattr(shopping_list, key, value)
+
+    await db.flush()
+
+    return _to_response(shopping_list)
+
+
+@router.patch(
+    "/shopping-lists/{shopping_list_id}/items/{item_id}",
+    response_model=ShoppingListItemResponse,
+)
+async def update_shopping_list_item(
+    db: DbSession,
+    shopping_list_id: UUID,
+    item_id: UUID,
+    update_data: ShoppingListItemUpdate,
+) -> ShoppingListItemResponse:
+    """Update a shopping list item (check off, add notes, set actual quantity)."""
+    query = (
+        select(ShoppingListItem)
+        .where(
+            ShoppingListItem.id == item_id,
+            ShoppingListItem.shopping_list_id == shopping_list_id,
+        )
+        .options(selectinload(ShoppingListItem.ingredient))
+    )
+    result = await db.execute(query)
+    item = result.scalar_one_or_none()
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Shopping list item not found")
+
+    data = update_data.model_dump(exclude_unset=True)
+    for key, value in data.items():
+        setattr(item, key, value)
+
+    await db.flush()
+
+    return ShoppingListItemResponse(
+        id=item.id,
+        shopping_list_id=item.shopping_list_id,
+        ingredient_id=item.ingredient_id,
+        required_quantity=item.required_quantity,
+        required_unit=item.required_unit,
+        on_hand_quantity=item.on_hand_quantity,
+        to_buy_quantity=item.to_buy_quantity,
+        is_checked=item.is_checked,
+        actual_quantity=item.actual_quantity,
+        notes=item.notes,
+        source_meal_plans=item.source_meal_plans or [],
+        ingredient_name=item.ingredient.name if item.ingredient else None,
+    )
+
+
+@router.delete("/shopping-lists/{shopping_list_id}", status_code=204)
+async def delete_shopping_list(
+    db: DbSession,
+    shopping_list_id: UUID,
+) -> Response:
+    """Delete a shopping list and all its items."""
+    query = select(ShoppingList).where(ShoppingList.id == shopping_list_id)
+    result = await db.execute(query)
+    shopping_list = result.scalar_one_or_none()
+
+    if not shopping_list:
+        raise HTTPException(status_code=404, detail="Shopping list not found")
+
+    await db.delete(shopping_list)
+    await db.flush()
+
+    return Response(status_code=204)
 
 
 def _to_response(shopping_list: ShoppingList) -> ShoppingListResponse:
