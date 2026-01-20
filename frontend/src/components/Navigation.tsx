@@ -10,7 +10,9 @@ import {
   Receipt,
   BarChart3,
   Vault,
-  ChefHat
+  ChefHat,
+  CalendarDays,
+  Soup
 } from "lucide-react";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { ThemeSwitcher } from "./ThemeSwitcher";
@@ -25,6 +27,8 @@ export function Navigation() {
     { href: `/${locale}/upload`, label: t("upload"), icon: Upload },
     { href: `/${locale}/receipts`, label: t("receipts"), icon: Receipt },
     { href: `/${locale}/recipes`, label: t("recipes"), icon: ChefHat },
+    { href: `/${locale}/plan`, label: t("plan"), icon: CalendarDays },
+    { href: `/${locale}/leftovers`, label: t("leftovers"), icon: Soup },
     { href: `/${locale}/analytics`, label: t("analytics"), icon: BarChart3 },
   ];
 
