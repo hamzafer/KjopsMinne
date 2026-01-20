@@ -208,3 +208,49 @@ async def update_inventory_lot(
         .where(InventoryLot.id == lot.id)
     )
     return result.scalar_one()
+
+
+@router.post("/inventory/lots/{lot_id}/consume", response_model=InventoryLotResponse)
+async def consume_from_lot(
+    lot_id: uuid.UUID,
+    data: ConsumeRequest,
+    db: DbSession,
+):
+    """Consume quantity from an inventory lot."""
+    result = await db.execute(
+        select(InventoryLot).where(InventoryLot.id == lot_id)
+    )
+    lot = result.scalar_one_or_none()
+
+    if not lot:
+        raise HTTPException(status_code=404, detail="Inventory lot not found")
+
+    if lot.quantity < data.quantity:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Insufficient quantity. Available: {lot.quantity}, requested: {data.quantity}"
+        )
+
+    # Update quantity
+    lot.quantity -= data.quantity
+
+    # Create consume event
+    event = InventoryEvent(
+        id=uuid.uuid4(),
+        lot_id=lot.id,
+        event_type="consume",
+        quantity_delta=-data.quantity,
+        unit=lot.unit,
+        reason=data.reason,
+    )
+    db.add(event)
+
+    await db.flush()
+
+    # Reload with ingredient
+    result = await db.execute(
+        select(InventoryLot)
+        .options(selectinload(InventoryLot.ingredient))
+        .where(InventoryLot.id == lot.id)
+    )
+    return result.scalar_one()
