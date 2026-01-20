@@ -9,7 +9,12 @@ from sqlalchemy.orm import selectinload
 
 from src.api.deps import DbSession
 from src.db.models import MealPlan, Recipe
-from src.schemas.meal_plan import MealPlanCreate, MealPlanListResponse, MealPlanResponse
+from src.schemas.meal_plan import (
+    MealPlanCreate,
+    MealPlanListResponse,
+    MealPlanResponse,
+    MealPlanUpdate,
+)
 
 router = APIRouter()
 
@@ -93,5 +98,29 @@ async def get_meal_plan(
 
     if not meal_plan:
         raise HTTPException(status_code=404, detail="Meal plan not found")
+
+    return MealPlanResponse.model_validate(meal_plan)
+
+
+@router.patch("/meal-plans/{meal_plan_id}", response_model=MealPlanResponse)
+async def update_meal_plan(
+    db: DbSession,
+    meal_plan_id: UUID,
+    meal_plan_data: MealPlanUpdate,
+) -> MealPlanResponse:
+    """Update a meal plan."""
+    query = select(MealPlan).where(MealPlan.id == meal_plan_id)
+    result = await db.execute(query)
+    meal_plan = result.scalar_one_or_none()
+
+    if not meal_plan:
+        raise HTTPException(status_code=404, detail="Meal plan not found")
+
+    update_data = meal_plan_data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(meal_plan, key, value)
+
+    await db.flush()
+    await db.refresh(meal_plan, ["recipe"])
 
     return MealPlanResponse.model_validate(meal_plan)
