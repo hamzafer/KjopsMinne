@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, Utensils } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { IngredientInput } from "./IngredientInput";
 import { cn } from "@/lib/utils";
@@ -38,10 +38,16 @@ export function IngredientList({ ingredients, onChange }: IngredientListProps) {
   };
 
   return (
-    <div className="space-y-3">
-      <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200">
-        {t("ingredients")}
-      </label>
+    <div className="space-y-4 animate-fade-in">
+      <div className="flex items-center gap-2">
+        <Utensils className="w-4 h-4 text-fjord-400" />
+        <label className="text-sm font-medium text-fjord-700 dark:text-fjord-200">
+          {t("ingredients")}
+        </label>
+        <span className="text-xs text-fjord-400 dark:text-fjord-500">
+          ({ingredients.length})
+        </span>
+      </div>
 
       <div className="space-y-2">
         {ingredients.map((ingredient, index) => (
@@ -50,6 +56,7 @@ export function IngredientList({ ingredients, onChange }: IngredientListProps) {
             ingredient={ingredient}
             onChange={(ing) => handleChange(index, ing)}
             onRemove={() => handleRemove(index)}
+            animationDelay={index * 50}
           />
         ))}
       </div>
@@ -58,10 +65,14 @@ export function IngredientList({ ingredients, onChange }: IngredientListProps) {
         type="button"
         onClick={handleAdd}
         className={cn(
-          "flex items-center gap-2 px-4 py-2 rounded-lg",
-          "text-fjord-600 dark:text-fjord-300",
-          "hover:bg-fjord-100 dark:hover:bg-fjord-800",
-          "transition-colors"
+          "flex items-center gap-2 px-4 py-2.5 rounded-xl",
+          "text-fjord-600 dark:text-fjord-300 font-medium",
+          "bg-fjord-100/50 dark:bg-fjord-800/50",
+          "hover:bg-fjord-200/70 dark:hover:bg-fjord-700/50",
+          "border border-dashed border-fjord-300 dark:border-fjord-600",
+          "hover:border-fjord-400 dark:hover:border-fjord-500",
+          "hover:scale-[1.02] active:scale-[0.98]",
+          "transition-all duration-200"
         )}
       >
         <Plus className="w-4 h-4" />

@@ -23,12 +23,17 @@ export function RecipeGrid({ recipes, loading }: RecipeGridProps) {
         {[...Array(6)].map((_, i) => (
           <div
             key={i}
-            className="bg-white dark:bg-fjord-800/50 rounded-2xl border border-fjord-100 dark:border-fjord-700/50 overflow-hidden animate-pulse"
+            className="paper-card overflow-hidden animate-pulse"
+            style={{ animationDelay: `${i * 50}ms` }}
           >
             <div className="aspect-[4/3] bg-fjord-100 dark:bg-fjord-700/50" />
             <div className="p-4 space-y-3">
               <div className="h-5 bg-fjord-100 dark:bg-fjord-700 rounded w-3/4" />
               <div className="h-4 bg-fjord-100 dark:bg-fjord-700 rounded w-1/2" />
+              <div className="flex gap-2">
+                <div className="h-5 bg-fjord-100 dark:bg-fjord-700 rounded-full w-16" />
+                <div className="h-5 bg-fjord-100 dark:bg-fjord-700 rounded-full w-12" />
+              </div>
             </div>
           </div>
         ))}
@@ -38,25 +43,28 @@ export function RecipeGrid({ recipes, loading }: RecipeGridProps) {
 
   if (recipes.length === 0) {
     return (
-      <div className="text-center py-16">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-fjord-100 dark:bg-fjord-800 flex items-center justify-center">
-          <ChefHat className="w-8 h-8 text-fjord-400 dark:text-fjord-500" />
+      <div className="text-center py-16 animate-fade-in">
+        <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-fjord-100 dark:bg-fjord-800 flex items-center justify-center">
+          <ChefHat className="w-10 h-10 text-fjord-400 dark:text-fjord-500" />
         </div>
-        <h3 className="text-lg font-semibold text-fjord-700 dark:text-fjord-200">
+        <h3 className="text-xl font-display font-semibold text-fjord-700 dark:text-fjord-200">
           {t("noRecipes")}
         </h3>
-        <p className="mt-1 text-fjord-500 dark:text-fjord-400 max-w-sm mx-auto">
+        <p className="mt-2 text-fjord-500 dark:text-fjord-400 max-w-sm mx-auto">
           {t("noRecipesMessage")}
         </p>
         <Link
           href={`/${locale}/recipes/import`}
           className={cn(
-            "mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl",
+            "mt-6 inline-flex items-center gap-2 px-5 py-3 rounded-xl",
             "bg-fjord-500 text-white font-medium",
-            "hover:bg-fjord-600 transition-colors"
+            "hover:bg-fjord-600",
+            "shadow-lg shadow-fjord-500/20",
+            "transition-all duration-200",
+            "hover:scale-[1.02] active:scale-[0.98]"
           )}
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-5 h-5" />
           {t("import")}
         </Link>
       </div>
@@ -65,8 +73,12 @@ export function RecipeGrid({ recipes, loading }: RecipeGridProps) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {recipes.map((recipe) => (
-        <RecipeCard key={recipe.id} recipe={recipe} />
+      {recipes.map((recipe, index) => (
+        <RecipeCard
+          key={recipe.id}
+          recipe={recipe}
+          animationDelay={index * 60}
+        />
       ))}
     </div>
   );

@@ -110,13 +110,13 @@ export function RecipeForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">
+        <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 animate-fade-in">
           {error}
         </div>
       )}
 
       {/* Name */}
-      <div>
+      <div className="animate-fade-in" style={{ animationDelay: '0ms' }}>
         <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-2">
           {t("nameLabel")} *
         </label>
@@ -131,7 +131,7 @@ export function RecipeForm({
       </div>
 
       {/* Servings & Prep Time */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 animate-fade-in" style={{ animationDelay: '50ms' }}>
         <div>
           <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-2">
             {t("servingsLabel")} *
@@ -163,7 +163,7 @@ export function RecipeForm({
       </div>
 
       {/* Tags */}
-      <div>
+      <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
         <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-2">
           {t("tagsLabel")}
         </label>
@@ -177,10 +177,12 @@ export function RecipeForm({
       </div>
 
       {/* Ingredients */}
-      <IngredientList ingredients={ingredients} onChange={setIngredients} />
+      <div className="animate-fade-in" style={{ animationDelay: '150ms' }}>
+        <IngredientList ingredients={ingredients} onChange={setIngredients} />
+      </div>
 
       {/* Instructions */}
-      <div>
+      <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
         <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-2">
           {t("instructionsLabel")}
         </label>
@@ -194,7 +196,7 @@ export function RecipeForm({
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 justify-end">
+      <div className="flex gap-3 justify-end pt-4 border-t border-fjord-200 dark:border-fjord-700 animate-fade-in" style={{ animationDelay: '250ms' }}>
         <button
           type="button"
           onClick={() => router.back()}
@@ -202,7 +204,8 @@ export function RecipeForm({
             "px-5 py-2.5 rounded-xl font-medium",
             "text-fjord-600 dark:text-fjord-300",
             "hover:bg-fjord-100 dark:hover:bg-fjord-800",
-            "transition-colors"
+            "hover:scale-[1.02] active:scale-[0.98]",
+            "transition-all duration-200"
           )}
         >
           {t("cancel")}
@@ -213,8 +216,10 @@ export function RecipeForm({
           className={cn(
             "px-5 py-2.5 rounded-xl font-medium",
             "bg-fjord-500 text-white",
-            "hover:bg-fjord-600 disabled:opacity-50",
-            "transition-colors flex items-center gap-2"
+            "hover:bg-fjord-600 disabled:opacity-50 disabled:cursor-not-allowed",
+            "shadow-lg shadow-fjord-500/20",
+            "hover:scale-[1.02] active:scale-[0.98]",
+            "transition-all duration-200 flex items-center gap-2"
           )}
         >
           {saving && <Loader2 className="w-4 h-4 animate-spin" />}

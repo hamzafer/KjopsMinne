@@ -76,14 +76,18 @@ export default function RecipeDetailPage() {
       {/* Back Link */}
       <Link
         href={`/${locale}/recipes`}
-        className="inline-flex items-center gap-2 text-fjord-500 hover:text-fjord-700 dark:hover:text-fjord-300 mb-4"
+        className={cn(
+          "inline-flex items-center gap-2 mb-6",
+          "text-fjord-500 hover:text-fjord-700 dark:hover:text-fjord-300",
+          "transition-colors animate-fade-in"
+        )}
       >
         <ArrowLeft className="w-4 h-4" />
         {t("backToRecipes")}
       </Link>
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 animate-slide-up">
         <div>
           <h1 className="text-3xl font-display font-semibold text-fjord-800 dark:text-fjord-100">
             {recipe.name}
@@ -105,7 +109,7 @@ export default function RecipeDetailPage() {
                 href={recipe.source_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 hover:text-fjord-600 dark:hover:text-fjord-300"
+                className="flex items-center gap-1.5 hover:text-fjord-600 dark:hover:text-fjord-300 transition-colors"
               >
                 <ExternalLink className="w-4 h-4" />
                 {new URL(recipe.source_url).hostname}
@@ -115,10 +119,18 @@ export default function RecipeDetailPage() {
 
           {recipe.tags.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
-              {recipe.tags.map((tag) => (
+              {recipe.tags.map((tag, index) => (
                 <span
                   key={tag}
-                  className="px-3 py-1 text-sm rounded-full bg-fjord-100 dark:bg-fjord-800 text-fjord-600 dark:text-fjord-300"
+                  className={cn(
+                    "px-3 py-1 text-sm rounded-full",
+                    "bg-fjord-100 dark:bg-fjord-800 text-fjord-600 dark:text-fjord-300",
+                    "animate-fade-in opacity-0"
+                  )}
+                  style={{
+                    animationDelay: `${index * 50}ms`,
+                    animationFillMode: 'forwards'
+                  }}
                 >
                   {tag}
                 </span>
@@ -128,15 +140,18 @@ export default function RecipeDetailPage() {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 animate-fade-in" style={{ animationDelay: '100ms' }}>
           <button
             onClick={() => {
               /* TODO: Plan meal */
             }}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-xl font-medium",
+              "flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium",
               "bg-fjord-500 text-white",
-              "hover:bg-fjord-600 transition-colors"
+              "hover:bg-fjord-600",
+              "shadow-lg shadow-fjord-500/20",
+              "hover:scale-[1.02] active:scale-[0.98]",
+              "transition-all duration-200"
             )}
           >
             <Calendar className="w-4 h-4" />
@@ -145,9 +160,11 @@ export default function RecipeDetailPage() {
           <Link
             href={`/${locale}/recipes/${recipe.id}/edit`}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-xl font-medium",
+              "flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium",
               "bg-fjord-100 dark:bg-fjord-800 text-fjord-700 dark:text-fjord-200",
-              "hover:bg-fjord-200 dark:hover:bg-fjord-700 transition-colors"
+              "hover:bg-fjord-200 dark:hover:bg-fjord-700",
+              "hover:scale-[1.02] active:scale-[0.98]",
+              "transition-all duration-200"
             )}
           >
             <Pencil className="w-4 h-4" />
@@ -157,9 +174,12 @@ export default function RecipeDetailPage() {
             onClick={handleDelete}
             disabled={deleting}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-xl font-medium",
+              "flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium",
               "text-red-600 dark:text-red-400",
-              "hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+              "hover:bg-red-50 dark:hover:bg-red-900/20",
+              "hover:scale-[1.02] active:scale-[0.98]",
+              "disabled:opacity-50 disabled:cursor-not-allowed",
+              "transition-all duration-200"
             )}
           >
             <Trash2 className="w-4 h-4" />
@@ -169,33 +189,45 @@ export default function RecipeDetailPage() {
       </div>
 
       {/* Image */}
-      {recipe.image_url ? (
-        <img
-          src={recipe.image_url}
-          alt={recipe.name}
-          className="w-full aspect-video object-cover rounded-2xl mb-8"
-        />
-      ) : (
-        <div className="w-full aspect-video bg-fjord-100 dark:bg-fjord-800 rounded-2xl mb-8 flex items-center justify-center">
-          <ChefHat className="w-16 h-16 text-fjord-300 dark:text-fjord-600" />
-        </div>
-      )}
+      <div className="animate-fade-in" style={{ animationDelay: '150ms' }}>
+        {recipe.image_url ? (
+          <img
+            src={recipe.image_url}
+            alt={recipe.name}
+            className="w-full aspect-video object-cover rounded-2xl mb-8 shadow-lg"
+          />
+        ) : (
+          <div className="w-full aspect-video bg-gradient-to-br from-fjord-100 to-fjord-200 dark:from-fjord-700/50 dark:to-fjord-800/50 rounded-2xl mb-8 flex items-center justify-center">
+            <ChefHat className="w-16 h-16 text-fjord-300 dark:text-fjord-600" />
+          </div>
+        )}
+      </div>
 
       <div className="grid md:grid-cols-3 gap-8">
         {/* Ingredients */}
-        <div className="md:col-span-1">
-          <h2 className="text-lg font-semibold text-fjord-800 dark:text-fjord-100 mb-4">
+        <div
+          className="md:col-span-1 paper-card p-6 animate-slide-up opacity-0"
+          style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}
+        >
+          <h2 className="text-lg font-display font-semibold text-fjord-800 dark:text-fjord-100 mb-4">
             {t("ingredients")}
           </h2>
-          <ul className="space-y-2">
+          <ul className="space-y-2.5">
             {recipe.ingredients.map((ing, i) => (
               <li
                 key={i}
-                className="flex items-start gap-2 text-fjord-600 dark:text-fjord-300"
+                className={cn(
+                  "flex items-start gap-2 text-fjord-600 dark:text-fjord-300",
+                  "animate-fade-in opacity-0"
+                )}
+                style={{
+                  animationDelay: `${250 + i * 30}ms`,
+                  animationFillMode: 'forwards'
+                }}
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-fjord-400 mt-2 shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-forest-500 mt-2 shrink-0" />
                 <span>
-                  {ing.quantity} {ing.unit} {ing.ingredient_name}
+                  <strong className="font-medium">{ing.quantity} {ing.unit}</strong> {ing.ingredient_name}
                   {ing.notes && (
                     <span className="text-fjord-400 dark:text-fjord-500">
                       {" "}
@@ -209,13 +241,26 @@ export default function RecipeDetailPage() {
         </div>
 
         {/* Instructions */}
-        <div className="md:col-span-2">
-          <h2 className="text-lg font-semibold text-fjord-800 dark:text-fjord-100 mb-4">
+        <div
+          className="md:col-span-2 paper-card p-6 animate-slide-up opacity-0"
+          style={{ animationDelay: '250ms', animationFillMode: 'forwards' }}
+        >
+          <h2 className="text-lg font-display font-semibold text-fjord-800 dark:text-fjord-100 mb-4">
             {t("instructions")}
           </h2>
           <div className="prose prose-fjord dark:prose-invert max-w-none">
             {recipe.instructions.split("\n").map((paragraph, i) => (
-              <p key={i} className="text-fjord-600 dark:text-fjord-300">
+              <p
+                key={i}
+                className={cn(
+                  "text-fjord-600 dark:text-fjord-300",
+                  "animate-fade-in opacity-0"
+                )}
+                style={{
+                  animationDelay: `${300 + i * 50}ms`,
+                  animationFillMode: 'forwards'
+                }}
+              >
                 {paragraph}
               </p>
             ))}

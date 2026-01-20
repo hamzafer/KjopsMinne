@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pencil } from "lucide-react";
 import { api, type Recipe } from "@/lib/api";
 import { RecipeForm } from "@/components/recipes/RecipeForm";
+import { cn } from "@/lib/utils";
 
 export default function EditRecipePage() {
   const params = useParams();
@@ -36,11 +37,14 @@ export default function EditRecipePage() {
     return (
       <div className="max-w-3xl mx-auto px-6 py-8 animate-pulse">
         <div className="h-6 w-32 bg-fjord-100 dark:bg-fjord-800 rounded mb-4" />
-        <div className="h-10 w-48 bg-fjord-100 dark:bg-fjord-800 rounded mb-8" />
-        <div className="space-y-6">
-          <div className="h-12 bg-fjord-100 dark:bg-fjord-800 rounded-xl" />
-          <div className="h-12 bg-fjord-100 dark:bg-fjord-800 rounded-xl" />
-          <div className="h-32 bg-fjord-100 dark:bg-fjord-800 rounded-xl" />
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-12 h-12 bg-fjord-100 dark:bg-fjord-800 rounded-xl" />
+          <div className="h-8 w-48 bg-fjord-100 dark:bg-fjord-800 rounded" />
+        </div>
+        <div className="paper-card p-6 space-y-6">
+          <div className="h-12 bg-fjord-100 dark:bg-fjord-700 rounded-xl" />
+          <div className="h-12 bg-fjord-100 dark:bg-fjord-700 rounded-xl" />
+          <div className="h-32 bg-fjord-100 dark:bg-fjord-700 rounded-xl" />
         </div>
       </div>
     );
@@ -51,22 +55,33 @@ export default function EditRecipePage() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 animate-slide-up">
         <Link
           href={`/${locale}/recipes/${recipe.id}`}
-          className="inline-flex items-center gap-2 text-fjord-500 hover:text-fjord-700 dark:hover:text-fjord-300 mb-4"
+          className={cn(
+            "inline-flex items-center gap-2 mb-4",
+            "text-fjord-500 hover:text-fjord-700 dark:hover:text-fjord-300",
+            "transition-colors"
+          )}
         >
           <ArrowLeft className="w-4 h-4" />
-          {t("backToRecipes")}
+          {recipe.name}
         </Link>
 
-        <h1 className="text-2xl font-display font-semibold text-fjord-800 dark:text-fjord-100">
-          {t("editTitle")}
-        </h1>
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-fjord-500 to-fjord-600 flex items-center justify-center shadow-lg shadow-fjord-500/20">
+            <Pencil className="w-6 h-6 text-white" />
+          </div>
+          <h1 className="text-2xl font-display font-semibold text-fjord-800 dark:text-fjord-100">
+            {t("editTitle")}
+          </h1>
+        </div>
       </div>
 
       {/* Form */}
-      <RecipeForm recipe={recipe} householdId={recipe.household_id} />
+      <div className="paper-card p-6 animate-slide-up" style={{ animationDelay: '50ms' }}>
+        <RecipeForm recipe={recipe} householdId={recipe.household_id} />
+      </div>
     </div>
   );
 }

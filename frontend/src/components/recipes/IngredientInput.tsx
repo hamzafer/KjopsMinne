@@ -13,6 +13,7 @@ interface IngredientInputProps {
   };
   onChange: (ingredient: IngredientInputProps["ingredient"]) => void;
   onRemove: () => void;
+  animationDelay?: number;
 }
 
 const UNITS = ["g", "kg", "ml", "dl", "l", "stk", "ss", "ts", "kopp"];
@@ -21,21 +22,34 @@ export function IngredientInput({
   ingredient,
   onChange,
   onRemove,
+  animationDelay = 0,
 }: IngredientInputProps) {
   const t = useTranslations("Recipes");
 
   const inputClasses = cn(
-    "px-3 py-2 rounded-lg",
-    "bg-white dark:bg-fjord-800",
+    "px-3 py-2.5 rounded-xl",
+    "bg-white dark:bg-fjord-800/50",
     "border border-fjord-200 dark:border-fjord-700",
     "text-fjord-800 dark:text-fjord-100",
-    "placeholder:text-fjord-400",
-    "focus:outline-none focus:ring-2 focus:ring-fjord-500/50",
-    "transition-all"
+    "placeholder:text-fjord-400 dark:placeholder:text-fjord-500",
+    "focus:outline-none focus:ring-2 focus:ring-fjord-500/50 focus:border-fjord-400",
+    "transition-all duration-200"
   );
 
   return (
-    <div className="flex gap-2 items-start">
+    <div
+      className={cn(
+        "group flex gap-2 items-start p-3 rounded-xl",
+        "bg-fjord-50/50 dark:bg-fjord-800/30",
+        "border border-transparent hover:border-fjord-200 dark:hover:border-fjord-700",
+        "animate-fade-in opacity-0",
+        "transition-all duration-200"
+      )}
+      style={{
+        animationDelay: `${animationDelay}ms`,
+        animationFillMode: 'forwards'
+      }}
+    >
       <input
         type="number"
         value={ingredient.quantity || ""}
@@ -51,7 +65,7 @@ export function IngredientInput({
       <select
         value={ingredient.unit}
         onChange={(e) => onChange({ ...ingredient, unit: e.target.value })}
-        className={cn(inputClasses, "w-24")}
+        className={cn(inputClasses, "w-24 cursor-pointer")}
       >
         {UNITS.map((unit) => (
           <option key={unit} value={unit}>
@@ -67,7 +81,7 @@ export function IngredientInput({
           onChange({ ...ingredient, ingredient_name: e.target.value })
         }
         placeholder={t("ingredientName")}
-        className={cn(inputClasses, "flex-1")}
+        className={cn(inputClasses, "flex-1 min-w-0")}
       />
 
       <input
@@ -77,13 +91,19 @@ export function IngredientInput({
           onChange({ ...ingredient, notes: e.target.value || null })
         }
         placeholder={t("notes")}
-        className={cn(inputClasses, "w-32")}
+        className={cn(inputClasses, "w-32 hidden sm:block")}
       />
 
       <button
         type="button"
         onClick={onRemove}
-        className="p-2 text-fjord-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+        className={cn(
+          "p-2.5 rounded-xl",
+          "text-fjord-400 hover:text-red-500",
+          "hover:bg-red-50 dark:hover:bg-red-900/20",
+          "hover:scale-110 active:scale-95",
+          "transition-all duration-200"
+        )}
       >
         <Trash2 className="w-5 h-5" />
       </button>

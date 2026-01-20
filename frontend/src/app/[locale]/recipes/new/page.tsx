@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChefHat } from "lucide-react";
 import { RecipeForm } from "@/components/recipes/RecipeForm";
+import { cn } from "@/lib/utils";
 
 // TODO: Get from user context
 const HOUSEHOLD_ID = "00000000-0000-0000-0000-000000000001";
@@ -15,22 +16,33 @@ export default function NewRecipePage() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 animate-slide-up">
         <Link
           href={`/${locale}/recipes`}
-          className="inline-flex items-center gap-2 text-fjord-500 hover:text-fjord-700 dark:hover:text-fjord-300 mb-4"
+          className={cn(
+            "inline-flex items-center gap-2 mb-4",
+            "text-fjord-500 hover:text-fjord-700 dark:hover:text-fjord-300",
+            "transition-colors"
+          )}
         >
           <ArrowLeft className="w-4 h-4" />
           {t("backToRecipes")}
         </Link>
 
-        <h1 className="text-2xl font-display font-semibold text-fjord-800 dark:text-fjord-100">
-          {t("newTitle")}
-        </h1>
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-forest-500 to-forest-600 flex items-center justify-center shadow-lg shadow-forest-500/20">
+            <ChefHat className="w-6 h-6 text-white" />
+          </div>
+          <h1 className="text-2xl font-display font-semibold text-fjord-800 dark:text-fjord-100">
+            {t("newTitle")}
+          </h1>
+        </div>
       </div>
 
       {/* Form */}
-      <RecipeForm householdId={HOUSEHOLD_ID} />
+      <div className="paper-card p-6 animate-slide-up" style={{ animationDelay: '50ms' }}>
+        <RecipeForm householdId={HOUSEHOLD_ID} />
+      </div>
     </div>
   );
 }
