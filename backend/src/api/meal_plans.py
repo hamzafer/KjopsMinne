@@ -9,9 +9,32 @@ from sqlalchemy.orm import selectinload
 
 from src.api.deps import DbSession
 from src.db.models import MealPlan, Recipe
-from src.schemas.meal_plan import MealPlanListResponse, MealPlanResponse
+from src.schemas.meal_plan import MealPlanCreate, MealPlanListResponse, MealPlanResponse
 
 router = APIRouter()
+
+
+@router.post("/meal-plans", response_model=MealPlanResponse, status_code=201)
+async def create_meal_plan(
+    db: DbSession,
+    meal_plan_data: MealPlanCreate,
+) -> MealPlanResponse:
+    """Create a new meal plan."""
+    meal_plan = MealPlan(
+        household_id=meal_plan_data.household_id,
+        recipe_id=meal_plan_data.recipe_id,
+        planned_date=meal_plan_data.planned_date,
+        meal_type=meal_plan_data.meal_type,
+        servings=meal_plan_data.servings,
+        is_leftover_source=meal_plan_data.is_leftover_source,
+        leftover_from_id=meal_plan_data.leftover_from_id,
+    )
+    db.add(meal_plan)
+    await db.flush()
+
+    await db.refresh(meal_plan, ["recipe"])
+
+    return MealPlanResponse.model_validate(meal_plan)
 
 
 @router.get("/meal-plans", response_model=MealPlanListResponse)
