@@ -319,7 +319,7 @@ async def get_spend_trend(
     household_id: UUID,
     start_date: datetime,
     end_date: datetime,
-    granularity: str = Query("weekly", regex="^(daily|weekly|monthly)$"),
+    granularity: str = Query("weekly", pattern="^(daily|weekly|monthly)$"),
 ):
     """Get spending trends over time."""
     # Determine date truncation based on granularity
@@ -367,6 +367,7 @@ async def get_spend_trend(
         .where(
             MealPlan.household_id == household_id,
             MealPlan.status == "cooked",
+            MealPlan.actual_cost.isnot(None),
             MealPlan.cooked_at >= start_date,
             MealPlan.cooked_at <= end_date,
         )
@@ -389,7 +390,7 @@ async def get_spend_trend(
         if granularity == "daily":
             period_str = period.strftime("%Y-%m-%d")
         elif granularity == "weekly":
-            period_str = period.strftime("%Y-W%W")
+            period_str = period.strftime("%G-W%V")
         else:
             period_str = period.strftime("%Y-%m")
 
