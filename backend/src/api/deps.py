@@ -10,6 +10,7 @@ from src.services.mock_llm import MockLLMService
 from src.services.mock_ocr import MockOCRService
 from src.services.ocr import OCRService
 from src.services.recipe_importer import RecipeImporter
+from src.services.shopping_generator import ShoppingGenerator
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]
 
@@ -37,3 +38,10 @@ def get_meal_plan_service() -> MealPlanService:
 
 
 MealPlanServiceDep = Annotated[MealPlanService, Depends(get_meal_plan_service)]
+
+
+def get_shopping_generator() -> ShoppingGenerator:
+    return ShoppingGenerator()
+
+
+ShoppingGeneratorDep = Annotated[ShoppingGenerator, Depends(get_shopping_generator)]

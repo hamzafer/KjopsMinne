@@ -1,19 +1,134 @@
 """API routes for shopping lists."""
+from decimal import Decimal
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
-from src.api.deps import DbSession
-from src.db.models import ShoppingList, ShoppingListItem
+from src.api.deps import DbSession, ShoppingGeneratorDep
+from src.db.models import InventoryLot, MealPlan, Recipe, ShoppingList, ShoppingListItem
 from src.schemas.shopping_list import (
+    GenerateShoppingListRequest,
+    GenerateShoppingListResponse,
     ShoppingListItemResponse,
     ShoppingListListResponse,
     ShoppingListResponse,
 )
 
 router = APIRouter()
+
+
+@router.post(
+    "/shopping-lists/generate", response_model=GenerateShoppingListResponse, status_code=201
+)
+async def generate_shopping_list(
+    db: DbSession,
+    generator: ShoppingGeneratorDep,
+    request: GenerateShoppingListRequest,
+) -> GenerateShoppingListResponse:
+    """Generate a shopping list from planned meals."""
+    # Get planned meals in date range
+    query = (
+        select(MealPlan)
+        .where(
+            MealPlan.household_id == request.household_id,
+            MealPlan.planned_date >= request.start_date,
+            MealPlan.planned_date <= request.end_date,
+            MealPlan.status == "planned",
+        )
+        .options(selectinload(MealPlan.recipe).selectinload(Recipe.ingredients))
+    )
+    result = await db.execute(query)
+    meal_plans = result.scalars().all()
+
+    # Convert to dict format for generator
+    meal_plan_data = [
+        {
+            "id": mp.id,
+            "servings": mp.servings,
+            "recipe": {
+                "servings": mp.recipe.servings,
+                "ingredients": [
+                    {
+                        "ingredient_id": ri.ingredient_id,
+                        "quantity": ri.quantity,
+                        "unit": ri.unit,
+                    }
+                    for ri in mp.recipe.ingredients
+                    if ri.ingredient_id and ri.quantity
+                ],
+            },
+        }
+        for mp in meal_plans
+    ]
+
+    # Aggregate ingredients
+    aggregated = generator.aggregate_ingredients(meal_plan_data)
+
+    # Generate list name
+    list_name = generator.generate_list_name(
+        start_date=request.start_date,
+        end_date=request.end_date,
+        custom_name=request.name,
+    )
+
+    # Create shopping list
+    shopping_list = ShoppingList(
+        household_id=request.household_id,
+        name=list_name,
+        date_range_start=request.start_date,
+        date_range_end=request.end_date,
+    )
+    db.add(shopping_list)
+    await db.flush()
+
+    # Create items with inventory check
+    for ingredient_id, data in aggregated.items():
+        # Get current inventory for this ingredient
+        inv_query = select(
+            func.coalesce(func.sum(InventoryLot.quantity), Decimal("0"))
+        ).where(
+            InventoryLot.household_id == request.household_id,
+            InventoryLot.ingredient_id == ingredient_id,
+            InventoryLot.quantity > 0,
+        )
+        on_hand = await db.scalar(inv_query) or Decimal("0")
+
+        to_buy = generator.calculate_to_buy(
+            required_quantity=data["quantity"],
+            on_hand_quantity=on_hand,
+        )
+
+        item = ShoppingListItem(
+            shopping_list_id=shopping_list.id,
+            ingredient_id=ingredient_id,
+            required_quantity=data["quantity"],
+            required_unit=data["unit"],
+            on_hand_quantity=on_hand,
+            to_buy_quantity=to_buy,
+            source_meal_plans=data["source_meal_plans"],
+        )
+        db.add(item)
+
+    await db.flush()
+
+    # Reload with items and ingredients
+    query = (
+        select(ShoppingList)
+        .where(ShoppingList.id == shopping_list.id)
+        .options(
+            selectinload(ShoppingList.items).selectinload(ShoppingListItem.ingredient)
+        )
+    )
+    result = await db.execute(query)
+    shopping_list = result.scalar_one()
+
+    return GenerateShoppingListResponse(
+        shopping_list=_to_response(shopping_list),
+        meal_plans_included=len(meal_plans),
+        ingredients_aggregated=len(aggregated),
+    )
 
 
 @router.get("/shopping-lists", response_model=ShoppingListListResponse)
