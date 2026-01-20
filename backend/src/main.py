@@ -10,6 +10,7 @@ from src.api import (
     households,
     ingredients,
     inventory,
+    meal_plans,
     receipts,
     recipes,
     upload,
@@ -55,6 +56,7 @@ app.include_router(categories.router, prefix="/api", tags=["categories"])
 app.include_router(households.router, prefix="/api", tags=["households"])
 app.include_router(ingredients.router, prefix="/api", tags=["ingredients"])
 app.include_router(inventory.router, prefix="/api", tags=["inventory"])
+app.include_router(meal_plans.router, prefix="/api", tags=["meal-plans"])
 app.include_router(recipes.router, prefix="/api", tags=["recipes"])
 
 
