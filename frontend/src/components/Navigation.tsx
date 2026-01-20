@@ -9,7 +9,8 @@ import {
   Upload,
   Receipt,
   BarChart3,
-  Vault
+  Vault,
+  ChefHat
 } from "lucide-react";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { ThemeSwitcher } from "./ThemeSwitcher";
@@ -23,6 +24,7 @@ export function Navigation() {
     { href: `/${locale}`, label: t("dashboard"), icon: LayoutDashboard },
     { href: `/${locale}/upload`, label: t("upload"), icon: Upload },
     { href: `/${locale}/receipts`, label: t("receipts"), icon: Receipt },
+    { href: `/${locale}/recipes`, label: t("recipes"), icon: ChefHat },
     { href: `/${locale}/analytics`, label: t("analytics"), icon: BarChart3 },
   ];
 
