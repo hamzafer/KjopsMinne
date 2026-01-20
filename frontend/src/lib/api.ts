@@ -232,6 +232,84 @@ export interface GenerateShoppingListResponse {
   ingredients_aggregated: number;
 }
 
+// Extended Analytics types
+export interface MealCostEntry {
+  meal_plan_id: string;
+  recipe_name: string;
+  planned_date: string;
+  servings: number;
+  actual_cost: number;
+  cost_per_serving: number;
+}
+
+export interface CostPerMealResponse {
+  meals: MealCostEntry[];
+  total_meals: number;
+  total_cost: number;
+  average_cost_per_meal: number;
+  average_cost_per_serving: number;
+  period_start: string | null;
+  period_end: string | null;
+}
+
+export interface WasteEntry {
+  date: string;
+  ingredient_name: string | null;
+  quantity: number;
+  unit: string;
+  reason: string;
+  estimated_value: number | null;
+}
+
+export interface LeftoverWasteEntry {
+  leftover_id: string;
+  recipe_name: string;
+  servings_wasted: number;
+  created_at: string;
+  discarded_at: string | null;
+}
+
+export interface WasteResponse {
+  inventory_discards: WasteEntry[];
+  leftover_discards: LeftoverWasteEntry[];
+  total_inventory_waste_value: number;
+  total_leftover_servings_wasted: number;
+  period_start: string | null;
+  period_end: string | null;
+}
+
+export interface SpendTrendPoint {
+  period: string;
+  total_spent: number;
+  receipt_count: number;
+  meal_count: number;
+  meal_cost: number;
+}
+
+export interface SpendTrendResponse {
+  trends: SpendTrendPoint[];
+  granularity: "daily" | "weekly" | "monthly";
+  period_start: string;
+  period_end: string;
+}
+
+export interface RestockPrediction {
+  ingredient_id: string;
+  ingredient_name: string;
+  current_quantity: number;
+  unit: string;
+  average_daily_usage: number;
+  days_until_empty: number | null;
+  predicted_runout_date: string | null;
+  recommended_restock_date: string | null;
+}
+
+export interface RestockPredictionsResponse {
+  predictions: RestockPrediction[];
+  household_id: string;
+  generated_at: string;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -482,6 +560,53 @@ class ApiClient {
 
   async deleteShoppingList(id: string): Promise<void> {
     await this.fetch(`/api/shopping-lists/${id}`, { method: "DELETE" });
+  }
+
+  // Extended Analytics
+  async getCostPerMeal(
+    householdId: string,
+    startDate?: string,
+    endDate?: string
+  ): Promise<CostPerMealResponse> {
+    const params = new URLSearchParams();
+    params.append("household_id", householdId);
+    if (startDate) params.append("start_date", startDate);
+    if (endDate) params.append("end_date", endDate);
+    return this.fetch(`/api/analytics/cost-per-meal?${params.toString()}`);
+  }
+
+  async getWasteAnalytics(
+    householdId: string,
+    startDate?: string,
+    endDate?: string
+  ): Promise<WasteResponse> {
+    const params = new URLSearchParams();
+    params.append("household_id", householdId);
+    if (startDate) params.append("start_date", startDate);
+    if (endDate) params.append("end_date", endDate);
+    return this.fetch(`/api/analytics/waste?${params.toString()}`);
+  }
+
+  async getSpendTrend(
+    householdId: string,
+    startDate: string,
+    endDate: string,
+    granularity: "daily" | "weekly" | "monthly" = "weekly"
+  ): Promise<SpendTrendResponse> {
+    const params = new URLSearchParams();
+    params.append("household_id", householdId);
+    params.append("start_date", startDate);
+    params.append("end_date", endDate);
+    params.append("granularity", granularity);
+    return this.fetch(`/api/analytics/spend-trend?${params.toString()}`);
+  }
+
+  async getRestockPredictions(
+    householdId: string
+  ): Promise<RestockPredictionsResponse> {
+    const params = new URLSearchParams();
+    params.append("household_id", householdId);
+    return this.fetch(`/api/analytics/restock-predictions?${params.toString()}`);
   }
 }
 
