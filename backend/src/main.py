@@ -13,6 +13,7 @@ from src.api import (
     meal_plans,
     receipts,
     recipes,
+    shopping_lists,
     upload,
 )
 from src.db.engine import engine
@@ -58,6 +59,7 @@ app.include_router(ingredients.router, prefix="/api", tags=["ingredients"])
 app.include_router(inventory.router, prefix="/api", tags=["inventory"])
 app.include_router(meal_plans.router, prefix="/api", tags=["meal-plans"])
 app.include_router(recipes.router, prefix="/api", tags=["recipes"])
+app.include_router(shopping_lists.router, prefix="/api", tags=["shopping-lists"])
 
 
 @app.get("/health")
