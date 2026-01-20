@@ -7,8 +7,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
 from src.api.deps import DbSession
-from src.db.models import Recipe
-from src.schemas.recipe import RecipeListResponse, RecipeResponse
+from src.db.models import Recipe, RecipeIngredient
+from src.schemas.recipe import RecipeCreate, RecipeListResponse, RecipeResponse
 
 router = APIRouter()
 
@@ -65,5 +65,46 @@ async def get_recipe(
 
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
+
+    return RecipeResponse.model_validate(recipe)
+
+
+@router.post("/recipes", response_model=RecipeResponse, status_code=201)
+async def create_recipe(
+    db: DbSession,
+    recipe_data: RecipeCreate,
+) -> RecipeResponse:
+    """Create a new recipe with ingredients."""
+    # Create recipe
+    recipe = Recipe(
+        household_id=recipe_data.household_id,
+        name=recipe_data.name,
+        source_url=recipe_data.source_url,
+        servings=recipe_data.servings,
+        prep_time_minutes=recipe_data.prep_time_minutes,
+        cook_time_minutes=recipe_data.cook_time_minutes,
+        instructions=recipe_data.instructions,
+        tags=recipe_data.tags,
+        image_url=recipe_data.image_url,
+    )
+    db.add(recipe)
+    await db.flush()  # Get the recipe ID
+
+    # Create ingredients
+    for ing_data in recipe_data.ingredients:
+        ingredient = RecipeIngredient(
+            recipe_id=recipe.id,
+            raw_text=ing_data.raw_text,
+            quantity=ing_data.quantity,
+            unit=ing_data.unit,
+            notes=ing_data.notes,
+            ingredient_id=ing_data.ingredient_id,
+        )
+        db.add(ingredient)
+
+    await db.flush()
+
+    # Refresh to load ingredients relationship
+    await db.refresh(recipe, ["ingredients"])
 
     return RecipeResponse.model_validate(recipe)
