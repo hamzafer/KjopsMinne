@@ -3,12 +3,12 @@
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import selectinload
 
 from src.api.deps import DbSession
 from src.db.models import Recipe, RecipeIngredient
-from src.schemas.recipe import RecipeCreate, RecipeListResponse, RecipeResponse
+from src.schemas.recipe import RecipeCreate, RecipeListResponse, RecipeResponse, RecipeUpdate
 
 router = APIRouter()
 
@@ -105,6 +105,55 @@ async def create_recipe(
     await db.flush()
 
     # Refresh to load ingredients relationship
+    await db.refresh(recipe, ["ingredients"])
+
+    return RecipeResponse.model_validate(recipe)
+
+
+@router.patch("/recipes/{recipe_id}", response_model=RecipeResponse)
+async def update_recipe(
+    db: DbSession,
+    recipe_id: UUID,
+    recipe_data: RecipeUpdate,
+) -> RecipeResponse:
+    """Update a recipe."""
+    # Find recipe
+    query = select(Recipe).where(Recipe.id == recipe_id)
+    result = await db.execute(query)
+    recipe = result.scalar_one_or_none()
+
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+
+    # Update only provided fields
+    update_data = recipe_data.model_dump(exclude_unset=True)
+
+    # Handle ingredients separately if provided
+    if "ingredients" in update_data:
+        ingredients_data = update_data.pop("ingredients")
+
+        # Delete existing ingredients
+        await db.execute(
+            delete(RecipeIngredient).where(RecipeIngredient.recipe_id == recipe_id)
+        )
+
+        # Create new ingredients
+        for ing_data in ingredients_data:
+            ingredient = RecipeIngredient(
+                recipe_id=recipe_id,
+                raw_text=ing_data["raw_text"],
+                quantity=ing_data.get("quantity"),
+                unit=ing_data.get("unit"),
+                notes=ing_data.get("notes"),
+                ingredient_id=ing_data.get("ingredient_id"),
+            )
+            db.add(ingredient)
+
+    # Update recipe fields
+    for key, value in update_data.items():
+        setattr(recipe, key, value)
+
+    await db.flush()
     await db.refresh(recipe, ["ingredients"])
 
     return RecipeResponse.model_validate(recipe)
