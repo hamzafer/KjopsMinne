@@ -123,6 +123,69 @@ export interface RecipeImportResponse {
   warnings: string[];
 }
 
+// MealPlan types
+export interface MealPlan {
+  id: string;
+  household_id: string;
+  recipe_id: string;
+  planned_date: string;
+  meal_type: "breakfast" | "lunch" | "dinner";
+  servings: number;
+  status: "planned" | "cooked" | "skipped";
+  is_leftover_source: boolean;
+  leftover_from_id: string | null;
+  cooked_at: string | null;
+  actual_cost: number | null;
+  cost_per_serving: number | null;
+  created_at: string;
+  updated_at: string;
+  recipe: Recipe | null;
+}
+
+export interface MealPlanListResponse {
+  meal_plans: MealPlan[];
+  total: number;
+}
+
+export interface MealPlanCreate {
+  household_id: string;
+  recipe_id: string;
+  planned_date: string;
+  meal_type: "breakfast" | "lunch" | "dinner";
+  servings: number;
+  leftover_from_id?: string | null;
+}
+
+export interface CookRequest {
+  actual_servings?: number;
+  create_leftover: boolean;
+  leftover_servings?: number;
+}
+
+export interface CookResponse {
+  meal_plan: MealPlan;
+  actual_cost: number;
+  cost_per_serving: number;
+  inventory_consumed: { lot_id: string; quantity: number; cost: number }[];
+  leftover: Leftover | null;
+}
+
+export interface Leftover {
+  id: string;
+  household_id: string;
+  meal_plan_id: string;
+  recipe_id: string;
+  remaining_servings: number;
+  status: "available" | "consumed" | "discarded";
+  expires_at: string;
+  created_at: string;
+}
+
+export interface LeftoverListResponse {
+  leftovers: Leftover[];
+  total: number;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -242,6 +305,78 @@ class ApiClient {
   async importRecipe(data: RecipeImportRequest): Promise<RecipeImportResponse> {
     return this.fetch("/api/recipes/import", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Meal Plans
+  async getMealPlans(
+    householdId: string,
+    startDate?: string,
+    endDate?: string,
+    status?: string
+  ): Promise<MealPlanListResponse> {
+    const params = new URLSearchParams();
+    params.append("household_id", householdId);
+    if (startDate) params.append("start_date", startDate);
+    if (endDate) params.append("end_date", endDate);
+    if (status) params.append("status", status);
+    return this.fetch(`/api/meal-plans?${params.toString()}`);
+  }
+
+  async getMealPlan(id: string): Promise<MealPlan> {
+    return this.fetch(`/api/meal-plans/${id}`);
+  }
+
+  async createMealPlan(data: MealPlanCreate): Promise<MealPlan> {
+    return this.fetch("/api/meal-plans", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateMealPlan(
+    id: string,
+    data: Partial<MealPlanCreate> & { status?: string }
+  ): Promise<MealPlan> {
+    return this.fetch(`/api/meal-plans/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteMealPlan(id: string): Promise<void> {
+    await this.fetch(`/api/meal-plans/${id}`, { method: "DELETE" });
+  }
+
+  async cookMealPlan(id: string, data: CookRequest): Promise<CookResponse> {
+    return this.fetch(`/api/meal-plans/${id}/cook`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Leftovers
+  async getLeftovers(
+    householdId: string,
+    status?: string
+  ): Promise<LeftoverListResponse> {
+    const params = new URLSearchParams();
+    params.append("household_id", householdId);
+    if (status) params.append("status", status);
+    return this.fetch(`/api/leftovers?${params.toString()}`);
+  }
+
+  async updateLeftover(
+    id: string,
+    data: { status?: string; remaining_servings?: number }
+  ): Promise<Leftover> {
+    return this.fetch(`/api/leftovers/${id}`, {
+      method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
