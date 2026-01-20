@@ -177,3 +177,34 @@ async def create_inventory_lot(
         .where(InventoryLot.id == lot.id)
     )
     return result.scalar_one()
+
+
+@router.put("/inventory/lots/{lot_id}", response_model=InventoryLotResponse)
+async def update_inventory_lot(
+    lot_id: uuid.UUID,
+    data: InventoryLotUpdate,
+    db: DbSession,
+):
+    """Update an inventory lot (location, expiry only)."""
+    result = await db.execute(
+        select(InventoryLot).where(InventoryLot.id == lot_id)
+    )
+    lot = result.scalar_one_or_none()
+
+    if not lot:
+        raise HTTPException(status_code=404, detail="Inventory lot not found")
+
+    if data.location is not None:
+        lot.location = data.location
+    if data.expiry_date is not None:
+        lot.expiry_date = data.expiry_date
+
+    await db.flush()
+
+    # Reload with ingredient
+    result = await db.execute(
+        select(InventoryLot)
+        .options(selectinload(InventoryLot.ingredient))
+        .where(InventoryLot.id == lot.id)
+    )
+    return result.scalar_one()
