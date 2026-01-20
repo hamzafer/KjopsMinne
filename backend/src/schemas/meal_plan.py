@@ -26,6 +26,13 @@ class LeftoverCreate(LeftoverBase):
     recipe_id: UUID
 
 
+class LeftoverUpdate(BaseModel):
+    """Update an existing leftover."""
+
+    status: str | None = None
+    remaining_servings: int | None = None
+
+
 class LeftoverResponse(LeftoverBase):
     """Leftover response."""
 

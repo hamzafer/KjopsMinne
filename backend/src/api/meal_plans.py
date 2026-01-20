@@ -15,6 +15,7 @@ from src.schemas.meal_plan import (
     CookResponse,
     LeftoverListResponse,
     LeftoverResponse,
+    LeftoverUpdate,
     MealPlanCreate,
     MealPlanListResponse,
     MealPlanResponse,
@@ -317,7 +318,7 @@ async def list_leftovers(
 async def update_leftover(
     db: DbSession,
     leftover_id: UUID,
-    status: str = Query(..., description="New status: available, consumed, or discarded"),
+    leftover_data: LeftoverUpdate,
 ) -> LeftoverResponse:
     """Update leftover status (consumed/discarded)."""
     query = select(Leftover).where(Leftover.id == leftover_id)
@@ -327,10 +328,16 @@ async def update_leftover(
     if not leftover:
         raise HTTPException(status_code=404, detail="Leftover not found")
 
-    if status not in ("available", "consumed", "discarded"):
-        raise HTTPException(status_code=400, detail="Invalid status")
+    update_data = leftover_data.model_dump(exclude_unset=True)
 
-    leftover.status = status
+    # Validate status if provided
+    if "status" in update_data:
+        if update_data["status"] not in ("available", "consumed", "discarded"):
+            raise HTTPException(status_code=400, detail="Invalid status")
+
+    for key, value in update_data.items():
+        setattr(leftover, key, value)
+
     await db.flush()
 
     return LeftoverResponse.model_validate(leftover)
