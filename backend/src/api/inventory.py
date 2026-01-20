@@ -296,3 +296,50 @@ async def discard_lot(
         .where(InventoryLot.id == lot.id)
     )
     return result.scalar_one()
+
+
+@router.post("/inventory/lots/{lot_id}/transfer", response_model=InventoryLotResponse)
+async def transfer_lot(
+    lot_id: uuid.UUID,
+    data: TransferRequest,
+    db: DbSession,
+):
+    """Transfer inventory lot to a different location."""
+    result = await db.execute(
+        select(InventoryLot).where(InventoryLot.id == lot_id)
+    )
+    lot = result.scalar_one_or_none()
+
+    if not lot:
+        raise HTTPException(status_code=404, detail="Inventory lot not found")
+
+    valid_locations = ["pantry", "fridge", "freezer"]
+    if data.location not in valid_locations:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid location. Must be one of: {valid_locations}"
+        )
+
+    old_location = lot.location
+    lot.location = data.location
+
+    # Create transfer event
+    event = InventoryEvent(
+        id=uuid.uuid4(),
+        lot_id=lot.id,
+        event_type="transfer",
+        quantity_delta=Decimal("0"),
+        unit=lot.unit,
+        reason=f"moved from {old_location} to {data.location}",
+    )
+    db.add(event)
+
+    await db.flush()
+
+    # Reload with ingredient
+    result = await db.execute(
+        select(InventoryLot)
+        .options(selectinload(InventoryLot.ingredient))
+        .where(InventoryLot.id == lot.id)
+    )
+    return result.scalar_one()
