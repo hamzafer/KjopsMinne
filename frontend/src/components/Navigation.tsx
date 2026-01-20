@@ -12,7 +12,8 @@ import {
   Vault,
   ChefHat,
   CalendarDays,
-  Soup
+  Soup,
+  ShoppingCart
 } from "lucide-react";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { ThemeSwitcher } from "./ThemeSwitcher";
@@ -28,6 +29,7 @@ export function Navigation() {
     { href: `/${locale}/receipts`, label: t("receipts"), icon: Receipt },
     { href: `/${locale}/recipes`, label: t("recipes"), icon: ChefHat },
     { href: `/${locale}/plan`, label: t("plan"), icon: CalendarDays },
+    { href: `/${locale}/shopping`, label: t("shopping"), icon: ShoppingCart },
     { href: `/${locale}/leftovers`, label: t("leftovers"), icon: Soup },
     { href: `/${locale}/analytics`, label: t("analytics"), icon: BarChart3 },
   ];
