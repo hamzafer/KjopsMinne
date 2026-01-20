@@ -30,18 +30,30 @@ function calculateTrend(
 }
 
 function formatPeriodLabel(period: string, granularity: string, locale: string): string {
-  const date = new Date(period);
   const localeCode = locale === "en" ? "en-GB" : "nb-NO";
 
   switch (granularity) {
-    case "daily":
+    case "daily": {
+      const date = new Date(period);
       return date.toLocaleDateString(localeCode, { day: "numeric", month: "short" });
+    }
     case "weekly": {
+      // Backend returns ISO week format: "YYYY-WXX" (e.g., "2026-W03")
+      const weekMatch = period.match(/^\d{4}-W(\d{2})$/);
+      if (weekMatch) {
+        const weekNum = parseInt(weekMatch[1], 10);
+        const weekLabel = locale === "en" ? "Week" : "Uke";
+        return `${weekLabel} ${weekNum}`;
+      }
+      // Fallback for other formats
+      const date = new Date(period);
       const weekLabel = locale === "en" ? "Week" : "Uke";
       return `${weekLabel} ${getWeekNumber(date)}`;
     }
-    case "monthly":
+    case "monthly": {
+      const date = new Date(period);
       return date.toLocaleDateString(localeCode, { month: "short", year: "2-digit" });
+    }
     default:
       return period;
   }

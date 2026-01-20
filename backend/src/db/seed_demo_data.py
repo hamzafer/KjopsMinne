@@ -1075,6 +1075,16 @@ async def create_recipes() -> dict[str, uuid.UUID]:
 
 async def create_meal_plans(recipe_map: dict[str, uuid.UUID]) -> list[uuid.UUID]:
     """Create 2 weeks of meal plans."""
+    # Estimated costs per recipe (realistic Norwegian prices)
+    recipe_costs = {
+        "Kjøttboller i brun saus": Decimal("120.00"),
+        "Fiskegrateng": Decimal("145.00"),
+        "Pasta Carbonara": Decimal("95.00"),
+        "Kylling med ris": Decimal("130.00"),
+        "Lapskaus": Decimal("110.00"),
+        "Fiskesuppe": Decimal("160.00"),
+    }
+
     # Plan dinners for 14 days, some lunches
     # Format: (days_offset, meal_type, recipe_name, status, servings)
     # days_offset: negative = past, positive = future
@@ -1112,6 +1122,19 @@ async def create_meal_plans(recipe_map: dict[str, uuid.UUID]) -> list[uuid.UUID]
             planned_date = datetime.now() + timedelta(days=days_offset)
             cooked_at = planned_date if status == "cooked" else None
 
+            # Set actual_cost for cooked meals
+            actual_cost = None
+            cost_per_serving = None
+            if status == "cooked":
+                base_cost = recipe_costs.get(recipe_name, Decimal("100.00"))
+                # Scale cost based on servings (base is for 4 servings)
+                actual_cost = (base_cost * Decimal(servings) / Decimal("4")).quantize(
+                    Decimal("0.01")
+                )
+                cost_per_serving = (actual_cost / Decimal(servings)).quantize(
+                    Decimal("0.01")
+                )
+
             meal_plan = MealPlan(
                 id=uuid.uuid4(),
                 household_id=DEMO_HOUSEHOLD_ID,
@@ -1121,6 +1144,8 @@ async def create_meal_plans(recipe_map: dict[str, uuid.UUID]) -> list[uuid.UUID]
                 servings=servings,
                 status=status,
                 cooked_at=cooked_at,
+                actual_cost=actual_cost,
+                cost_per_serving=cost_per_serving,
             )
             session.add(meal_plan)
             meal_plan_ids.append(meal_plan.id)
