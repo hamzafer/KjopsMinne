@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
 from src.db.session import get_db
+from src.services.meal_plan_service import MealPlanService
 from src.services.mock_llm import MockLLMService
 from src.services.mock_ocr import MockOCRService
 from src.services.ocr import OCRService
@@ -29,3 +30,10 @@ def get_recipe_importer() -> RecipeImporter:
 
 
 RecipeImporterDep = Annotated[RecipeImporter, Depends(get_recipe_importer)]
+
+
+def get_meal_plan_service() -> MealPlanService:
+    return MealPlanService()
+
+
+MealPlanServiceDep = Annotated[MealPlanService, Depends(get_meal_plan_service)]

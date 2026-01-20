@@ -1,15 +1,19 @@
 """API routes for meal plans."""
 
 from datetime import datetime
+from decimal import Decimal
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
-from src.api.deps import DbSession
-from src.db.models import MealPlan, Recipe
+from src.api.deps import DbSession, MealPlanServiceDep
+from src.db.models import InventoryEvent, InventoryLot, Leftover, MealPlan, Recipe
 from src.schemas.meal_plan import (
+    CookRequest,
+    CookResponse,
+    LeftoverResponse,
     MealPlanCreate,
     MealPlanListResponse,
     MealPlanResponse,
@@ -67,9 +71,7 @@ async def list_meal_plans(
     total = await db.scalar(count_query)
 
     # Paginate and eager load recipe with ingredients
-    query = query.options(
-        selectinload(MealPlan.recipe).selectinload(Recipe.ingredients)
-    )
+    query = query.options(selectinload(MealPlan.recipe).selectinload(Recipe.ingredients))
     query = query.order_by(MealPlan.planned_date.asc())
     query = query.offset((page - 1) * page_size).limit(page_size)
 
@@ -143,3 +145,139 @@ async def delete_meal_plan(
     await db.flush()
 
     return Response(status_code=204)
+
+
+@router.post("/meal-plans/{meal_plan_id}/cook", response_model=CookResponse)
+async def cook_meal_plan(
+    db: DbSession,
+    meal_plan_service: MealPlanServiceDep,
+    meal_plan_id: UUID,
+    cook_data: CookRequest,
+) -> CookResponse:
+    """Mark a meal as cooked and consume inventory."""
+    # Get meal plan with recipe and ingredients
+    query = (
+        select(MealPlan)
+        .where(MealPlan.id == meal_plan_id)
+        .options(selectinload(MealPlan.recipe).selectinload(Recipe.ingredients))
+    )
+    result = await db.execute(query)
+    meal_plan = result.scalar_one_or_none()
+
+    if not meal_plan:
+        raise HTTPException(status_code=404, detail="Meal plan not found")
+
+    if meal_plan.status == "cooked":
+        raise HTTPException(status_code=400, detail="Meal already cooked")
+
+    servings = cook_data.actual_servings or meal_plan.servings
+
+    # Calculate required ingredients
+    recipe_ingredients = [
+        {
+            "ingredient_id": ri.ingredient_id,
+            "quantity": ri.quantity,
+            "unit": ri.unit,
+        }
+        for ri in meal_plan.recipe.ingredients
+        if ri.ingredient_id and ri.quantity
+    ]
+
+    required = meal_plan_service.calculate_required_ingredients(
+        recipe_ingredients=recipe_ingredients,
+        recipe_servings=meal_plan.recipe.servings,
+        planned_servings=servings,
+    )
+
+    # Consume from inventory (FIFO)
+    total_cost = Decimal("0")
+    inventory_consumed = []
+
+    for ing in required:
+        if not ing.get("ingredient_id"):
+            continue
+
+        # Get inventory lots for this ingredient (oldest first)
+        lots_query = (
+            select(InventoryLot)
+            .where(
+                InventoryLot.household_id == meal_plan.household_id,
+                InventoryLot.ingredient_id == ing["ingredient_id"],
+                InventoryLot.quantity > 0,
+            )
+            .order_by(InventoryLot.purchase_date.asc())
+        )
+        lots_result = await db.execute(lots_query)
+        lots = lots_result.scalars().all()
+
+        lots_data = [
+            {
+                "id": lot.id,
+                "quantity": lot.quantity,
+                "unit_cost": lot.unit_cost,
+                "purchase_date": lot.purchase_date,
+            }
+            for lot in lots
+        ]
+
+        cost_result = meal_plan_service.calculate_cost_fifo(
+            lots=lots_data,
+            required_quantity=ing["quantity"],
+        )
+
+        total_cost += cost_result["total_cost"]
+
+        # Create consume events and update lot quantities
+        for consumed in cost_result["consumed"]:
+            lot = next(inv_lot for inv_lot in lots if inv_lot.id == consumed["lot_id"])
+
+            event = InventoryEvent(
+                lot_id=lot.id,
+                event_type="consume",
+                quantity_delta=-consumed["quantity"],
+                unit=lot.unit,
+                reason=f"cooked:meal_plan:{meal_plan_id}",
+            )
+            db.add(event)
+
+            lot.quantity -= consumed["quantity"]
+
+            inventory_consumed.append(
+                {
+                    "lot_id": str(consumed["lot_id"]),
+                    "quantity": float(consumed["quantity"]),
+                    "cost": float(consumed["cost"]),
+                }
+            )
+
+    # Update meal plan
+    meal_plan.status = "cooked"
+    meal_plan.cooked_at = datetime.now()
+    meal_plan.actual_cost = total_cost
+    meal_plan.cost_per_serving = total_cost / servings if servings > 0 else Decimal("0")
+
+    # Create leftover if requested
+    leftover_response = None
+    if cook_data.create_leftover and cook_data.leftover_servings:
+        leftover_data = meal_plan_service.create_leftover(
+            household_id=meal_plan.household_id,
+            meal_plan_id=meal_plan.id,
+            recipe_id=meal_plan.recipe_id,
+            servings=cook_data.leftover_servings,
+        )
+        leftover = Leftover(**leftover_data)
+        db.add(leftover)
+        await db.flush()
+        leftover_response = LeftoverResponse.model_validate(leftover)
+        meal_plan.is_leftover_source = True
+
+    await db.flush()
+    await db.refresh(meal_plan, ["recipe"])
+
+    return CookResponse(
+        meal_plan=MealPlanResponse.model_validate(meal_plan),
+        actual_cost=total_cost,
+        cost_per_serving=meal_plan.cost_per_serving or Decimal("0"),
+        inventory_consumed=inventory_consumed,
+        leftover=leftover_response,
+    )
