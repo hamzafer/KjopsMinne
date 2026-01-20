@@ -137,6 +137,38 @@ class InventoryLot(Base):
     )
 
 
+class InventoryEvent(Base):
+    __tablename__ = "inventory_events"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    lot_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("inventory_lots.id"), nullable=False
+    )
+    event_type: Mapped[str] = mapped_column(
+        Text, nullable=False
+    )  # add|consume|adjust|discard|transfer
+    quantity_delta: Mapped[Decimal] = mapped_column(Numeric(10, 3), nullable=False)
+    unit: Mapped[str] = mapped_column(Text, nullable=False)
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=func.now(), nullable=False
+    )
+
+    lot: Mapped["InventoryLot"] = relationship("InventoryLot", back_populates="events")
+    user: Mapped["User | None"] = relationship("User")
+
+    __table_args__ = (
+        Index("idx_inventory_events_lot", "lot_id"),
+        Index("idx_inventory_events_type", "event_type"),
+        Index("idx_inventory_events_created", "created_at"),
+    )
+
+
 class Category(Base):
     __tablename__ = "categories"
 
