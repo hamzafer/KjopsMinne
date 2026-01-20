@@ -1,4 +1,4 @@
-.PHONY: dev up down rebuild restart reset ps shell-backend shell-db logs migrate seed test lint fmt install clean
+.PHONY: dev up down rebuild restart reset ps shell-backend shell-db logs migrate seed seed-categories seed-ingredients seed-units seed-all test lint fmt install clean
 
 dev:
 	@echo "Backend: http://localhost:8000"
@@ -40,6 +40,18 @@ migrate:
 
 seed:
 	cd backend && uv run python -m src.db.seed
+
+seed-categories:
+	cd backend && uv run python -m src.db.seed
+
+seed-ingredients:
+	cd backend && uv run python -m src.db.seed_ingredients
+
+seed-units:
+	cd backend && uv run python -m src.db.seed_unit_conversions
+
+seed-all: seed-categories seed-ingredients seed-units
+	@echo "All seed data loaded"
 
 test:
 	cd backend && uv run pytest
