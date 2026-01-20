@@ -1,0 +1,117 @@
+"""Inventory management API routes."""
+import uuid
+from decimal import Decimal
+
+from fastapi import APIRouter, HTTPException, Query
+from sqlalchemy import select, func
+from sqlalchemy.orm import selectinload
+
+from src.api.deps import DbSession
+from src.db.models import Household, InventoryLot, InventoryEvent, Ingredient
+from src.schemas.inventory import (
+    InventoryLotCreate,
+    InventoryLotResponse,
+    InventoryLotUpdate,
+    InventoryEventResponse,
+    InventoryAggregatedItem,
+    ConsumeRequest,
+    DiscardRequest,
+    TransferRequest,
+)
+
+router = APIRouter()
+
+
+@router.get("/inventory", response_model=list[InventoryAggregatedItem])
+async def get_inventory_aggregated(
+    db: DbSession,
+    household_id: uuid.UUID = Query(..., description="Household ID"),
+    location: str | None = Query(None, description="Filter by location"),
+):
+    """Get aggregated inventory view by ingredient."""
+    # Build subquery to sum quantities
+    query = (
+        select(
+            InventoryLot.ingredient_id,
+            Ingredient.name.label("ingredient_name"),
+            Ingredient.canonical_name,
+            func.sum(InventoryLot.quantity).label("total_quantity"),
+            InventoryLot.unit,
+            func.count(InventoryLot.id).label("lot_count"),
+            func.array_agg(func.distinct(InventoryLot.location)).label("locations"),
+            func.min(InventoryLot.expiry_date).label("earliest_expiry"),
+        )
+        .join(Ingredient, InventoryLot.ingredient_id == Ingredient.id)
+        .where(InventoryLot.household_id == household_id)
+        .where(InventoryLot.quantity > 0)
+        .group_by(
+            InventoryLot.ingredient_id,
+            Ingredient.name,
+            Ingredient.canonical_name,
+            InventoryLot.unit,
+        )
+    )
+
+    if location:
+        query = query.where(InventoryLot.location == location)
+
+    result = await db.execute(query)
+    rows = result.all()
+
+    return [
+        InventoryAggregatedItem(
+            ingredient_id=row.ingredient_id,
+            ingredient_name=row.ingredient_name,
+            canonical_name=row.canonical_name,
+            total_quantity=row.total_quantity,
+            unit=row.unit,
+            lot_count=row.lot_count,
+            locations=row.locations or [],
+            earliest_expiry=row.earliest_expiry,
+        )
+        for row in rows
+    ]
+
+
+@router.get("/inventory/lots", response_model=list[InventoryLotResponse])
+async def list_inventory_lots(
+    db: DbSession,
+    household_id: uuid.UUID = Query(..., description="Household ID"),
+    ingredient_id: uuid.UUID | None = Query(None, description="Filter by ingredient"),
+    location: str | None = Query(None, description="Filter by location"),
+    skip: int = 0,
+    limit: int = 50,
+):
+    """List all inventory lots for a household."""
+    query = (
+        select(InventoryLot)
+        .options(selectinload(InventoryLot.ingredient))
+        .where(InventoryLot.household_id == household_id)
+        .where(InventoryLot.quantity > 0)
+    )
+
+    if ingredient_id:
+        query = query.where(InventoryLot.ingredient_id == ingredient_id)
+    if location:
+        query = query.where(InventoryLot.location == location)
+
+    query = query.order_by(InventoryLot.purchase_date.asc()).offset(skip).limit(limit)
+
+    result = await db.execute(query)
+    return result.scalars().all()
+
+
+@router.get("/inventory/lots/{lot_id}", response_model=InventoryLotResponse)
+async def get_inventory_lot(lot_id: uuid.UUID, db: DbSession):
+    """Get a specific inventory lot."""
+    result = await db.execute(
+        select(InventoryLot)
+        .options(selectinload(InventoryLot.ingredient))
+        .where(InventoryLot.id == lot_id)
+    )
+    lot = result.scalar_one_or_none()
+
+    if not lot:
+        raise HTTPException(status_code=404, detail="Inventory lot not found")
+
+    return lot
