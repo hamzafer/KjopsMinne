@@ -3,7 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 # Cost Per Meal Analytics
@@ -17,6 +17,8 @@ class MealCostEntry(BaseModel):
 
 
 class CostPerMealResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     meals: list[MealCostEntry]
     total_meals: int
     total_cost: Decimal
@@ -45,6 +47,8 @@ class LeftoverWasteEntry(BaseModel):
 
 
 class WasteResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     inventory_discards: list[WasteEntry]
     leftover_discards: list[LeftoverWasteEntry]
     total_inventory_waste_value: Decimal
@@ -63,6 +67,8 @@ class SpendTrendPoint(BaseModel):
 
 
 class SpendTrendResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     trends: list[SpendTrendPoint]
     granularity: str  # "daily", "weekly", "monthly"
     period_start: datetime
@@ -82,6 +88,8 @@ class RestockPrediction(BaseModel):
 
 
 class RestockPredictionsResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     predictions: list[RestockPrediction]
     household_id: UUID
     generated_at: datetime
