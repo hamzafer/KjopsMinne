@@ -12,7 +12,9 @@
     "leftovers": "Leftovers",
     "shopping": "Shopping",
     "analytics": "Analytics",
-    "appName": "Receipt Vault"
+    "appName": "Receipt Vault",
+    "language": "Language",
+    "collapse": "Collapse"
   },
   "Dashboard": {
     "greeting": "Good day",

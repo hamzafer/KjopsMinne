@@ -12,7 +12,9 @@
     "leftovers": "Rester",
     "shopping": "Handleliste",
     "analytics": "Analyse",
-    "appName": "Kvitteringshvelv"
+    "appName": "Kvitteringshvelv",
+    "language": "Språk",
+    "collapse": "Skjul"
   },
   "Dashboard": {
     "greeting": "God dag",

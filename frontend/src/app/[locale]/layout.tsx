@@ -4,7 +4,10 @@ import { getTranslations } from "next-intl/server";
 import { hasLocale } from "next-intl";
 import { NextIntlClientProvider } from "next-intl";
 import "../globals.css";
-import { Navigation } from "@/components/Navigation";
+import { Sidebar } from "@/components/Sidebar";
+import { MobileNav } from "@/components/MobileNav";
+import { MainContent } from "@/components/MainContent";
+import { SidebarProvider } from "@/components/SidebarContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { routing } from "@/i18n/routing";
 
@@ -65,8 +68,14 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body className="min-h-screen">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider>
-            <Navigation />
-            <main className="pb-12">{children}</main>
+            <SidebarProvider>
+              {/* Desktop Sidebar */}
+              <Sidebar />
+              {/* Mobile Navigation */}
+              <MobileNav />
+              {/* Main Content */}
+              <MainContent>{children}</MainContent>
+            </SidebarProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
