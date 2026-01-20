@@ -2,11 +2,15 @@
 """MealPlan and Leftover Pydantic schemas."""
 from datetime import datetime
 from decimal import Decimal
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
 from .recipe import RecipeResponse
+
+# Valid meal types that match frontend DayColumn expectations
+MealType = Literal["breakfast", "lunch", "dinner"]
 
 
 # Leftover Schemas
@@ -57,7 +61,7 @@ class MealPlanBase(BaseModel):
     """Base schema for meal plans."""
 
     planned_date: datetime
-    meal_type: str
+    meal_type: MealType
     servings: int = 2
     is_leftover_source: bool = False
 
@@ -74,7 +78,7 @@ class MealPlanUpdate(BaseModel):
     """Update an existing meal plan."""
 
     planned_date: datetime | None = None
-    meal_type: str | None = None
+    meal_type: MealType | None = None
     servings: int | None = None
     status: str | None = None
     is_leftover_source: bool | None = None
