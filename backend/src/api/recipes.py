@@ -2,7 +2,7 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Response
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import selectinload
 
@@ -157,3 +157,22 @@ async def update_recipe(
     await db.refresh(recipe, ["ingredients"])
 
     return RecipeResponse.model_validate(recipe)
+
+
+@router.delete("/recipes/{recipe_id}", status_code=204)
+async def delete_recipe(
+    db: DbSession,
+    recipe_id: UUID,
+) -> Response:
+    """Delete a recipe."""
+    query = select(Recipe).where(Recipe.id == recipe_id)
+    result = await db.execute(query)
+    recipe = result.scalar_one_or_none()
+
+    if not recipe:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+
+    await db.delete(recipe)
+    await db.flush()
+
+    return Response(status_code=204)
