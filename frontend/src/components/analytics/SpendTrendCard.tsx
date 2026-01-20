@@ -29,16 +29,19 @@ function calculateTrend(
   return { direction, percentage: Math.abs(change) };
 }
 
-function formatPeriodLabel(period: string, granularity: string): string {
+function formatPeriodLabel(period: string, granularity: string, locale: string): string {
   const date = new Date(period);
+  const localeCode = locale === "en" ? "en-GB" : "nb-NO";
 
   switch (granularity) {
     case "daily":
-      return date.toLocaleDateString("nb-NO", { day: "numeric", month: "short" });
-    case "weekly":
-      return `Uke ${getWeekNumber(date)}`;
+      return date.toLocaleDateString(localeCode, { day: "numeric", month: "short" });
+    case "weekly": {
+      const weekLabel = locale === "en" ? "Week" : "Uke";
+      return `${weekLabel} ${getWeekNumber(date)}`;
+    }
     case "monthly":
-      return date.toLocaleDateString("nb-NO", { month: "short", year: "2-digit" });
+      return date.toLocaleDateString(localeCode, { month: "short", year: "2-digit" });
     default:
       return period;
   }
@@ -142,7 +145,7 @@ export function SpendTrendCard({
                             : "text-fjord-600 dark:text-fjord-300"
                         )}
                       >
-                        {formatPeriodLabel(point.period, data.granularity)}
+                        {formatPeriodLabel(point.period, data.granularity, locale)}
                       </p>
                       <p className="text-xs text-fjord-500 dark:text-fjord-400">
                         {point.receipt_count} {t("spendTrend.receipts")} - {point.meal_count}{" "}
