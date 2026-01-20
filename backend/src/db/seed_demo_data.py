@@ -152,6 +152,43 @@ async def create_receipts() -> list[uuid.UUID]:
     # Receipt data: (days_ago, store_idx, items)
     # Items: (raw_name, canonical_name, qty, unit, unit_price, total, category, ingredient_key)
     receipts_data = [
+        # Receipt 0: KIWI, 1 day ago - quick evening shop
+        (
+            1,
+            1,
+            [
+                (
+                    "Tine Lettmelk 1L",
+                    "Melk",
+                    Decimal("1"),
+                    "l",
+                    Decimal("21.90"),
+                    Decimal("21.90"),
+                    "Meieri",
+                    "melk",
+                ),
+                (
+                    "Banan 6stk",
+                    "Banan",
+                    Decimal("6"),
+                    "pcs",
+                    Decimal("3.50"),
+                    Decimal("21.00"),
+                    "Frukt",
+                    "banan",
+                ),
+                (
+                    "Yoghurt Skyr",
+                    "Yoghurt",
+                    Decimal("500"),
+                    "g",
+                    Decimal("0.07"),
+                    Decimal("34.90"),
+                    "Meieri",
+                    "yoghurt",
+                ),
+            ],
+        ),
         # Receipt 1: REMA 1000, 2 days ago - weekly groceries
         (
             2,
