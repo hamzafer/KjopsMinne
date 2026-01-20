@@ -3,11 +3,25 @@
 import json
 import re
 from decimal import Decimal
-from typing import Any
+from typing import TYPE_CHECKING, Any
+from uuid import UUID
+
+if TYPE_CHECKING:
+    from src.services.llm import LLMService
 
 
 class RecipeImporter:
     """Service for importing recipes from URLs."""
+
+    def __init__(self, llm_service: "LLMService | None" = None):
+        """
+        Initialize the recipe importer.
+
+        Args:
+            llm_service: Optional LLM service for AI-powered extraction fallback.
+                        If not provided, only structured data extraction is used.
+        """
+        self.llm_service = llm_service
 
     # Common units for ingredient parsing (ordered by length to match longer units first)
     UNITS = [
@@ -344,3 +358,81 @@ class RecipeImporter:
             "tags": [],
             "confidence": Decimal("0.5"),  # Lower confidence for HTML fallback
         }
+
+    async def import_from_url(self, url: str, household_id: UUID) -> dict[str, Any]:
+        """
+        Import a recipe from a URL.
+
+        Fetches the HTML content and extracts recipe data using:
+        1. JSON-LD structured data (preferred, high confidence)
+        2. LLM extraction fallback (if configured and structured data not found)
+        3. Basic HTML extraction (lowest confidence)
+
+        Args:
+            url: URL of the recipe page to import
+            household_id: UUID of the household importing the recipe
+
+        Returns:
+            Dictionary with extracted recipe data including household_id
+
+        Raises:
+            httpx.HTTPError: If the URL cannot be fetched
+        """
+        import httpx
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, follow_redirects=True, timeout=30.0)
+            response.raise_for_status()
+            html = response.text
+
+        # Try structured data extraction first
+        result = self.extract_recipe_data(html, url)
+
+        # If low confidence and LLM service available, try LLM extraction
+        if result["confidence"] < Decimal("0.8") and self.llm_service:
+            llm_result = await self._extract_with_llm(html, url)
+            if llm_result:
+                result.update(llm_result)
+                result["confidence"] = Decimal("0.6")  # LLM extraction confidence
+                result["source_url"] = url  # Ensure source URL is preserved
+
+        result["household_id"] = household_id
+        return result
+
+    async def _extract_with_llm(self, html: str, source_url: str) -> dict[str, Any] | None:
+        """
+        Extract recipe data using LLM service.
+
+        Args:
+            html: Raw HTML content
+            source_url: URL of the recipe page
+
+        Returns:
+            Dictionary with extracted recipe data or None if extraction fails
+        """
+        if not self.llm_service:
+            return None
+
+        try:
+            llm_result = await self.llm_service.extract_recipe(html)
+
+            # Parse ingredients if they're raw strings
+            ingredients = []
+            for ing in llm_result.get("ingredients", []):
+                if isinstance(ing, str):
+                    ingredients.append(self.parse_ingredient_line(ing))
+                else:
+                    ingredients.append(ing)
+
+            return {
+                "name": llm_result.get("name", "Untitled Recipe"),
+                "instructions": llm_result.get("instructions", ""),
+                "servings": llm_result.get("servings", 4),
+                "ingredients": ingredients,
+                "tags": [t.strip() for t in llm_result.get("tags", []) if t.strip()],
+                "prep_time_minutes": llm_result.get("prep_time_minutes"),
+                "cook_time_minutes": llm_result.get("cook_time_minutes"),
+            }
+        except Exception:
+            # If LLM extraction fails, return None to fall back to basic extraction
+            return None

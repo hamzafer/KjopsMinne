@@ -1,5 +1,12 @@
 """Tests for recipe importer service."""
 
+from decimal import Decimal
+from unittest.mock import AsyncMock, MagicMock, patch
+from uuid import uuid4
+
+import pytest
+
+from src.services.mock_llm import MockLLMService
 from src.services.recipe_importer import RecipeImporter
 
 
@@ -189,3 +196,305 @@ class TestRecipeImporter:
         assert result["quantity"] is None
         assert result["unit"] is None
         assert result["raw_text"] == ""
+
+
+class TestRecipeImporterWithLLM:
+    """Tests for RecipeImporter with LLM service."""
+
+    def setup_method(self):
+        self.mock_llm = MockLLMService()
+        self.importer = RecipeImporter(llm_service=self.mock_llm)
+
+    def test_importer_accepts_llm_service(self):
+        """Importer can be initialized with LLM service."""
+        assert self.importer.llm_service is not None
+
+    def test_importer_works_without_llm_service(self):
+        """Importer works when no LLM service provided."""
+        importer = RecipeImporter()
+        assert importer.llm_service is None
+
+        # Should still extract recipes
+        html = "<html><body><h1>Test Recipe</h1></body></html>"
+        result = importer.extract_recipe_data(html, "https://example.com/recipe")
+        assert result["name"] == "Test Recipe"
+
+
+class TestMockLLMService:
+    """Tests for MockLLMService."""
+
+    def setup_method(self):
+        self.llm = MockLLMService()
+
+    @pytest.mark.asyncio
+    async def test_extract_recipe_basic(self):
+        """Extract basic recipe data from HTML."""
+        html = """
+        <html>
+        <head><title>Page Title</title></head>
+        <body>
+            <h1>Chocolate Cake</h1>
+            <p>Mix flour and sugar.</p>
+        </body>
+        </html>
+        """
+        result = await self.llm.extract_recipe(html)
+
+        assert result["name"] == "Chocolate Cake"
+        assert "Mix flour and sugar" in result["instructions"]
+        assert result["servings"] == 4  # Default
+
+    @pytest.mark.asyncio
+    async def test_extract_recipe_uses_title_when_no_h1(self):
+        """Uses title tag when no h1 present."""
+        html = """
+        <html>
+        <head><title>Vanilla Pudding Recipe</title></head>
+        <body><p>Instructions here.</p></body>
+        </html>
+        """
+        result = await self.llm.extract_recipe(html)
+
+        assert result["name"] == "Vanilla Pudding Recipe"
+
+    @pytest.mark.asyncio
+    async def test_extract_recipe_untitled_fallback(self):
+        """Uses 'Untitled Recipe' when no name found."""
+        html = "<html><body><p>Just text</p></body></html>"
+        result = await self.llm.extract_recipe(html)
+
+        assert result["name"] == "Untitled Recipe"
+
+    @pytest.mark.asyncio
+    async def test_extract_recipe_finds_servings(self):
+        """Extracts servings from text patterns."""
+        html = """
+        <html><body>
+            <h1>Recipe</h1>
+            <p>Serves 6 people</p>
+        </body></html>
+        """
+        result = await self.llm.extract_recipe(html)
+
+        assert result["servings"] == 6
+
+    @pytest.mark.asyncio
+    async def test_extract_recipe_finds_servings_norwegian(self):
+        """Extracts servings from Norwegian text."""
+        html = """
+        <html><body>
+            <h1>Oppskrift</h1>
+            <p>8 porsjoner</p>
+        </body></html>
+        """
+        result = await self.llm.extract_recipe(html)
+
+        assert result["servings"] == 8
+
+    @pytest.mark.asyncio
+    async def test_extract_recipe_finds_ingredients_list(self):
+        """Extracts ingredients from HTML lists with ingredient class."""
+        html = """
+        <html><body>
+            <h1>Recipe</h1>
+            <ul class="ingredients-list">
+                <li>2 cups flour</li>
+                <li>1 cup sugar</li>
+            </ul>
+        </body></html>
+        """
+        result = await self.llm.extract_recipe(html)
+
+        assert len(result["ingredients"]) == 2
+        assert "2 cups flour" in result["ingredients"]
+        assert "1 cup sugar" in result["ingredients"]
+
+
+class TestImportFromUrl:
+    """Tests for import_from_url method."""
+
+    def setup_method(self):
+        self.mock_llm = MockLLMService()
+        self.importer = RecipeImporter(llm_service=self.mock_llm)
+        self.household_id = uuid4()
+
+    @pytest.mark.asyncio
+    async def test_import_from_url_with_json_ld(self):
+        """Import uses JSON-LD when available."""
+        html = """
+        <html>
+        <head>
+            <script type="application/ld+json">
+            {
+                "@type": "Recipe",
+                "name": "JSON-LD Recipe",
+                "recipeIngredient": ["2 cups flour"],
+                "recipeInstructions": "Mix well.",
+                "recipeYield": "4 servings"
+            }
+            </script>
+        </head>
+        <body><h1>Different Title</h1></body>
+        </html>
+        """
+
+        with patch("httpx.AsyncClient") as mock_client:
+            mock_response = MagicMock()
+            mock_response.text = html
+            mock_response.raise_for_status = MagicMock()
+
+            mock_client_instance = AsyncMock()
+            mock_client_instance.get.return_value = mock_response
+            mock_client_instance.__aenter__.return_value = mock_client_instance
+            mock_client_instance.__aexit__.return_value = None
+            mock_client.return_value = mock_client_instance
+
+            result = await self.importer.import_from_url(
+                "https://example.com/recipe", self.household_id
+            )
+
+        # JSON-LD should be used (high confidence)
+        assert result["name"] == "JSON-LD Recipe"
+        assert result["confidence"] == Decimal("0.9")
+        assert result["household_id"] == self.household_id
+
+    @pytest.mark.asyncio
+    async def test_import_from_url_falls_back_to_llm(self):
+        """Import falls back to LLM when no JSON-LD."""
+        html = """
+        <html>
+        <head><title>Page Title</title></head>
+        <body>
+            <h1>LLM Extracted Recipe</h1>
+            <p>Serves 6</p>
+            <p>Mix and bake.</p>
+        </body>
+        </html>
+        """
+
+        with patch("httpx.AsyncClient") as mock_client:
+            mock_response = MagicMock()
+            mock_response.text = html
+            mock_response.raise_for_status = MagicMock()
+
+            mock_client_instance = AsyncMock()
+            mock_client_instance.get.return_value = mock_response
+            mock_client_instance.__aenter__.return_value = mock_client_instance
+            mock_client_instance.__aexit__.return_value = None
+            mock_client.return_value = mock_client_instance
+
+            result = await self.importer.import_from_url(
+                "https://example.com/recipe", self.household_id
+            )
+
+        # LLM extraction should be used (medium confidence)
+        assert result["name"] == "LLM Extracted Recipe"
+        assert result["confidence"] == Decimal("0.6")
+        assert result["servings"] == 6
+        assert result["household_id"] == self.household_id
+
+    @pytest.mark.asyncio
+    async def test_import_from_url_without_llm_service(self):
+        """Import works without LLM service (basic HTML extraction)."""
+        importer = RecipeImporter()  # No LLM service
+        html = """
+        <html>
+        <head><title>Page Title</title></head>
+        <body>
+            <h1>Basic Recipe</h1>
+            <p>Instructions here.</p>
+        </body>
+        </html>
+        """
+
+        with patch("httpx.AsyncClient") as mock_client:
+            mock_response = MagicMock()
+            mock_response.text = html
+            mock_response.raise_for_status = MagicMock()
+
+            mock_client_instance = AsyncMock()
+            mock_client_instance.get.return_value = mock_response
+            mock_client_instance.__aenter__.return_value = mock_client_instance
+            mock_client_instance.__aexit__.return_value = None
+            mock_client.return_value = mock_client_instance
+
+            result = await importer.import_from_url(
+                "https://example.com/recipe", self.household_id
+            )
+
+        # Basic HTML extraction (low confidence)
+        assert result["name"] == "Basic Recipe"
+        assert result["confidence"] == Decimal("0.5")
+        assert result["household_id"] == self.household_id
+
+    @pytest.mark.asyncio
+    async def test_import_from_url_preserves_source_url(self):
+        """Source URL is preserved in result."""
+        html = "<html><body><h1>Recipe</h1></body></html>"
+        url = "https://example.com/my-recipe"
+
+        with patch("httpx.AsyncClient") as mock_client:
+            mock_response = MagicMock()
+            mock_response.text = html
+            mock_response.raise_for_status = MagicMock()
+
+            mock_client_instance = AsyncMock()
+            mock_client_instance.get.return_value = mock_response
+            mock_client_instance.__aenter__.return_value = mock_client_instance
+            mock_client_instance.__aexit__.return_value = None
+            mock_client.return_value = mock_client_instance
+
+            result = await self.importer.import_from_url(url, self.household_id)
+
+        assert result["source_url"] == url
+
+
+class TestExtractWithLLM:
+    """Tests for _extract_with_llm private method."""
+
+    def setup_method(self):
+        self.mock_llm = MockLLMService()
+        self.importer = RecipeImporter(llm_service=self.mock_llm)
+
+    @pytest.mark.asyncio
+    async def test_extract_with_llm_parses_ingredients(self):
+        """LLM extraction parses ingredient strings."""
+        html = """
+        <html><body>
+            <h1>Recipe</h1>
+            <ul class="ingredients">
+                <li>2 cups flour</li>
+                <li>1 tsp salt</li>
+            </ul>
+        </body></html>
+        """
+
+        result = await self.importer._extract_with_llm(html, "https://example.com")
+
+        assert result is not None
+        assert len(result["ingredients"]) == 2
+        # Ingredients should be parsed
+        assert result["ingredients"][0]["quantity"] == 2.0
+        assert result["ingredients"][0]["unit"] == "cups"
+
+    @pytest.mark.asyncio
+    async def test_extract_with_llm_returns_none_without_service(self):
+        """Returns None when no LLM service configured."""
+        importer = RecipeImporter()  # No LLM service
+
+        result = await importer._extract_with_llm("<html></html>", "https://example.com")
+
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_extract_with_llm_handles_errors(self):
+        """Returns None when LLM extraction fails."""
+        # Create a mock that raises an exception
+        failing_llm = AsyncMock()
+        failing_llm.extract_recipe = AsyncMock(side_effect=Exception("LLM error"))
+
+        importer = RecipeImporter(llm_service=failing_llm)
+
+        result = await importer._extract_with_llm("<html></html>", "https://example.com")
+
+        assert result is None
