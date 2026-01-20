@@ -3,19 +3,19 @@ import uuid
 from decimal import Decimal
 
 from fastapi import APIRouter, HTTPException, Query
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
 from src.api.deps import DbSession
-from src.db.models import Household, InventoryLot, InventoryEvent, Ingredient
+from src.db.models import Household, Ingredient, InventoryEvent, InventoryLot
 from src.schemas.inventory import (
+    ConsumeRequest,
+    DiscardRequest,
+    InventoryAggregatedItem,
+    InventoryEventResponse,
     InventoryLotCreate,
     InventoryLotResponse,
     InventoryLotUpdate,
-    InventoryEventResponse,
-    InventoryAggregatedItem,
-    ConsumeRequest,
-    DiscardRequest,
     TransferRequest,
 )
 

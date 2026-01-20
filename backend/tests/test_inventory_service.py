@@ -1,8 +1,6 @@
 """Tests for inventory service."""
-import pytest
 from decimal import Decimal
-from unittest.mock import MagicMock, AsyncMock
-import uuid
+from unittest.mock import MagicMock
 
 from src.services.inventory_service import InventoryService
 
