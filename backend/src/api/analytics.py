@@ -1,12 +1,14 @@
 from datetime import datetime
 from decimal import Decimal
+from uuid import UUID
 
 from fastapi import APIRouter
 from pydantic import BaseModel
 from sqlalchemy import func, select
 
 from src.api.deps import DbSession
-from src.db.models import Category, Item, Receipt
+from src.db.models import Category, Item, MealPlan, Receipt, Recipe
+from src.schemas.analytics import CostPerMealResponse, MealCostEntry
 
 router = APIRouter()
 
@@ -138,4 +140,59 @@ async def get_by_category(
         categories=categories,
         uncategorized_total=Decimal(str(uncat_row.total or 0)),
         uncategorized_count=uncat_row.count or 0,
+    )
+
+
+@router.get("/analytics/cost-per-meal", response_model=CostPerMealResponse)
+async def get_cost_per_meal(
+    db: DbSession,
+    household_id: UUID,
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
+):
+    """Get cost analytics for cooked meals."""
+    from sqlalchemy.orm import selectinload
+
+    query = (
+        select(MealPlan)
+        .where(
+            MealPlan.household_id == household_id,
+            MealPlan.status == "cooked",
+            MealPlan.actual_cost.isnot(None),
+        )
+        .options(selectinload(MealPlan.recipe))
+        .order_by(MealPlan.cooked_at.desc())
+    )
+
+    if start_date:
+        query = query.where(MealPlan.cooked_at >= start_date)
+    if end_date:
+        query = query.where(MealPlan.cooked_at <= end_date)
+
+    result = await db.execute(query)
+    meal_plans = result.scalars().all()
+
+    meals = [
+        MealCostEntry(
+            meal_plan_id=mp.id,
+            recipe_name=mp.recipe.name if mp.recipe else "Unknown",
+            planned_date=mp.planned_date,
+            servings=mp.servings,
+            actual_cost=mp.actual_cost or Decimal("0"),
+            cost_per_serving=mp.cost_per_serving or Decimal("0"),
+        )
+        for mp in meal_plans
+    ]
+
+    total_cost = sum(m.actual_cost for m in meals)
+    total_servings = sum(m.servings for m in meals)
+
+    return CostPerMealResponse(
+        meals=meals,
+        total_meals=len(meals),
+        total_cost=total_cost,
+        average_cost_per_meal=total_cost / len(meals) if meals else Decimal("0"),
+        average_cost_per_serving=total_cost / total_servings if total_servings > 0 else Decimal("0"),
+        period_start=min(m.planned_date for m in meals) if meals else None,
+        period_end=max(m.planned_date for m in meals) if meals else None,
     )
