@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from pydantic import BaseModel
 from sqlalchemy import func, select
 
@@ -22,6 +22,8 @@ from src.schemas.analytics import (
     CostPerMealResponse,
     LeftoverWasteEntry,
     MealCostEntry,
+    SpendTrendPoint,
+    SpendTrendResponse,
     WasteEntry,
     WasteResponse,
 )
@@ -306,6 +308,104 @@ async def get_waste_analytics(
         leftover_discards=leftover_discards,
         total_inventory_waste_value=total_waste_value,
         total_leftover_servings_wasted=total_servings_wasted,
+        period_start=start_date,
+        period_end=end_date,
+    )
+
+
+@router.get("/analytics/spend-trend", response_model=SpendTrendResponse)
+async def get_spend_trend(
+    db: DbSession,
+    household_id: UUID,
+    start_date: datetime,
+    end_date: datetime,
+    granularity: str = Query("weekly", regex="^(daily|weekly|monthly)$"),
+):
+    """Get spending trends over time."""
+    # Determine date truncation based on granularity
+    if granularity == "daily":
+        date_format = "YYYY-MM-DD"
+        trunc_func = func.date_trunc("day", Receipt.purchase_date)
+    elif granularity == "weekly":
+        date_format = "IYYY-IW"  # ISO week
+        trunc_func = func.date_trunc("week", Receipt.purchase_date)
+    else:  # monthly
+        date_format = "YYYY-MM"
+        trunc_func = func.date_trunc("month", Receipt.purchase_date)
+
+    # Receipt spending by period
+    receipt_query = (
+        select(
+            trunc_func.label("period"),
+            func.sum(Receipt.total_amount).label("total_spent"),
+            func.count(Receipt.id).label("receipt_count"),
+        )
+        .where(
+            Receipt.household_id == household_id,
+            Receipt.purchase_date >= start_date,
+            Receipt.purchase_date <= end_date,
+        )
+        .group_by(trunc_func)
+        .order_by(trunc_func)
+    )
+
+    receipt_result = await db.execute(receipt_query)
+    receipt_data = {row.period: row for row in receipt_result.all()}
+
+    # Meal costs by period (use MealPlan.cooked_at for the trunc)
+    meal_trunc_func = func.date_trunc(
+        "day" if granularity == "daily" else "week" if granularity == "weekly" else "month",
+        MealPlan.cooked_at
+    )
+
+    meal_query = (
+        select(
+            meal_trunc_func.label("period"),
+            func.sum(MealPlan.actual_cost).label("meal_cost"),
+            func.count(MealPlan.id).label("meal_count"),
+        )
+        .where(
+            MealPlan.household_id == household_id,
+            MealPlan.status == "cooked",
+            MealPlan.cooked_at >= start_date,
+            MealPlan.cooked_at <= end_date,
+        )
+        .group_by(meal_trunc_func)
+        .order_by(meal_trunc_func)
+    )
+
+    meal_result = await db.execute(meal_query)
+    meal_data = {row.period: row for row in meal_result.all()}
+
+    # Combine data points
+    all_periods = sorted(set(receipt_data.keys()) | set(meal_data.keys()))
+
+    trends = []
+    for period in all_periods:
+        receipt_row = receipt_data.get(period)
+        meal_row = meal_data.get(period)
+
+        # Format period string
+        if granularity == "daily":
+            period_str = period.strftime("%Y-%m-%d")
+        elif granularity == "weekly":
+            period_str = period.strftime("%Y-W%W")
+        else:
+            period_str = period.strftime("%Y-%m")
+
+        trends.append(
+            SpendTrendPoint(
+                period=period_str,
+                total_spent=Decimal(str(receipt_row.total_spent)) if receipt_row else Decimal("0"),
+                receipt_count=receipt_row.receipt_count if receipt_row else 0,
+                meal_count=meal_row.meal_count if meal_row else 0,
+                meal_cost=Decimal(str(meal_row.meal_cost)) if meal_row and meal_row.meal_cost else Decimal("0"),
+            )
+        )
+
+    return SpendTrendResponse(
+        trends=trends,
+        granularity=granularity,
         period_start=start_date,
         period_end=end_date,
     )
