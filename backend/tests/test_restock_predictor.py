@@ -1,7 +1,6 @@
 """Tests for restock predictor service."""
-from datetime import datetime, timedelta
+from datetime import datetime
 from decimal import Decimal
-from uuid import uuid4
 
 from src.services.restock_predictor import RestockPredictor
 

@@ -16,7 +16,6 @@ from src.db.models import (
     Leftover,
     MealPlan,
     Receipt,
-    Recipe,
 )
 from src.schemas.analytics import (
     CostPerMealResponse,
@@ -212,7 +211,9 @@ async def get_cost_per_meal(
         total_meals=len(meals),
         total_cost=total_cost,
         average_cost_per_meal=total_cost / len(meals) if meals else Decimal("0"),
-        average_cost_per_serving=total_cost / total_servings if total_servings > 0 else Decimal("0"),
+        average_cost_per_serving=(
+            total_cost / total_servings if total_servings > 0 else Decimal("0")
+        ),
         period_start=min(m.planned_date for m in meals) if meals else None,
         period_end=max(m.planned_date for m in meals) if meals else None,
     )
@@ -326,13 +327,10 @@ async def get_spend_trend(
     """Get spending trends over time."""
     # Determine date truncation based on granularity
     if granularity == "daily":
-        date_format = "YYYY-MM-DD"
         trunc_func = func.date_trunc("day", Receipt.purchase_date)
     elif granularity == "weekly":
-        date_format = "IYYY-IW"  # ISO week
         trunc_func = func.date_trunc("week", Receipt.purchase_date)
     else:  # monthly
-        date_format = "YYYY-MM"
         trunc_func = func.date_trunc("month", Receipt.purchase_date)
 
     # Receipt spending by period
@@ -402,7 +400,11 @@ async def get_spend_trend(
                 total_spent=Decimal(str(receipt_row.total_spent)) if receipt_row else Decimal("0"),
                 receipt_count=receipt_row.receipt_count if receipt_row else 0,
                 meal_count=meal_row.meal_count if meal_row else 0,
-                meal_cost=Decimal(str(meal_row.meal_cost)) if meal_row and meal_row.meal_cost else Decimal("0"),
+                meal_cost=(
+                    Decimal(str(meal_row.meal_cost))
+                    if meal_row and meal_row.meal_cost
+                    else Decimal("0")
+                ),
             )
         )
 
@@ -447,7 +449,11 @@ async def get_restock_predictions(
     ingredient_ids = [item.ingredient_id for item in inventory_items]
     if ingredient_ids:
         events_query = (
-            select(InventoryEvent.quantity_delta, InventoryEvent.created_at, InventoryLot.ingredient_id)
+            select(
+                InventoryEvent.quantity_delta,
+                InventoryEvent.created_at,
+                InventoryLot.ingredient_id,
+            )
             .join(InventoryLot, InventoryEvent.lot_id == InventoryLot.id)
             .where(
                 InventoryLot.household_id == household_id,
