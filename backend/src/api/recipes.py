@@ -1,16 +1,76 @@
 """Recipe API routes."""
 
+from decimal import Decimal
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Query, Response
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import selectinload
 
-from src.api.deps import DbSession
+from src.api.deps import DbSession, RecipeImporterDep
 from src.db.models import Recipe, RecipeIngredient
-from src.schemas.recipe import RecipeCreate, RecipeListResponse, RecipeResponse, RecipeUpdate
+from src.schemas.recipe import (
+    RecipeCreate,
+    RecipeImportRequest,
+    RecipeImportResponse,
+    RecipeListResponse,
+    RecipeResponse,
+    RecipeUpdate,
+)
 
 router = APIRouter()
+
+
+@router.post("/recipes/import", response_model=RecipeImportResponse, status_code=201)
+async def import_recipe(
+    db: DbSession,
+    importer: RecipeImporterDep,
+    import_data: RecipeImportRequest,
+) -> RecipeImportResponse:
+    """Import a recipe from a URL."""
+    # Fetch and parse recipe from URL
+    recipe_data = await importer.import_from_url(
+        url=str(import_data.url),
+        household_id=import_data.household_id,
+    )
+
+    # Create recipe in database
+    recipe = Recipe(
+        household_id=import_data.household_id,
+        name=recipe_data["name"],
+        source_url=recipe_data.get("source_url"),
+        servings=recipe_data.get("servings", 2),
+        prep_time_minutes=recipe_data.get("prep_time_minutes"),
+        cook_time_minutes=recipe_data.get("cook_time_minutes"),
+        instructions=recipe_data.get("instructions", ""),
+        tags=recipe_data.get("tags", []),
+        image_url=recipe_data.get("image_url"),
+        import_confidence=recipe_data.get("confidence"),
+    )
+    db.add(recipe)
+    await db.flush()
+
+    # Create ingredients
+    for ing_data in recipe_data.get("ingredients", []):
+        # ing_data is already parsed by importer
+        if isinstance(ing_data, dict):
+            ingredient = RecipeIngredient(
+                recipe_id=recipe.id,
+                raw_text=ing_data.get("raw_text", ""),
+                quantity=ing_data.get("quantity"),
+                unit=ing_data.get("unit"),
+                notes=ing_data.get("notes"),
+                ingredient_id=ing_data.get("ingredient_id"),
+            )
+            db.add(ingredient)
+
+    await db.flush()
+    await db.refresh(recipe, ["ingredients"])
+
+    return RecipeImportResponse(
+        recipe=RecipeResponse.model_validate(recipe),
+        confidence=recipe_data.get("confidence", Decimal("0.5")),
+    )
 
 
 @router.get("/recipes", response_model=RecipeListResponse)
@@ -55,11 +115,7 @@ async def get_recipe(
     recipe_id: UUID,
 ) -> RecipeResponse:
     """Get a recipe by ID."""
-    query = (
-        select(Recipe)
-        .where(Recipe.id == recipe_id)
-        .options(selectinload(Recipe.ingredients))
-    )
+    query = select(Recipe).where(Recipe.id == recipe_id).options(selectinload(Recipe.ingredients))
     result = await db.execute(query)
     recipe = result.scalar_one_or_none()
 
@@ -133,9 +189,7 @@ async def update_recipe(
         ingredients_data = update_data.pop("ingredients")
 
         # Delete existing ingredients
-        await db.execute(
-            delete(RecipeIngredient).where(RecipeIngredient.recipe_id == recipe_id)
-        )
+        await db.execute(delete(RecipeIngredient).where(RecipeIngredient.recipe_id == recipe_id))
 
         # Create new ingredients
         for ing_data in ingredients_data:
