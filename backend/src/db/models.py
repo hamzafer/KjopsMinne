@@ -245,8 +245,8 @@ class Item(Base):
         Numeric(3, 2), nullable=True
     )  # 0.00 to 1.00
     inventory_lot_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), nullable=True
-    )  # FK added later when InventoryLot exists
+        UUID(as_uuid=True), ForeignKey("inventory_lots.id"), nullable=True
+    )
     skip_inventory: Mapped[bool] = mapped_column(Boolean, default=False)
 
     receipt: Mapped["Receipt"] = relationship("Receipt", back_populates="items")

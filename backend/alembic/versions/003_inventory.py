@@ -90,8 +90,19 @@ def upgrade() -> None:
     op.create_index("idx_inventory_events_type", "inventory_events", ["event_type"])
     op.create_index("idx_inventory_events_created", "inventory_events", ["created_at"])
 
+    # Add foreign key constraint for items.inventory_lot_id (deferred from migration 002)
+    op.create_foreign_key(
+        "fk_items_inventory_lot_id",
+        "items",
+        "inventory_lots",
+        ["inventory_lot_id"],
+        ["id"],
+    )
+
 
 def downgrade() -> None:
+    # Drop the foreign key constraint first
+    op.drop_constraint("fk_items_inventory_lot_id", "items", type_="foreignkey")
     op.drop_index("idx_inventory_events_created", "inventory_events")
     op.drop_index("idx_inventory_events_type", "inventory_events")
     op.drop_index("idx_inventory_events_lot", "inventory_events")
