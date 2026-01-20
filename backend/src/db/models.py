@@ -280,6 +280,41 @@ class MealPlan(Base):
     )
 
 
+class Leftover(Base):
+    __tablename__ = "leftovers"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    household_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("households.id"), nullable=False
+    )
+    meal_plan_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("meal_plans.id"), nullable=False
+    )
+    recipe_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("recipes.id"), nullable=False
+    )
+    remaining_servings: Mapped[int] = mapped_column(nullable=False)
+    status: Mapped[str] = mapped_column(
+        Text, default="available"
+    )  # available|consumed|discarded
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=func.now(), nullable=False
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+    household: Mapped["Household"] = relationship("Household")
+    meal_plan: Mapped["MealPlan"] = relationship("MealPlan")
+    recipe: Mapped["Recipe"] = relationship("Recipe")
+
+    __table_args__ = (
+        Index("idx_leftovers_household", "household_id"),
+        Index("idx_leftovers_status", "status"),
+        Index("idx_leftovers_expires", "expires_at"),
+    )
+
+
 class Category(Base):
     __tablename__ = "categories"
 
