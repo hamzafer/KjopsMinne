@@ -343,3 +343,33 @@ async def transfer_lot(
         .where(InventoryLot.id == lot.id)
     )
     return result.scalar_one()
+
+
+@router.get(
+    "/inventory/lots/{lot_id}/events",
+    response_model=list[InventoryEventResponse]
+)
+async def get_lot_events(
+    lot_id: uuid.UUID,
+    db: DbSession,
+    skip: int = 0,
+    limit: int = 50,
+):
+    """Get event history for an inventory lot."""
+    # Verify lot exists
+    result = await db.execute(
+        select(InventoryLot).where(InventoryLot.id == lot_id)
+    )
+    if not result.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Inventory lot not found")
+
+    query = (
+        select(InventoryEvent)
+        .where(InventoryEvent.lot_id == lot_id)
+        .order_by(InventoryEvent.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+
+    result = await db.execute(query)
+    return result.scalars().all()
