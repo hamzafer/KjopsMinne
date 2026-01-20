@@ -7,8 +7,24 @@ from pydantic import BaseModel
 from sqlalchemy import func, select
 
 from src.api.deps import DbSession
-from src.db.models import Category, Item, MealPlan, Receipt, Recipe
-from src.schemas.analytics import CostPerMealResponse, MealCostEntry
+from src.db.models import (
+    Category,
+    Ingredient,
+    InventoryEvent,
+    InventoryLot,
+    Item,
+    Leftover,
+    MealPlan,
+    Receipt,
+    Recipe,
+)
+from src.schemas.analytics import (
+    CostPerMealResponse,
+    LeftoverWasteEntry,
+    MealCostEntry,
+    WasteEntry,
+    WasteResponse,
+)
 
 router = APIRouter()
 
@@ -195,4 +211,101 @@ async def get_cost_per_meal(
         average_cost_per_serving=total_cost / total_servings if total_servings > 0 else Decimal("0"),
         period_start=min(m.planned_date for m in meals) if meals else None,
         period_end=max(m.planned_date for m in meals) if meals else None,
+    )
+
+
+@router.get("/analytics/waste", response_model=WasteResponse)
+async def get_waste_analytics(
+    db: DbSession,
+    household_id: UUID,
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
+):
+    """Get waste analytics including discarded inventory and leftovers."""
+    from sqlalchemy.orm import selectinload
+
+    # Get discarded inventory events
+    inv_query = (
+        select(InventoryEvent)
+        .join(InventoryLot, InventoryEvent.lot_id == InventoryLot.id)
+        .where(
+            InventoryLot.household_id == household_id,
+            InventoryEvent.event_type == "discard",
+        )
+        .options(
+            selectinload(InventoryEvent.lot).selectinload(InventoryLot.ingredient)
+        )
+        .order_by(InventoryEvent.created_at.desc())
+    )
+
+    if start_date:
+        inv_query = inv_query.where(InventoryEvent.created_at >= start_date)
+    if end_date:
+        inv_query = inv_query.where(InventoryEvent.created_at <= end_date)
+
+    inv_result = await db.execute(inv_query)
+    inv_events = inv_result.scalars().all()
+
+    inventory_discards = []
+    total_waste_value = Decimal("0")
+
+    for event in inv_events:
+        lot = event.lot
+        quantity = abs(event.quantity_delta)
+        # Estimate value based on lot's unit cost
+        estimated_value = quantity * lot.unit_cost if lot.unit_cost else None
+
+        if estimated_value:
+            total_waste_value += estimated_value
+
+        inventory_discards.append(
+            WasteEntry(
+                date=event.created_at,
+                ingredient_name=lot.ingredient.name if lot.ingredient else None,
+                quantity=quantity,
+                unit=event.unit,
+                reason=event.reason or "discarded",
+                estimated_value=estimated_value,
+            )
+        )
+
+    # Get discarded leftovers
+    leftover_query = (
+        select(Leftover)
+        .where(
+            Leftover.household_id == household_id,
+            Leftover.status == "discarded",
+        )
+        .options(selectinload(Leftover.recipe))
+        .order_by(Leftover.created_at.desc())
+    )
+
+    if start_date:
+        leftover_query = leftover_query.where(Leftover.created_at >= start_date)
+    if end_date:
+        leftover_query = leftover_query.where(Leftover.created_at <= end_date)
+
+    leftover_result = await db.execute(leftover_query)
+    leftovers = leftover_result.scalars().all()
+
+    leftover_discards = [
+        LeftoverWasteEntry(
+            leftover_id=lo.id,
+            recipe_name=lo.recipe.name if lo.recipe else "Unknown",
+            servings_wasted=lo.remaining_servings,
+            created_at=lo.created_at,
+            discarded_at=None,  # We don't track when it was marked discarded
+        )
+        for lo in leftovers
+    ]
+
+    total_servings_wasted = sum(lo.remaining_servings for lo in leftovers)
+
+    return WasteResponse(
+        inventory_discards=inventory_discards,
+        leftover_discards=leftover_discards,
+        total_inventory_waste_value=total_waste_value,
+        total_leftover_servings_wasted=total_servings_wasted,
+        period_start=start_date,
+        period_end=end_date,
     )
