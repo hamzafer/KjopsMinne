@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.api import analytics, categories, households, ingredients, receipts, upload
+from src.api import analytics, categories, households, ingredients, inventory, receipts, upload
 from src.db.engine import engine
 
 
@@ -45,6 +45,7 @@ app.include_router(analytics.router, prefix="/api", tags=["analytics"])
 app.include_router(categories.router, prefix="/api", tags=["categories"])
 app.include_router(households.router, prefix="/api", tags=["households"])
 app.include_router(ingredients.router, prefix="/api", tags=["ingredients"])
+app.include_router(inventory.router, prefix="/api", tags=["inventory"])
 
 
 @app.get("/health")
