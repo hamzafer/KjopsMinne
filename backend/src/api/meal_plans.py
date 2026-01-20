@@ -3,7 +3,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
@@ -124,3 +124,22 @@ async def update_meal_plan(
     await db.refresh(meal_plan, ["recipe"])
 
     return MealPlanResponse.model_validate(meal_plan)
+
+
+@router.delete("/meal-plans/{meal_plan_id}", status_code=204)
+async def delete_meal_plan(
+    db: DbSession,
+    meal_plan_id: UUID,
+) -> Response:
+    """Delete a meal plan."""
+    query = select(MealPlan).where(MealPlan.id == meal_plan_id)
+    result = await db.execute(query)
+    meal_plan = result.scalar_one_or_none()
+
+    if not meal_plan:
+        raise HTTPException(status_code=404, detail="Meal plan not found")
+
+    await db.delete(meal_plan)
+    await db.flush()
+
+    return Response(status_code=204)
