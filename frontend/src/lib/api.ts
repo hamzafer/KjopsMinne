@@ -69,6 +69,60 @@ export interface ByCategory {
   uncategorized_count: number;
 }
 
+// Recipe types
+export interface RecipeIngredient {
+  id: string;
+  ingredient_id: string | null;
+  ingredient_name: string;
+  quantity: number;
+  unit: string;
+  notes: string | null;
+}
+
+export interface Recipe {
+  id: string;
+  household_id: string;
+  name: string;
+  source_url: string | null;
+  servings: number;
+  prep_time_minutes: number | null;
+  instructions: string;
+  tags: string[];
+  image_url: string | null;
+  import_confidence: number | null;
+  created_at: string;
+  updated_at: string;
+  ingredients: RecipeIngredient[];
+}
+
+export interface RecipeListResponse {
+  recipes: Recipe[];
+  total: number;
+}
+
+export interface RecipeCreate {
+  household_id: string;
+  name: string;
+  source_url?: string | null;
+  servings: number;
+  prep_time_minutes?: number | null;
+  instructions: string;
+  tags?: string[];
+  image_url?: string | null;
+  ingredients: Omit<RecipeIngredient, "id">[];
+}
+
+export interface RecipeImportRequest {
+  url: string;
+  household_id: string;
+}
+
+export interface RecipeImportResponse {
+  recipe: Omit<Recipe, "id" | "created_at" | "updated_at">;
+  confidence: number;
+  warnings: string[];
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -142,6 +196,55 @@ class ApiClient {
   // Categories
   async getCategories(): Promise<Category[]> {
     return this.fetch("/api/categories");
+  }
+
+  // Recipes
+  async getRecipes(
+    householdId: string,
+    search?: string,
+    tags?: string[],
+    page = 1,
+    pageSize = 20
+  ): Promise<RecipeListResponse> {
+    const params = new URLSearchParams();
+    params.append("household_id", householdId);
+    if (search) params.append("search", search);
+    if (tags?.length) tags.forEach((t) => params.append("tags", t));
+    params.append("page", page.toString());
+    params.append("page_size", pageSize.toString());
+    return this.fetch(`/api/recipes?${params.toString()}`);
+  }
+
+  async getRecipe(id: string): Promise<Recipe> {
+    return this.fetch(`/api/recipes/${id}`);
+  }
+
+  async createRecipe(data: RecipeCreate): Promise<Recipe> {
+    return this.fetch("/api/recipes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateRecipe(id: string, data: Partial<RecipeCreate>): Promise<Recipe> {
+    return this.fetch(`/api/recipes/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteRecipe(id: string): Promise<void> {
+    await this.fetch(`/api/recipes/${id}`, { method: "DELETE" });
+  }
+
+  async importRecipe(data: RecipeImportRequest): Promise<RecipeImportResponse> {
+    return this.fetch("/api/recipes/import", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
   }
 }
 
