@@ -233,6 +233,53 @@ class RecipeIngredient(Base):
     )
 
 
+class MealPlan(Base):
+    __tablename__ = "meal_plans"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    household_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("households.id"), nullable=False
+    )
+    recipe_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("recipes.id"), nullable=False
+    )
+    planned_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    meal_type: Mapped[str] = mapped_column(
+        Text, nullable=False
+    )  # breakfast|lunch|dinner|snack
+    servings: Mapped[int] = mapped_column(default=2)
+    status: Mapped[str] = mapped_column(Text, default="planned")  # planned|cooked|skipped
+    is_leftover_source: Mapped[bool] = mapped_column(Boolean, default=False)
+    leftover_from_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("meal_plans.id"), nullable=True
+    )
+    cooked_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    actual_cost: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
+    cost_per_serving: Mapped[Decimal | None] = mapped_column(
+        Numeric(10, 2), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    household: Mapped["Household"] = relationship("Household")
+    recipe: Mapped["Recipe"] = relationship("Recipe")
+    leftover_from: Mapped["MealPlan | None"] = relationship(
+        "MealPlan", remote_side=[id], foreign_keys=[leftover_from_id]
+    )
+
+    __table_args__ = (
+        Index("idx_meal_plans_household", "household_id"),
+        Index("idx_meal_plans_date", "planned_date"),
+        Index("idx_meal_plans_recipe", "recipe_id"),
+    )
+
+
 class Category(Base):
     __tablename__ = "categories"
 
