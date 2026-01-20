@@ -91,6 +91,52 @@ class UnitConversion(Base):
     )
 
 
+class InventoryLot(Base):
+    __tablename__ = "inventory_lots"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    household_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("households.id"), nullable=False
+    )
+    ingredient_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ingredients.id"), nullable=False
+    )
+    quantity: Mapped[Decimal] = mapped_column(Numeric(10, 3), nullable=False)
+    unit: Mapped[str] = mapped_column(Text, nullable=False)  # canonical: g, ml, pcs
+    location: Mapped[str] = mapped_column(Text, default="pantry")  # pantry|fridge|freezer
+    purchase_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    expiry_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    unit_cost: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    total_cost: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    currency: Mapped[str] = mapped_column(Text, default="NOK")
+    confidence: Mapped[Decimal] = mapped_column(Numeric(3, 2), default=Decimal("1.0"))
+    source_type: Mapped[str] = mapped_column(Text, nullable=False)  # receipt|manual|barcode
+    source_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    household: Mapped["Household"] = relationship("Household")
+    ingredient: Mapped["Ingredient"] = relationship("Ingredient")
+    events: Mapped[list["InventoryEvent"]] = relationship(
+        "InventoryEvent", back_populates="lot"
+    )
+
+    __table_args__ = (
+        Index("idx_inventory_lots_household", "household_id"),
+        Index("idx_inventory_lots_ingredient", "ingredient_id"),
+        Index("idx_inventory_lots_location", "location"),
+        Index("idx_inventory_lots_purchase_date", "purchase_date"),
+    )
+
+
 class Category(Base):
     __tablename__ = "categories"
 
