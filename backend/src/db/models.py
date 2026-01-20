@@ -207,6 +207,32 @@ class Recipe(Base):
     )
 
 
+class RecipeIngredient(Base):
+    __tablename__ = "recipe_ingredients"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    recipe_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("recipes.id", ondelete="CASCADE"), nullable=False
+    )
+    ingredient_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ingredients.id"), nullable=True
+    )
+    raw_text: Mapped[str] = mapped_column(Text, nullable=False)  # Original text from recipe
+    quantity: Mapped[Decimal | None] = mapped_column(Numeric(10, 3), nullable=True)
+    unit: Mapped[str | None] = mapped_column(Text, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)  # e.g., "finely chopped"
+
+    recipe: Mapped["Recipe"] = relationship("Recipe", back_populates="ingredients")
+    ingredient: Mapped["Ingredient | None"] = relationship("Ingredient")
+
+    __table_args__ = (
+        Index("idx_recipe_ingredients_recipe", "recipe_id"),
+        Index("idx_recipe_ingredients_ingredient", "ingredient_id"),
+    )
+
+
 class Category(Base):
     __tablename__ = "categories"
 
