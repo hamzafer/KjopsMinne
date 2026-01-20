@@ -254,3 +254,45 @@ async def consume_from_lot(
         .where(InventoryLot.id == lot.id)
     )
     return result.scalar_one()
+
+
+@router.post("/inventory/lots/{lot_id}/discard", response_model=InventoryLotResponse)
+async def discard_lot(
+    lot_id: uuid.UUID,
+    data: DiscardRequest,
+    db: DbSession,
+):
+    """Discard entire inventory lot (expired, spoiled, etc)."""
+    result = await db.execute(
+        select(InventoryLot).where(InventoryLot.id == lot_id)
+    )
+    lot = result.scalar_one_or_none()
+
+    if not lot:
+        raise HTTPException(status_code=404, detail="Inventory lot not found")
+
+    discarded_quantity = lot.quantity
+
+    # Set quantity to 0
+    lot.quantity = Decimal("0")
+
+    # Create discard event
+    event = InventoryEvent(
+        id=uuid.uuid4(),
+        lot_id=lot.id,
+        event_type="discard",
+        quantity_delta=-discarded_quantity,
+        unit=lot.unit,
+        reason=data.reason,
+    )
+    db.add(event)
+
+    await db.flush()
+
+    # Reload with ingredient
+    result = await db.execute(
+        select(InventoryLot)
+        .options(selectinload(InventoryLot.ingredient))
+        .where(InventoryLot.id == lot.id)
+    )
+    return result.scalar_one()
