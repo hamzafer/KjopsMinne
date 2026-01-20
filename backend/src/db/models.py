@@ -3,7 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Numeric, Text, func
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -292,6 +292,39 @@ class ShoppingList(Base):
         Index("idx_shopping_lists_household", "household_id"),
         Index("idx_shopping_lists_status", "status"),
         Index("idx_shopping_lists_date_range", "date_range_start", "date_range_end"),
+    )
+
+
+class ShoppingListItem(Base):
+    __tablename__ = "shopping_list_items"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    shopping_list_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("shopping_lists.id"), nullable=False
+    )
+    ingredient_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ingredients.id"), nullable=False
+    )
+    required_quantity: Mapped[Decimal] = mapped_column(Numeric(10, 3), nullable=False)
+    required_unit: Mapped[str] = mapped_column(Text, nullable=False)
+    on_hand_quantity: Mapped[Decimal] = mapped_column(Numeric(10, 3), default=Decimal("0"))
+    to_buy_quantity: Mapped[Decimal] = mapped_column(Numeric(10, 3), nullable=False)
+    is_checked: Mapped[bool] = mapped_column(Boolean, default=False)
+    actual_quantity: Mapped[Decimal | None] = mapped_column(Numeric(10, 3), nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source_meal_plans: Mapped[list] = mapped_column(ARRAY(UUID(as_uuid=True)), default=list)
+
+    shopping_list: Mapped["ShoppingList"] = relationship(
+        "ShoppingList", back_populates="items"
+    )
+    ingredient: Mapped["Ingredient"] = relationship("Ingredient")
+
+    __table_args__ = (
+        Index("idx_shopping_list_items_list", "shopping_list_id"),
+        Index("idx_shopping_list_items_ingredient", "ingredient_id"),
+        Index("idx_shopping_list_items_checked", "is_checked"),
     )
 
 
