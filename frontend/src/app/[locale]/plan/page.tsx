@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Plus, CalendarDays } from "lucide-react";
 import { api, type MealPlan } from "@/lib/api";
 import { WeeklyCalendar } from "@/components/meal-plan/WeeklyCalendar";
 import { MealDetail } from "@/components/meal-plan/MealDetail";
+import { GenerateButton } from "@/components/shopping";
 import { cn } from "@/lib/utils";
 
 // TODO: Get from user context
@@ -31,6 +32,12 @@ export default function MealPlanPage() {
   const [loading, setLoading] = useState(true);
   const [selectedMeal, setSelectedMeal] = useState<MealPlan | null>(null);
   const [cooking, setCooking] = useState(false);
+
+  const weekEnd = useMemo(() => {
+    const end = new Date(weekStart);
+    end.setDate(end.getDate() + 6);
+    return end;
+  }, [weekStart]);
 
   const loadMeals = useCallback(async () => {
     setLoading(true);
@@ -129,20 +136,30 @@ export default function MealPlanPage() {
           </div>
         </div>
 
-        <button
-          onClick={() => router.push(`/${locale}/plan/add`)}
-          className={cn(
-            "flex items-center gap-2 px-5 py-3 rounded-xl font-medium",
-            "bg-fjord-500 text-white",
-            "hover:bg-fjord-600",
-            "shadow-lg shadow-fjord-500/20",
-            "transition-all duration-200",
-            "hover:scale-[1.02] active:scale-[0.98]"
-          )}
-        >
-          <Plus className="w-5 h-5" />
-          {t("addMeal")}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push(`/${locale}/plan/add`)}
+            className={cn(
+              "flex items-center gap-2 px-5 py-3 rounded-xl font-medium",
+              "bg-fjord-500 text-white",
+              "hover:bg-fjord-600",
+              "shadow-lg shadow-fjord-500/20",
+              "transition-all duration-200",
+              "hover:scale-[1.02] active:scale-[0.98]"
+            )}
+          >
+            <Plus className="w-5 h-5" />
+            {t("addMeal")}
+          </button>
+
+          <div className="w-auto">
+            <GenerateButton
+              householdId={HOUSEHOLD_ID}
+              weekStart={weekStart}
+              weekEnd={weekEnd}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Calendar */}
