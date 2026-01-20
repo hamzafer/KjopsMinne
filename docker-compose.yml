@@ -26,11 +26,10 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./backend:/app
       - ./uploads:/app/uploads
     develop:
       watch:
-        - action: sync
+        - action: sync+restart
           path: ./backend/src
           target: /app/src
 
@@ -42,10 +41,6 @@ services:
       NEXT_PUBLIC_API_URL: http://localhost:8000
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
     develop:
       watch:
         - action: sync
