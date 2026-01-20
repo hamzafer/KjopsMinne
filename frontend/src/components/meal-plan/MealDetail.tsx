@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { X, Users, Clock, Trash2, ChefHat } from "lucide-react";
+import { X, Users, Clock, Trash2, ChefHat, Check, SkipForward, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MealPlan } from "@/lib/api";
 
@@ -39,56 +39,80 @@ export function MealDetail({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-white dark:bg-fjord-900 rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-fjord-900/60 backdrop-blur-sm animate-fade-in"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <div className={cn(
+        "relative paper-card max-w-md w-full max-h-[90vh] overflow-hidden",
+        "animate-scale-in"
+      )}>
+        {/* Paper texture overlay */}
+        <div className="absolute inset-0 bg-[url('/paper-texture.png')] opacity-[0.02] pointer-events-none" />
+
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-fjord-100 dark:border-fjord-700">
-          <h3 className="text-lg font-semibold text-fjord-800 dark:text-fjord-100">
-            {meal.recipe?.name || "Unknown"}
-          </h3>
+        <div className="relative flex items-start justify-between p-5 border-b border-fjord-100 dark:border-fjord-700">
+          <div className="flex-1 pr-4">
+            <h3 className="text-xl font-display font-semibold text-fjord-800 dark:text-fjord-100">
+              {meal.recipe?.name || "Unknown"}
+            </h3>
+            {/* Status Badge */}
+            <div className={cn(
+              "inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full text-sm font-medium",
+              meal.status === "planned" && "bg-fjord-100 text-fjord-700 dark:bg-fjord-800 dark:text-fjord-200",
+              meal.status === "cooked" && "bg-forest-100 text-forest-700 dark:bg-forest-900/30 dark:text-forest-400",
+              meal.status === "skipped" && "bg-stone-light/50 text-stone dark:bg-stone-light/20 dark:text-stone-light"
+            )}>
+              {meal.status === "cooked" && <Check className="w-3.5 h-3.5" />}
+              {meal.status === "skipped" && <SkipForward className="w-3.5 h-3.5" />}
+              {t(meal.status)}
+            </div>
+          </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-fjord-100 dark:hover:bg-fjord-800"
+            className={cn(
+              "p-2 -mt-1 -mr-1 rounded-xl",
+              "hover:bg-fjord-100 dark:hover:bg-fjord-800",
+              "transition-colors"
+            )}
           >
             <X className="w-5 h-5 text-fjord-500" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-4">
-          {/* Status Badge */}
-          <div className={cn(
-            "inline-flex px-3 py-1 rounded-full text-sm font-medium",
-            meal.status === "planned" && "bg-fjord-100 text-fjord-700 dark:bg-fjord-800 dark:text-fjord-200",
-            meal.status === "cooked" && "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-            meal.status === "skipped" && "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-          )}>
-            {t(meal.status)}
-          </div>
-
+        <div className="relative p-5 space-y-5 overflow-y-auto max-h-[calc(90vh-180px)]">
           {/* Info */}
-          <div className="flex items-center gap-4 text-sm text-fjord-600 dark:text-fjord-300">
-            <span className="flex items-center gap-1">
-              <Users className="w-4 h-4" />
-              {meal.servings} {t("servings")}
+          <div className="flex items-center gap-5 text-sm text-fjord-600 dark:text-fjord-300">
+            <span className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-fjord-100 dark:bg-fjord-800 flex items-center justify-center">
+                <Users className="w-4 h-4 text-fjord-500" />
+              </div>
+              <span className="font-medium">{meal.servings} {t("servings")}</span>
             </span>
             {meal.recipe?.prep_time_minutes && (
-              <span className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                {meal.recipe.prep_time_minutes} min
+              <span className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-fjord-100 dark:bg-fjord-800 flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-fjord-500" />
+                </div>
+                <span className="font-medium">{meal.recipe.prep_time_minutes} min</span>
               </span>
             )}
           </div>
 
           {/* Cook Form */}
           {meal.status === "planned" && showCookForm && (
-            <div className="p-4 bg-fjord-50 dark:bg-fjord-800/50 rounded-xl space-y-4">
-              <h4 className="font-medium text-fjord-700 dark:text-fjord-200">
+            <div className="p-4 bg-fjord-50/50 dark:bg-fjord-800/30 rounded-xl space-y-4 border border-fjord-100 dark:border-fjord-700">
+              <h4 className="font-display font-semibold text-fjord-700 dark:text-fjord-200">
                 {t("cookTitle")}
               </h4>
 
               <div>
-                <label className="block text-sm text-fjord-600 dark:text-fjord-300 mb-1">
+                <label className="block text-sm font-medium text-fjord-600 dark:text-fjord-300 mb-2">
                   {t("actualServings")}
                 </label>
                 <input
@@ -97,30 +121,30 @@ export function MealDetail({
                   onChange={(e) => setActualServings(parseInt(e.target.value) || 1)}
                   min="1"
                   className={cn(
-                    "w-full px-3 py-2 rounded-lg",
+                    "w-full px-4 py-2.5 rounded-xl",
                     "bg-white dark:bg-fjord-900",
                     "border border-fjord-200 dark:border-fjord-700",
-                    "text-fjord-800 dark:text-fjord-100"
+                    "text-fjord-800 dark:text-fjord-100",
+                    "focus:outline-none focus:ring-2 focus:ring-fjord-500/50"
                   )}
                 />
               </div>
 
-              <div className="flex items-center gap-2">
+              <label className="flex items-center gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
-                  id="createLeftover"
                   checked={createLeftover}
                   onChange={(e) => setCreateLeftover(e.target.checked)}
-                  className="rounded border-fjord-300"
+                  className="w-5 h-5 rounded border-fjord-300 text-fjord-500 focus:ring-fjord-500/50"
                 />
-                <label htmlFor="createLeftover" className="text-sm text-fjord-600 dark:text-fjord-300">
+                <span className="text-sm font-medium text-fjord-600 dark:text-fjord-300 group-hover:text-fjord-700">
                   {t("createLeftover")}
-                </label>
-              </div>
+                </span>
+              </label>
 
               {createLeftover && (
-                <div>
-                  <label className="block text-sm text-fjord-600 dark:text-fjord-300 mb-1">
+                <div className="animate-fade-in">
+                  <label className="block text-sm font-medium text-fjord-600 dark:text-fjord-300 mb-2">
                     {t("leftoverServings")}
                   </label>
                   <input
@@ -130,10 +154,11 @@ export function MealDetail({
                     min="0"
                     max={actualServings - 1}
                     className={cn(
-                      "w-full px-3 py-2 rounded-lg",
+                      "w-full px-4 py-2.5 rounded-xl",
                       "bg-white dark:bg-fjord-900",
                       "border border-fjord-200 dark:border-fjord-700",
-                      "text-fjord-800 dark:text-fjord-100"
+                      "text-fjord-800 dark:text-fjord-100",
+                      "focus:outline-none focus:ring-2 focus:ring-fjord-500/50"
                     )}
                   />
                 </div>
@@ -143,24 +168,35 @@ export function MealDetail({
                 onClick={handleCook}
                 disabled={cooking}
                 className={cn(
-                  "w-full py-2 rounded-lg font-medium",
-                  "bg-green-500 text-white",
-                  "hover:bg-green-600 disabled:opacity-50",
-                  "transition-colors"
+                  "w-full py-3 rounded-xl font-medium",
+                  "bg-forest-500 text-white",
+                  "hover:bg-forest-600",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  "transition-all duration-200",
+                  "hover:scale-[1.01] active:scale-[0.99]",
+                  "flex items-center justify-center gap-2"
                 )}
               >
-                {cooking ? "..." : t("cookConfirm")}
+                {cooking ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    <Check className="w-5 h-5" />
+                    {t("cookConfirm")}
+                  </>
+                )}
               </button>
             </div>
           )}
 
           {/* Cooked Info */}
           {meal.status === "cooked" && meal.actual_cost && (
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
-              <div className="text-sm text-green-700 dark:text-green-400">
+            <div className="p-4 bg-forest-50/50 dark:bg-forest-900/20 rounded-xl border border-forest-200/50 dark:border-forest-700/50">
+              <div className="flex items-center gap-2 text-forest-700 dark:text-forest-400 font-medium">
+                <Check className="w-4 h-4" />
                 {t("costCalculated")}: {meal.actual_cost.toFixed(2)} kr
               </div>
-              <div className="text-xs text-green-600 dark:text-green-500 mt-1">
+              <div className="text-sm text-forest-600 dark:text-forest-500 mt-1 tabular-nums">
                 {meal.cost_per_serving?.toFixed(2)} kr/porsjon
               </div>
             </div>
@@ -169,26 +205,31 @@ export function MealDetail({
 
         {/* Actions */}
         {meal.status === "planned" && (
-          <div className="p-4 border-t border-fjord-100 dark:border-fjord-700 flex gap-2">
+          <div className="relative p-5 border-t border-fjord-100 dark:border-fjord-700 flex gap-3">
             {!showCookForm && (
               <>
                 <button
                   onClick={() => setShowCookForm(true)}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-medium",
-                    "bg-green-500 text-white",
-                    "hover:bg-green-600 transition-colors"
+                    "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-medium",
+                    "bg-forest-500 text-white",
+                    "hover:bg-forest-600",
+                    "transition-all duration-200",
+                    "hover:scale-[1.01] active:scale-[0.99]"
                   )}
                 >
-                  <ChefHat className="w-4 h-4" />
+                  <ChefHat className="w-5 h-5" />
                   {t("cook")}
                 </button>
                 <button
                   onClick={onSkip}
                   className={cn(
-                    "px-4 py-2 rounded-lg font-medium",
-                    "bg-fjord-100 dark:bg-fjord-800 text-fjord-600 dark:text-fjord-300",
-                    "hover:bg-fjord-200 dark:hover:bg-fjord-700 transition-colors"
+                    "px-5 py-3 rounded-xl font-medium",
+                    "bg-fjord-100 dark:bg-fjord-800",
+                    "text-fjord-600 dark:text-fjord-300",
+                    "hover:bg-fjord-200 dark:hover:bg-fjord-700",
+                    "transition-all duration-200",
+                    "hover:scale-[1.01] active:scale-[0.99]"
                   )}
                 >
                   {t("skip")}
@@ -197,7 +238,11 @@ export function MealDetail({
             )}
             <button
               onClick={onDelete}
-              className="p-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+              className={cn(
+                "p-3 rounded-xl",
+                "text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20",
+                "transition-colors"
+              )}
             >
               <Trash2 className="w-5 h-5" />
             </button>

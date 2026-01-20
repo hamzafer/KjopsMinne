@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Soup } from "lucide-react";
+import { Soup, Filter } from "lucide-react";
 import { api, type Leftover, type Recipe } from "@/lib/api";
 import { LeftoverCard } from "@/components/meal-plan/LeftoverCard";
 import { cn } from "@/lib/utils";
@@ -63,40 +63,48 @@ export default function LeftoversPage() {
   return (
     <div className="max-w-4xl mx-auto px-6 py-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-display font-semibold text-fjord-800 dark:text-fjord-100">
-            {t("title")}
-          </h1>
-          <p className="mt-1 text-fjord-500 dark:text-fjord-400">
-            {t("subtitle")}
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-slide-up">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+            <Soup className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-display font-semibold text-fjord-800 dark:text-fjord-100">
+              {t("title")}
+            </h1>
+            <p className="mt-0.5 text-fjord-500 dark:text-fjord-400">
+              {t("subtitle")}
+            </p>
+          </div>
         </div>
 
         {/* Filter */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => setFilter("available")}
-            className={cn(
-              "px-4 py-2 rounded-lg font-medium transition-colors",
-              filter === "available"
-                ? "bg-fjord-500 text-white"
-                : "bg-fjord-100 dark:bg-fjord-800 text-fjord-600 dark:text-fjord-300"
-            )}
-          >
-            {t("filterAvailable")}
-          </button>
-          <button
-            onClick={() => setFilter("all")}
-            className={cn(
-              "px-4 py-2 rounded-lg font-medium transition-colors",
-              filter === "all"
-                ? "bg-fjord-500 text-white"
-                : "bg-fjord-100 dark:bg-fjord-800 text-fjord-600 dark:text-fjord-300"
-            )}
-          >
-            {t("filterAll")}
-          </button>
+        <div className="flex items-center gap-2 animate-fade-in stagger-1">
+          <Filter className="w-4 h-4 text-fjord-400" />
+          <div className="flex gap-1 p-1 rounded-xl bg-fjord-100/50 dark:bg-fjord-800/50">
+            <button
+              onClick={() => setFilter("available")}
+              className={cn(
+                "px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200",
+                filter === "available"
+                  ? "bg-white dark:bg-fjord-700 text-fjord-800 dark:text-fjord-100 shadow-sm"
+                  : "text-fjord-600 dark:text-fjord-400 hover:text-fjord-800 dark:hover:text-fjord-200"
+              )}
+            >
+              {t("filterAvailable")}
+            </button>
+            <button
+              onClick={() => setFilter("all")}
+              className={cn(
+                "px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200",
+                filter === "all"
+                  ? "bg-white dark:bg-fjord-700 text-fjord-800 dark:text-fjord-100 shadow-sm"
+                  : "text-fjord-600 dark:text-fjord-400 hover:text-fjord-800 dark:hover:text-fjord-200"
+              )}
+            >
+              {t("filterAll")}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -107,6 +115,7 @@ export default function LeftoversPage() {
             <div
               key={i}
               className="h-40 bg-fjord-100 dark:bg-fjord-800 rounded-xl animate-pulse"
+              style={{ animationDelay: `${i * 50}ms` }}
             />
           ))}
         </div>
@@ -114,14 +123,14 @@ export default function LeftoversPage() {
 
       {/* Empty State */}
       {!loading && leftovers.length === 0 && (
-        <div className="text-center py-16">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-fjord-100 dark:bg-fjord-800 flex items-center justify-center">
-            <Soup className="w-8 h-8 text-fjord-400 dark:text-fjord-500" />
+        <div className="text-center py-16 animate-fade-in">
+          <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-fjord-100 dark:bg-fjord-800 flex items-center justify-center">
+            <Soup className="w-10 h-10 text-fjord-400 dark:text-fjord-500" />
           </div>
-          <h3 className="text-lg font-semibold text-fjord-700 dark:text-fjord-200">
+          <h3 className="text-xl font-display font-semibold text-fjord-700 dark:text-fjord-200">
             {t("noLeftovers")}
           </h3>
-          <p className="mt-1 text-fjord-500 dark:text-fjord-400 max-w-sm mx-auto">
+          <p className="mt-2 text-fjord-500 dark:text-fjord-400 max-w-sm mx-auto">
             {t("noLeftoversMessage")}
           </p>
         </div>
@@ -130,14 +139,22 @@ export default function LeftoversPage() {
       {/* Grid */}
       {!loading && leftovers.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {leftovers.map((leftover) => (
-            <LeftoverCard
+          {leftovers.map((leftover, index) => (
+            <div
               key={leftover.id}
-              leftover={leftover}
-              recipeName={recipes.get(leftover.recipe_id) || "Unknown"}
-              onMarkConsumed={() => handleMarkConsumed(leftover.id)}
-              onMarkDiscarded={() => handleMarkDiscarded(leftover.id)}
-            />
+              className="animate-slide-up opacity-0"
+              style={{
+                animationDelay: `${index * 60}ms`,
+                animationFillMode: 'forwards'
+              }}
+            >
+              <LeftoverCard
+                leftover={leftover}
+                recipeName={recipes.get(leftover.recipe_id) || "Unknown"}
+                onMarkConsumed={() => handleMarkConsumed(leftover.id)}
+                onMarkDiscarded={() => handleMarkDiscarded(leftover.id)}
+              />
+            </div>
           ))}
         </div>
       )}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, ChefHat, Coffee, Sun, Moon, X } from "lucide-react";
 import { api, type Recipe } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +19,12 @@ interface AddMealFormProps {
   onCancel: () => void;
   saving?: boolean;
 }
+
+const mealTypeConfig = {
+  breakfast: { icon: Coffee, label: "breakfast" },
+  lunch: { icon: Sun, label: "lunch" },
+  dinner: { icon: Moon, label: "dinner" },
+} as const;
 
 export function AddMealForm({
   householdId,
@@ -69,77 +75,92 @@ export function AddMealForm({
     });
   };
 
-  const inputClasses = cn(
-    "w-full px-4 py-3 rounded-xl",
-    "bg-white dark:bg-fjord-800/50",
-    "border border-fjord-200 dark:border-fjord-700",
-    "text-fjord-800 dark:text-fjord-100",
-    "focus:outline-none focus:ring-2 focus:ring-fjord-500/50"
-  );
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
       {/* Recipe Search */}
       <div>
-        <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-2">
+        <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-3">
           {t("selectRecipe")} *
         </label>
 
         {!selectedRecipe ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-fjord-400" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-fjord-400" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t("searchRecipes")}
-                className={cn(inputClasses, "pl-10")}
+                className={cn(
+                  "w-full pl-12 pr-4 py-3.5 rounded-xl",
+                  "bg-white dark:bg-fjord-800/50",
+                  "border border-fjord-200 dark:border-fjord-700",
+                  "text-fjord-800 dark:text-fjord-100",
+                  "placeholder:text-fjord-400 dark:placeholder:text-fjord-500",
+                  "focus:outline-none focus:ring-2 focus:ring-fjord-500/50 focus:border-fjord-400",
+                  "transition-all"
+                )}
               />
             </div>
 
-            <div className="max-h-48 overflow-y-auto rounded-xl border border-fjord-200 dark:border-fjord-700">
+            <div className="paper-card overflow-hidden max-h-56 overflow-y-auto">
               {loading ? (
-                <div className="p-4 text-center text-fjord-500">
-                  <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                <div className="p-6 text-center">
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto text-fjord-400" />
                 </div>
               ) : filteredRecipes.length === 0 ? (
-                <div className="p-4 text-center text-fjord-500">
-                  {t("noRecipesFound")}
+                <div className="p-6 text-center text-fjord-500">
+                  <ChefHat className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p>{t("noRecipesFound")}</p>
                 </div>
               ) : (
-                filteredRecipes.map((recipe) => (
-                  <button
-                    key={recipe.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedRecipe(recipe);
-                      setServings(recipe.servings);
-                    }}
-                    className={cn(
-                      "w-full text-left px-4 py-3",
-                      "hover:bg-fjord-50 dark:hover:bg-fjord-800",
-                      "border-b border-fjord-100 dark:border-fjord-700 last:border-b-0",
-                      "text-fjord-700 dark:text-fjord-200"
-                    )}
-                  >
-                    {recipe.name}
-                  </button>
-                ))
+                <div className="divide-y divide-fjord-100 dark:divide-fjord-700">
+                  {filteredRecipes.map((recipe, index) => (
+                    <button
+                      key={recipe.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedRecipe(recipe);
+                        setServings(recipe.servings);
+                      }}
+                      className={cn(
+                        "w-full text-left px-4 py-3.5",
+                        "hover:bg-fjord-50 dark:hover:bg-fjord-800/50",
+                        "text-fjord-700 dark:text-fjord-200 font-medium",
+                        "transition-colors",
+                        "animate-fade-in"
+                      )}
+                      style={{ animationDelay: `${index * 30}ms` }}
+                    >
+                      {recipe.name}
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between p-3 rounded-xl bg-fjord-50 dark:bg-fjord-800">
-            <span className="font-medium text-fjord-700 dark:text-fjord-200">
-              {selectedRecipe.name}
-            </span>
+          <div className="paper-card p-4 flex items-center justify-between animate-scale-in">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-fjord-100 dark:bg-fjord-800 flex items-center justify-center">
+                <ChefHat className="w-5 h-5 text-fjord-500" />
+              </div>
+              <span className="font-medium text-fjord-800 dark:text-fjord-100">
+                {selectedRecipe.name}
+              </span>
+            </div>
             <button
               type="button"
               onClick={() => setSelectedRecipe(null)}
-              className="text-sm text-fjord-500 hover:text-fjord-700"
+              className={cn(
+                "p-2 rounded-lg",
+                "text-fjord-500 hover:text-fjord-700 dark:hover:text-fjord-300",
+                "hover:bg-fjord-100 dark:hover:bg-fjord-800",
+                "transition-colors"
+              )}
             >
-              Change
+              <X className="w-4 h-4" />
             </button>
           </div>
         )}
@@ -147,65 +168,118 @@ export function AddMealForm({
 
       {/* Date */}
       <div>
-        <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-2">
+        <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-3">
           {t("date")} *
         </label>
         <input
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className={inputClasses}
+          className={cn(
+            "w-full px-4 py-3.5 rounded-xl",
+            "bg-white dark:bg-fjord-800/50",
+            "border border-fjord-200 dark:border-fjord-700",
+            "text-fjord-800 dark:text-fjord-100",
+            "focus:outline-none focus:ring-2 focus:ring-fjord-500/50 focus:border-fjord-400",
+            "transition-all"
+          )}
           required
         />
       </div>
 
       {/* Meal Type */}
       <div>
-        <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-2">
+        <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-3">
           {t("mealType")} *
         </label>
-        <div className="grid grid-cols-3 gap-2">
-          {(["breakfast", "lunch", "dinner"] as const).map((type) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => setMealType(type)}
-              className={cn(
-                "py-2 rounded-lg font-medium transition-colors",
-                mealType === type
-                  ? "bg-fjord-500 text-white"
-                  : "bg-fjord-100 dark:bg-fjord-800 text-fjord-600 dark:text-fjord-300 hover:bg-fjord-200 dark:hover:bg-fjord-700"
-              )}
-            >
-              {t(type)}
-            </button>
-          ))}
+        <div className="grid grid-cols-3 gap-3">
+          {(["breakfast", "lunch", "dinner"] as const).map((type) => {
+            const config = mealTypeConfig[type];
+            const Icon = config.icon;
+            const isSelected = mealType === type;
+
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setMealType(type)}
+                className={cn(
+                  "flex flex-col items-center gap-2 py-4 rounded-xl font-medium",
+                  "transition-all duration-200",
+                  "hover:scale-[1.02] active:scale-[0.98]",
+                  isSelected
+                    ? "bg-fjord-500 text-white shadow-lg shadow-fjord-500/20"
+                    : "bg-fjord-50 dark:bg-fjord-800/50 text-fjord-600 dark:text-fjord-300 hover:bg-fjord-100 dark:hover:bg-fjord-800"
+                )}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-sm">{t(type)}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Servings */}
       <div>
-        <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-2">
+        <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-3">
           {t("servings")}
         </label>
-        <input
-          type="number"
-          value={servings}
-          onChange={(e) => setServings(parseInt(e.target.value) || 1)}
-          min="1"
-          className={inputClasses}
-        />
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => setServings(Math.max(1, servings - 1))}
+            className={cn(
+              "w-12 h-12 rounded-xl font-bold text-lg",
+              "bg-fjord-100 dark:bg-fjord-800 text-fjord-600 dark:text-fjord-300",
+              "hover:bg-fjord-200 dark:hover:bg-fjord-700",
+              "transition-all duration-200",
+              "hover:scale-105 active:scale-95"
+            )}
+          >
+            −
+          </button>
+          <input
+            type="number"
+            value={servings}
+            onChange={(e) => setServings(parseInt(e.target.value) || 1)}
+            min="1"
+            className={cn(
+              "w-20 text-center px-4 py-3 rounded-xl",
+              "bg-white dark:bg-fjord-800/50",
+              "border border-fjord-200 dark:border-fjord-700",
+              "text-fjord-800 dark:text-fjord-100 font-semibold text-lg",
+              "focus:outline-none focus:ring-2 focus:ring-fjord-500/50",
+              "tabular-nums"
+            )}
+          />
+          <button
+            type="button"
+            onClick={() => setServings(servings + 1)}
+            className={cn(
+              "w-12 h-12 rounded-xl font-bold text-lg",
+              "bg-fjord-100 dark:bg-fjord-800 text-fjord-600 dark:text-fjord-300",
+              "hover:bg-fjord-200 dark:hover:bg-fjord-700",
+              "transition-all duration-200",
+              "hover:scale-105 active:scale-95"
+            )}
+          >
+            +
+          </button>
+        </div>
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 justify-end">
+      <div className="flex gap-3 pt-4">
         <button
           type="button"
           onClick={onCancel}
           className={cn(
-            "px-5 py-2.5 rounded-xl font-medium",
+            "flex-1 py-3.5 rounded-xl font-medium",
             "text-fjord-600 dark:text-fjord-300",
-            "hover:bg-fjord-100 dark:hover:bg-fjord-800"
+            "hover:bg-fjord-100 dark:hover:bg-fjord-800",
+            "transition-all duration-200",
+            "hover:scale-[1.01] active:scale-[0.99]"
           )}
         >
           {t("cancel")}
@@ -214,13 +288,16 @@ export function AddMealForm({
           type="submit"
           disabled={saving || !selectedRecipe}
           className={cn(
-            "px-5 py-2.5 rounded-xl font-medium",
+            "flex-1 py-3.5 rounded-xl font-medium",
             "bg-fjord-500 text-white",
-            "hover:bg-fjord-600 disabled:opacity-50",
-            "flex items-center gap-2"
+            "hover:bg-fjord-600",
+            "disabled:opacity-50 disabled:cursor-not-allowed",
+            "transition-all duration-200",
+            "hover:scale-[1.01] active:scale-[0.99]",
+            "flex items-center justify-center gap-2"
           )}
         >
-          {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+          {saving && <Loader2 className="w-5 h-5 animate-spin" />}
           {t("save")}
         </button>
       </div>

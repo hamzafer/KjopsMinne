@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Plus } from "lucide-react";
+import { Plus, CalendarDays } from "lucide-react";
 import { api, type MealPlan } from "@/lib/api";
 import { WeeklyCalendar } from "@/components/meal-plan/WeeklyCalendar";
 import { MealDetail } from "@/components/meal-plan/MealDetail";
@@ -114,25 +114,33 @@ export default function MealPlanPage() {
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-display font-semibold text-fjord-800 dark:text-fjord-100">
-            {t("title")}
-          </h1>
-          <p className="mt-1 text-fjord-500 dark:text-fjord-400">
-            {t("subtitle")}
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-slide-up">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-fjord-500 to-fjord-600 flex items-center justify-center shadow-lg shadow-fjord-500/20">
+            <CalendarDays className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-display font-semibold text-fjord-800 dark:text-fjord-100">
+              {t("title")}
+            </h1>
+            <p className="mt-0.5 text-fjord-500 dark:text-fjord-400">
+              {t("subtitle")}
+            </p>
+          </div>
         </div>
 
         <button
           onClick={() => router.push(`/${locale}/plan/add`)}
           className={cn(
-            "flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium",
+            "flex items-center gap-2 px-5 py-3 rounded-xl font-medium",
             "bg-fjord-500 text-white",
-            "hover:bg-fjord-600 transition-colors"
+            "hover:bg-fjord-600",
+            "shadow-lg shadow-fjord-500/20",
+            "transition-all duration-200",
+            "hover:scale-[1.02] active:scale-[0.98]"
           )}
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-5 h-5" />
           {t("addMeal")}
         </button>
       </div>
