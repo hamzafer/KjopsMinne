@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from uuid import UUID
 
@@ -6,7 +6,7 @@ from fastapi import APIRouter, Query
 from pydantic import BaseModel
 from sqlalchemy import func, select
 
-from src.api.deps import DbSession
+from src.api.deps import DbSession, RestockPredictorDep
 from src.db.models import (
     Category,
     Ingredient,
@@ -22,6 +22,8 @@ from src.schemas.analytics import (
     CostPerMealResponse,
     LeftoverWasteEntry,
     MealCostEntry,
+    RestockPrediction,
+    RestockPredictionsResponse,
     SpendTrendPoint,
     SpendTrendResponse,
     WasteEntry,
@@ -409,4 +411,86 @@ async def get_spend_trend(
         granularity=granularity,
         period_start=start_date,
         period_end=end_date,
+    )
+
+
+@router.get("/analytics/restock-predictions", response_model=RestockPredictionsResponse)
+async def get_restock_predictions(
+    db: DbSession,
+    predictor: RestockPredictorDep,
+    household_id: UUID,
+):
+    """Get restock predictions for inventory items."""
+    from sqlalchemy.orm import selectinload
+
+    # Get all ingredients with inventory
+    inv_query = (
+        select(
+            InventoryLot.ingredient_id,
+            Ingredient.name,
+            func.sum(InventoryLot.quantity).label("total_quantity"),
+            InventoryLot.unit,
+        )
+        .join(Ingredient, InventoryLot.ingredient_id == Ingredient.id)
+        .where(
+            InventoryLot.household_id == household_id,
+            InventoryLot.quantity > 0,
+        )
+        .group_by(InventoryLot.ingredient_id, Ingredient.name, InventoryLot.unit)
+    )
+
+    inv_result = await db.execute(inv_query)
+    inventory_items = inv_result.all()
+
+    predictions = []
+    now = datetime.now()
+
+    for item in inventory_items:
+        # Get consumption events for this ingredient (last 30 days)
+        events_query = (
+            select(InventoryEvent.quantity_delta, InventoryEvent.created_at)
+            .join(InventoryLot, InventoryEvent.lot_id == InventoryLot.id)
+            .where(
+                InventoryLot.household_id == household_id,
+                InventoryLot.ingredient_id == item.ingredient_id,
+                InventoryEvent.event_type == "consume",
+                InventoryEvent.created_at >= now - timedelta(days=30),
+            )
+        )
+
+        events_result = await db.execute(events_query)
+        events = [
+            {"quantity_delta": e.quantity_delta, "created_at": e.created_at}
+            for e in events_result.all()
+        ]
+
+        avg_usage = predictor.calculate_average_daily_usage(events)
+        runout_info = predictor.predict_runout(
+            current_quantity=Decimal(str(item.total_quantity)),
+            average_daily_usage=avg_usage,
+            from_date=now,
+        )
+
+        predictions.append(
+            RestockPrediction(
+                ingredient_id=item.ingredient_id,
+                ingredient_name=item.name,
+                current_quantity=Decimal(str(item.total_quantity)),
+                unit=item.unit,
+                average_daily_usage=avg_usage,
+                days_until_empty=runout_info["days_until_empty"],
+                predicted_runout_date=runout_info["predicted_runout_date"],
+                recommended_restock_date=runout_info["recommended_restock_date"],
+            )
+        )
+
+    # Sort by days until empty (soonest first, None at end)
+    predictions.sort(
+        key=lambda p: (p.days_until_empty is None, p.days_until_empty or 999)
+    )
+
+    return RestockPredictionsResponse(
+        predictions=predictions,
+        household_id=household_id,
+        generated_at=now,
     )

@@ -10,6 +10,7 @@ from src.services.mock_llm import MockLLMService
 from src.services.mock_ocr import MockOCRService
 from src.services.ocr import OCRService
 from src.services.recipe_importer import RecipeImporter
+from src.services.restock_predictor import RestockPredictor
 from src.services.shopping_generator import ShoppingGenerator
 
 DbSession = Annotated[AsyncSession, Depends(get_db)]
@@ -45,3 +46,10 @@ def get_shopping_generator() -> ShoppingGenerator:
 
 
 ShoppingGeneratorDep = Annotated[ShoppingGenerator, Depends(get_shopping_generator)]
+
+
+def get_restock_predictor() -> RestockPredictor:
+    return RestockPredictor()
+
+
+RestockPredictorDep = Annotated[RestockPredictor, Depends(get_restock_predictor)]
