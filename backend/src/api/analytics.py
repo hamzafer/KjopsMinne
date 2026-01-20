@@ -421,8 +421,6 @@ async def get_restock_predictions(
     household_id: UUID,
 ):
     """Get restock predictions for inventory items."""
-    from sqlalchemy.orm import selectinload
-
     # Get all ingredients with inventory
     inv_query = (
         select(
@@ -445,24 +443,36 @@ async def get_restock_predictions(
     predictions = []
     now = datetime.now()
 
-    for item in inventory_items:
-        # Get consumption events for this ingredient (last 30 days)
+    # Fetch all consumption events for these ingredients in one query
+    ingredient_ids = [item.ingredient_id for item in inventory_items]
+    if ingredient_ids:
         events_query = (
-            select(InventoryEvent.quantity_delta, InventoryEvent.created_at)
+            select(InventoryEvent.quantity_delta, InventoryEvent.created_at, InventoryLot.ingredient_id)
             .join(InventoryLot, InventoryEvent.lot_id == InventoryLot.id)
             .where(
                 InventoryLot.household_id == household_id,
-                InventoryLot.ingredient_id == item.ingredient_id,
+                InventoryLot.ingredient_id.in_(ingredient_ids),
                 InventoryEvent.event_type == "consume",
                 InventoryEvent.created_at >= now - timedelta(days=30),
             )
         )
-
         events_result = await db.execute(events_query)
-        events = [
-            {"quantity_delta": e.quantity_delta, "created_at": e.created_at}
-            for e in events_result.all()
-        ]
+
+        # Group events by ingredient_id
+        events_by_ingredient: dict[UUID, list[dict]] = {}
+        for row in events_result.all():
+            ing_id = row.ingredient_id
+            if ing_id not in events_by_ingredient:
+                events_by_ingredient[ing_id] = []
+            events_by_ingredient[ing_id].append({
+                "quantity_delta": row.quantity_delta,
+                "created_at": row.created_at,
+            })
+    else:
+        events_by_ingredient = {}
+
+    for item in inventory_items:
+        events = events_by_ingredient.get(item.ingredient_id, [])
 
         avg_usage = predictor.calculate_average_daily_usage(events)
         runout_info = predictor.predict_runout(
