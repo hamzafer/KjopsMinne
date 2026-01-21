@@ -1130,14 +1130,29 @@ async def create_meal_plans(recipe_map: dict[str, uuid.UUID]) -> list[uuid.UUID]
         "Fiskesuppe": Decimal("160.00"),
     }
 
-    # Plan dinners for 14 days, some lunches
+    # Plan dinners spread across 4 weeks for meaningful period filtering
     # Format: (days_offset, meal_type, recipe_name, status, servings)
     # days_offset: negative = past, positive = future
     meal_plan_data = [
-        # Past week (cooked)
-        (-7, "dinner", "Kjøttboller i brun saus", "cooked", 4),
-        (-6, "dinner", "Fiskegrateng", "cooked", 4),
-        (-5, "dinner", "Pasta Carbonara", "cooked", 4),
+        # Week 4 ago (cooked)
+        (-28, "dinner", "Fiskegrateng", "cooked", 4),
+        (-27, "dinner", "Lapskaus", "cooked", 6),
+        (-26, "dinner", "Pasta Carbonara", "cooked", 4),
+        (-25, "dinner", "Kjøttboller i brun saus", "cooked", 4),
+        # Week 3 ago (cooked)
+        (-21, "dinner", "Kylling med ris", "cooked", 4),
+        (-20, "dinner", "Fiskesuppe", "cooked", 4),
+        (-19, "dinner", "Fiskegrateng", "cooked", 4),
+        (-18, "dinner", "Pasta Carbonara", "cooked", 4),
+        # Week 2 ago (cooked)
+        (-14, "dinner", "Kjøttboller i brun saus", "cooked", 4),
+        (-13, "dinner", "Lapskaus", "cooked", 6),
+        (-12, "dinner", "Kylling med ris", "cooked", 4),
+        (-11, "dinner", "Fiskesuppe", "cooked", 4),
+        # Last week (cooked)
+        (-7, "dinner", "Fiskegrateng", "cooked", 4),
+        (-6, "dinner", "Pasta Carbonara", "cooked", 4),
+        (-5, "dinner", "Kjøttboller i brun saus", "cooked", 4),
         (-4, "dinner", "Kylling med ris", "cooked", 4),
         (-3, "dinner", "Lapskaus", "cooked", 6),
         (-2, "dinner", "Fiskesuppe", "cooked", 4),
@@ -1150,7 +1165,10 @@ async def create_meal_plans(recipe_map: dict[str, uuid.UUID]) -> list[uuid.UUID]
         (4, "dinner", "Fiskesuppe", "planned", 4),
         (5, "dinner", "Kjøttboller i brun saus", "planned", 4),
         (6, "dinner", "Pasta Carbonara", "planned", 4),
-        # Some lunches
+        # Some lunches spread across weeks
+        (-25, "lunch", "Fiskesuppe", "cooked", 2),
+        (-18, "lunch", "Pasta Carbonara", "cooked", 2),
+        (-11, "lunch", "Lapskaus", "cooked", 2),
         (-6, "lunch", "Fiskesuppe", "cooked", 2),
         (-3, "lunch", "Pasta Carbonara", "cooked", 2),
         (2, "lunch", "Lapskaus", "planned", 2),
@@ -1302,6 +1320,186 @@ async def create_shopping_lists():
         print(f"Created shopping list with {len(shopping_items_data)} items")
 
 
+async def create_consumption_events():
+    """Create consume events for frequently-used items to enable restock predictions."""
+    ingredients = await get_ingredient_map()
+
+    async with async_session_factory() as session:
+        # Get inventory lots for items we want to create consumption history for
+        # Format: (ing_key, consumptions: list of (days_ago, quantity))
+        consumption_data = [
+            # Milk - consumed regularly
+            ("melk", [(1, Decimal("200")), (3, Decimal("150")), (5, Decimal("200")),
+                      (7, Decimal("150")), (10, Decimal("200")), (14, Decimal("200"))]),
+            # Eggs - consumed frequently
+            ("egg", [(2, Decimal("2")), (4, Decimal("3")), (6, Decimal("2")),
+                     (9, Decimal("2")), (12, Decimal("3")), (15, Decimal("2"))]),
+            # Bread - consumed daily
+            ("brod", [(1, Decimal("0.2")), (2, Decimal("0.2")), (3, Decimal("0.15")),
+                      (4, Decimal("0.15")), (5, Decimal("0.2")), (6, Decimal("0.1"))]),
+            # Cheese - consumed frequently
+            ("ost", [(2, Decimal("30")), (5, Decimal("50")), (8, Decimal("40")),
+                     (12, Decimal("30")), (15, Decimal("50"))]),
+            # Bananas - consumed quickly
+            ("banan", [(1, Decimal("1")), (2, Decimal("1")), (3, Decimal("1")),
+                       (4, Decimal("1")), (5, Decimal("2"))]),
+            # Coffee - consumed daily
+            ("kaffe", [(1, Decimal("10")), (2, Decimal("12")), (3, Decimal("10")),
+                       (5, Decimal("12")), (7, Decimal("10")), (10, Decimal("12"))]),
+        ]
+
+        event_count = 0
+        for ing_key, consumptions in consumption_data:
+            ingredient_id = ingredients.get(ing_key)
+            if not ingredient_id:
+                continue
+
+            # Find the lot for this ingredient
+            lot_result = await session.execute(
+                select(InventoryLot).where(
+                    InventoryLot.household_id == DEMO_HOUSEHOLD_ID,
+                    InventoryLot.ingredient_id == ingredient_id,
+                )
+            )
+            lot = lot_result.scalars().first()
+            if not lot:
+                continue
+
+            for days, qty in consumptions:
+                event = InventoryEvent(
+                    id=uuid.uuid4(),
+                    lot_id=lot.id,
+                    event_type="consume",
+                    quantity_delta=-qty,  # Negative for consumption
+                    unit=lot.unit,
+                    reason="Used in cooking",
+                    created_at=days_ago(days),
+                    created_by=DEMO_USER_OLA_ID,
+                )
+                session.add(event)
+                event_count += 1
+
+        await session.commit()
+        print(f"Created {event_count} consumption events")
+
+
+async def create_waste_events():
+    """Create discard events for expired items to populate waste analytics."""
+    ingredients = await get_ingredient_map()
+
+    async with async_session_factory() as session:
+        # Format: (ing_key, days_ago, quantity, reason)
+        waste_data = [
+            ("spinat", 3, Decimal("100"), "Expired - wilted"),
+            ("tomat", 5, Decimal("150"), "Expired - moldy"),
+            ("yoghurt", 8, Decimal("200"), "Expired - past best before"),
+            ("banan", 10, Decimal("2"), "Overripe - brown"),
+            ("brokkoli", 12, Decimal("150"), "Expired - yellowing"),
+            ("salat", 15, Decimal("0.5"), "Wilted"),
+        ]
+
+        event_count = 0
+        for ing_key, days, qty, reason in waste_data:
+            ingredient_id = ingredients.get(ing_key)
+            if not ingredient_id:
+                continue
+
+            # Find or create a lot for this ingredient (some may not exist)
+            lot_result = await session.execute(
+                select(InventoryLot).where(
+                    InventoryLot.household_id == DEMO_HOUSEHOLD_ID,
+                    InventoryLot.ingredient_id == ingredient_id,
+                )
+            )
+            lot = lot_result.scalars().first()
+
+            # If no lot exists, create one with the wasted quantity
+            if not lot:
+                lot = InventoryLot(
+                    id=uuid.uuid4(),
+                    household_id=DEMO_HOUSEHOLD_ID,
+                    ingredient_id=ingredient_id,
+                    quantity=Decimal("0"),  # Already discarded
+                    unit="g" if ing_key not in ["banan", "salat"] else "pcs",
+                    location="fridge",
+                    purchase_date=days_ago(days + 7),
+                    expiry_date=days_ago(days),
+                    unit_cost=Decimal("0.05"),
+                    total_cost=qty * Decimal("0.05"),
+                    currency="NOK",
+                    confidence=Decimal("0.95"),
+                    source_type="receipt",
+                )
+                session.add(lot)
+                await session.flush()  # Get the lot.id
+
+            event = InventoryEvent(
+                id=uuid.uuid4(),
+                lot_id=lot.id,
+                event_type="discard",
+                quantity_delta=-qty,
+                unit=lot.unit,
+                reason=reason,
+                created_at=days_ago(days),
+                created_by=DEMO_USER_KARI_ID,
+            )
+            session.add(event)
+            event_count += 1
+
+        await session.commit()
+        print(f"Created {event_count} waste/discard events")
+
+
+async def create_discarded_leftovers(recipe_map: dict[str, uuid.UUID]):
+    """Create discarded leftovers to populate leftover waste analytics."""
+    async with async_session_factory() as session:
+        # Create some old meal plans that resulted in discarded leftovers
+        leftover_data = [
+            # Format: (recipe_name, days_ago_cooked, servings_wasted)
+            ("Fiskegrateng", 10, 2),
+            ("Lapskaus", 18, 3),
+        ]
+
+        leftover_count = 0
+        for recipe_name, days, servings in leftover_data:
+            recipe_id = recipe_map.get(recipe_name)
+            if not recipe_id:
+                continue
+
+            # Create a meal plan for the source meal
+            meal_plan = MealPlan(
+                id=uuid.uuid4(),
+                household_id=DEMO_HOUSEHOLD_ID,
+                recipe_id=recipe_id,
+                planned_date=days_ago(days),
+                meal_type="dinner",
+                servings=4,
+                status="cooked",
+                cooked_at=days_ago(days),
+                actual_cost=Decimal("120.00"),
+                cost_per_serving=Decimal("30.00"),
+                is_leftover_source=True,
+            )
+            session.add(meal_plan)
+
+            # Create discarded leftover
+            leftover = Leftover(
+                id=uuid.uuid4(),
+                household_id=DEMO_HOUSEHOLD_ID,
+                meal_plan_id=meal_plan.id,
+                recipe_id=recipe_id,
+                remaining_servings=servings,
+                status="discarded",
+                expires_at=days_ago(days - 3),  # Expired a few days after cooking
+                created_at=days_ago(days),
+            )
+            session.add(leftover)
+            leftover_count += 1
+
+        await session.commit()
+        print(f"Created {leftover_count} discarded leftovers")
+
+
 async def seed_demo_data(clear_first: bool = True):
     """Main function to seed all demo data."""
     print("=" * 50)
@@ -1320,6 +1518,10 @@ async def seed_demo_data(clear_first: bool = True):
     await create_meal_plans(recipe_map)
     await create_leftovers(recipe_map)
     await create_shopping_lists()
+    # Add consumption and waste events for analytics
+    await create_consumption_events()
+    await create_waste_events()
+    await create_discarded_leftovers(recipe_map)
 
     print("=" * 50)
     print("Demo data seeding complete!")
