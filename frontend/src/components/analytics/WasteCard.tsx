@@ -5,7 +5,7 @@ import { Trash2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { StatCard } from "./StatCard";
 import { formatNOK, formatDate, type WasteResponse } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, formatQty } from "@/lib/utils";
 
 type WasteTab = "inventory" | "leftovers";
 
@@ -123,7 +123,7 @@ export function WasteCard({ data, loading = false, className }: WasteCardProps) 
                           {item.ingredient_name || t("waste.unknownItem")}
                         </p>
                         <p className="text-xs text-fjord-500 dark:text-fjord-400">
-                          {item.quantity} {item.unit} - {item.reason}
+                          {formatQty(item.quantity)} {item.unit} - {item.reason}
                         </p>
                       </div>
                       {item.estimated_value !== null && (

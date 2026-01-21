@@ -4,7 +4,7 @@ import { AlertTriangle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { StatCard, type StatCardVariant } from "./StatCard";
 import { formatDate, type RestockPredictionsResponse, type RestockPrediction } from "@/lib/api";
-import { cn, toNumber } from "@/lib/utils";
+import { cn, formatQty } from "@/lib/utils";
 
 interface RestockCardProps {
   data: RestockPredictionsResponse | null;
@@ -166,7 +166,7 @@ export function RestockCard({
                         {item.ingredient_name}
                       </p>
                       <p className="text-xs text-fjord-500 dark:text-fjord-400">
-                        {toNumber(item.current_quantity).toFixed(1)} {item.unit}{" "}
+                        {formatQty(item.current_quantity)} {item.unit}{" "}
                         {t("restock.remaining")}
                       </p>
                     </div>

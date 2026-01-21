@@ -16,7 +16,7 @@ import {
   Loader2
 } from "lucide-react";
 import { api, formatNOK, formatDate, type Receipt } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, formatQty } from "@/lib/utils";
 
 export default function ReceiptDetailPage() {
   const router = useRouter();
@@ -228,9 +228,9 @@ function ItemRow({
         )}
         <span className="receipt-item-name">
           {item.raw_name}
-          {item.quantity && item.quantity !== 1 && (
+          {item.quantity && Number(item.quantity) !== 1 && (
             <span className="text-stone-light ml-1">
-              × {item.quantity}
+              × {formatQty(item.quantity)}
             </span>
           )}
         </span>

@@ -15,7 +15,7 @@ import {
   ChefHat,
 } from "lucide-react";
 import { api, type Recipe } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, formatQty } from "@/lib/utils";
 
 export default function RecipeDetailPage() {
   const params = useParams();
@@ -227,7 +227,7 @@ export default function RecipeDetailPage() {
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-forest-500 mt-2 shrink-0" />
                 <span>
-                  <strong className="font-medium">{ing.quantity} {ing.unit}</strong> {ing.ingredient_name}
+                  <strong className="font-medium">{formatQty(ing.quantity)} {ing.unit}</strong> {ing.ingredient_name}
                   {ing.notes && (
                     <span className="text-fjord-400 dark:text-fjord-500">
                       {" "}

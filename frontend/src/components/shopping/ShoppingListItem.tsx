@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Check, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatQty } from "@/lib/utils";
 import type { ShoppingListItem as ShoppingListItemType } from "@/lib/api";
 
 interface ShoppingListItemProps {
@@ -82,11 +82,11 @@ export function ShoppingListItem({
             {item.ingredient_name || `Ingredient ${item.ingredient_id}`}
           </p>
           <p className="text-sm text-fjord-500 dark:text-fjord-400 mt-0.5">
-            <span className="font-semibold text-fjord-600 dark:text-fjord-300">{item.to_buy_quantity}</span>{" "}
+            <span className="font-semibold text-fjord-600 dark:text-fjord-300">{formatQty(item.to_buy_quantity)}</span>{" "}
             <span>{item.required_unit}</span>
-            {item.on_hand_quantity > 0 && (
+            {Number(item.on_hand_quantity) > 0 && (
               <span className="ml-2 text-forest-600 dark:text-forest-400">
-                ({item.on_hand_quantity} {t("itemOnHand")})
+                ({formatQty(item.on_hand_quantity)} {t("itemOnHand")})
               </span>
             )}
           </p>
