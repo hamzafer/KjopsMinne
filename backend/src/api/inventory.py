@@ -7,7 +7,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
 from src.api.deps import DbSession
-from src.db.models import Category, Household, Ingredient, InventoryEvent, InventoryLot
+from src.db.models import Household, Ingredient, InventoryEvent, InventoryLot
 from src.schemas.inventory import (
     ConsumeRequest,
     DiscardRequest,

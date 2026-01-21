@@ -937,7 +937,8 @@ async def create_recipes() -> dict[str, uuid.UUID]:
     """Create Norwegian recipes with ingredients."""
     ingredients = await get_ingredient_map()
 
-    # Recipe data: (name, servings, prep_time, cook_time, instructions, tags, image_url, ingredients_list)
+    # Recipe data: (name, servings, prep_time, cook_time, instructions,
+    #               tags, image_url, ingredients_list)
     # Ingredients: (raw_text, qty, unit, ing_key, notes)
     recipes_data = [
         (

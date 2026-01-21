@@ -50,10 +50,17 @@ interface ChartDataItem {
   itemCount: number;
 }
 
-// Custom active shape for hover effect
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const renderActiveShape = (props: any) => {
-  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+// Custom active shape for hover effect (props type from recharts PieSectorDataItem)
+const renderActiveShape = (props: unknown) => {
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props as {
+    cx: number;
+    cy: number;
+    innerRadius: number;
+    outerRadius: number;
+    startAngle: number;
+    endAngle: number;
+    fill: string;
+  };
 
   return (
     <g>
