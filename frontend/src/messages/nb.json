@@ -145,6 +145,19 @@
       "unknown": "Ukjent",
       "restockBy": "Fyll på innen {date}",
       "tip": "Basert på ditt forbruksmønster"
+    },
+    "topItems": {
+      "title": "Mest kjøpt",
+      "subtitle": "Dine mest kjøpte varer",
+      "bySpend": "Etter beløp",
+      "byFrequency": "Etter antall"
+    },
+    "byStore": {
+      "title": "Butikkoversikt",
+      "subtitle": "Hvor du handler",
+      "visits": "besøk",
+      "avgReceipt": "snitt kvittering",
+      "lastVisit": "Siste besøk"
     }
   },
   "Recipes": {

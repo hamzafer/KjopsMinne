@@ -67,7 +67,10 @@ async def list_meal_plans(
     """List meal plans for a household with optional date range filter."""
     query = select(MealPlan).where(MealPlan.household_id == household_id)
 
-    # Convert timezone-aware dates to naive (DB stores naive dates)
+    # Convert timezone-aware dates to naive (DB stores naive dates).
+    # NOTE: This strips timezone without UTC conversion. Acceptable for meal planning
+    # which operates at day-level precision, but could cause off-by-one issues
+    # near timezone boundaries for time-precise queries.
     if start_date:
         if start_date.tzinfo is not None:
             start_date = start_date.replace(tzinfo=None)

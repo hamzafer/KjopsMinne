@@ -310,6 +310,39 @@ export interface RestockPredictionsResponse {
   generated_at: string;
 }
 
+// Top Items types
+export interface TopItemEntry {
+  item_name: string;
+  total_spent: number;
+  total_quantity: number;
+  purchase_count: number;
+  unit: string | null;
+  average_price: number;
+}
+
+export interface TopItemsResponse {
+  items: TopItemEntry[];
+  total_items: number;
+  sort_by: "spend" | "count";
+  period_start: string | null;
+  period_end: string | null;
+}
+
+// Store Analytics types
+export interface StoreSpending {
+  store_name: string;
+  total_spent: number;
+  receipt_count: number;
+  avg_receipt: number;
+  last_visit: string | null;
+}
+
+export interface ByStoreResponse {
+  stores: StoreSpending[];
+  period_start: string | null;
+  period_end: string | null;
+}
+
 class ApiClient {
   private baseUrl: string;
 
@@ -378,6 +411,28 @@ class ApiClient {
     if (endDate) params.append("end_date", endDate);
     const query = params.toString() ? `?${params.toString()}` : "";
     return this.fetch(`/api/analytics/by-category${query}`);
+  }
+
+  async getTopItems(
+    startDate?: string,
+    endDate?: string,
+    sortBy: "spend" | "count" = "spend",
+    limit: number = 10
+  ): Promise<TopItemsResponse> {
+    const params = new URLSearchParams();
+    if (startDate) params.append("start_date", startDate);
+    if (endDate) params.append("end_date", endDate);
+    params.append("sort_by", sortBy);
+    params.append("limit", limit.toString());
+    return this.fetch(`/api/analytics/top-items?${params.toString()}`);
+  }
+
+  async getByStore(startDate?: string, endDate?: string): Promise<ByStoreResponse> {
+    const params = new URLSearchParams();
+    if (startDate) params.append("start_date", startDate);
+    if (endDate) params.append("end_date", endDate);
+    const query = params.toString() ? `?${params.toString()}` : "";
+    return this.fetch(`/api/analytics/by-store${query}`);
   }
 
   // Categories

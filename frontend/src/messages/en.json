@@ -145,6 +145,19 @@
       "unknown": "Unknown",
       "restockBy": "Restock by {date}",
       "tip": "Based on your usage patterns"
+    },
+    "topItems": {
+      "title": "Top Purchases",
+      "subtitle": "Your most purchased items",
+      "bySpend": "By Spend",
+      "byFrequency": "By Frequency"
+    },
+    "byStore": {
+      "title": "Store Breakdown",
+      "subtitle": "Where you shop",
+      "visits": "visits",
+      "avgReceipt": "avg receipt",
+      "lastVisit": "Last visit"
     }
   },
   "Recipes": {

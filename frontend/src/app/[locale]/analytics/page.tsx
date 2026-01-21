@@ -11,6 +11,8 @@ import {
   type RestockPredictionsResponse,
   type ByCategory,
   type Summary,
+  type TopItemsResponse,
+  type ByStoreResponse,
 } from "@/lib/api";
 import {
   CostPerMealCard,
@@ -19,6 +21,8 @@ import {
   RestockCard,
   CategoryCard,
   SummaryStats,
+  TopItemsCard,
+  StoreCard,
 } from "@/components/analytics";
 
 // TODO: Get from auth context
@@ -39,6 +43,9 @@ export default function AnalyticsPage() {
   const [restockData, setRestockData] = useState<RestockPredictionsResponse | null>(null);
   const [categoryData, setCategoryData] = useState<ByCategory | null>(null);
   const [summaryData, setSummaryData] = useState<Summary | null>(null);
+  const [topItemsData, setTopItemsData] = useState<TopItemsResponse | null>(null);
+  const [storeData, setStoreData] = useState<ByStoreResponse | null>(null);
+  const [topItemsSortBy, setTopItemsSortBy] = useState<"spend" | "count">("spend");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -68,13 +75,15 @@ export default function AnalyticsPage() {
       const endStr = endDate.toISOString().split("T")[0];
 
       try {
-        const [cost, waste, trend, restock, category, summary] = await Promise.all([
+        const [cost, waste, trend, restock, category, summary, topItems, stores] = await Promise.all([
           api.getCostPerMeal(DEMO_HOUSEHOLD_ID, startStr, endStr).catch(() => null),
           api.getWasteAnalytics(DEMO_HOUSEHOLD_ID, startStr, endStr).catch(() => null),
           api.getSpendTrend(DEMO_HOUSEHOLD_ID, startStr, endStr, "weekly").catch(() => null),
           api.getRestockPredictions(DEMO_HOUSEHOLD_ID).catch(() => null),
           api.getByCategory(startStr, endStr).catch(() => null),
           api.getSummary(startStr, endStr).catch(() => null),
+          api.getTopItems(startStr, endStr, topItemsSortBy).catch(() => null),
+          api.getByStore(startStr, endStr).catch(() => null),
         ]);
 
         setCostData(cost);
@@ -83,6 +92,8 @@ export default function AnalyticsPage() {
         setRestockData(restock);
         setCategoryData(category);
         setSummaryData(summary);
+        setTopItemsData(topItems);
+        setStoreData(stores);
       } catch (error) {
         console.error("Failed to fetch analytics:", error);
       } finally {
@@ -91,7 +102,7 @@ export default function AnalyticsPage() {
     };
 
     fetchData();
-  }, [period]);
+  }, [period, topItemsSortBy]);
 
   return (
     <div className="min-h-screen">
@@ -137,16 +148,26 @@ export default function AnalyticsPage() {
             <CategoryCard data={categoryData} loading={loading} />
           </div>
           <div className="animate-slide-up stagger-2">
-            <CostPerMealCard data={costData} loading={loading} />
+            <TopItemsCard
+              data={topItemsData}
+              loading={loading}
+              onSortChange={setTopItemsSortBy}
+            />
           </div>
           <div className="animate-slide-up stagger-3">
             <SpendTrendCard data={trendData} loading={loading} />
           </div>
           <div className="animate-slide-up stagger-4">
-            <WasteCard data={wasteData} loading={loading} />
+            <CostPerMealCard data={costData} loading={loading} />
           </div>
           <div className="animate-slide-up stagger-5">
+            <WasteCard data={wasteData} loading={loading} />
+          </div>
+          <div className="animate-slide-up stagger-6">
             <RestockCard data={restockData} loading={loading} />
+          </div>
+          <div className="animate-slide-up stagger-7 md:col-span-2">
+            <StoreCard data={storeData} loading={loading} />
           </div>
         </div>
       </div>

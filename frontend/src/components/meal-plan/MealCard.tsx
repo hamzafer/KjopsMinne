@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Users, Check, X, ChefHat } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, toNumber } from "@/lib/utils";
 import type { MealPlan } from "@/lib/api";
 
 interface MealCardProps {
@@ -70,7 +70,7 @@ export function MealCard({ meal, onClick }: MealCardProps) {
 
           {meal.status === "cooked" && meal.cost_per_serving && (
             <p className="mt-1 text-xs font-medium text-forest-600 dark:text-forest-400 tabular-nums">
-              {parseFloat(String(meal.cost_per_serving)).toFixed(0)} kr/porsjon
+              {toNumber(meal.cost_per_serving).toFixed(0)} kr/porsjon
             </p>
           )}
         </div>

@@ -1,5 +1,12 @@
 "use client";
 
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { StatCard, type TrendDirection } from "./StatCard";
@@ -17,8 +24,8 @@ function calculateTrend(
 ): { direction: TrendDirection; percentage: number } | null {
   if (trends.length < 2) return null;
 
-  const current = trends[trends.length - 1].total_spent;
-  const previous = trends[trends.length - 2].total_spent;
+  const current = Number(trends[trends.length - 1].total_spent);
+  const previous = Number(trends[trends.length - 2].total_spent);
 
   if (previous === 0) return null;
 
@@ -63,6 +70,29 @@ function getWeekNumber(date: Date): number {
   const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
   const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000;
   return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+}
+
+// Custom tooltip component matching StatCard aesthetic
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ value: number; payload: { period: string; label: string } }>;
+  locale: string;
+}
+
+function CustomTooltip({ active, payload, locale }: CustomTooltipProps) {
+  if (!active || !payload || !payload.length) return null;
+
+  const data = payload[0];
+  return (
+    <div className="bg-paper dark:bg-fjord-800 rounded-lg shadow-paper-hover px-3 py-2 border border-fjord-100 dark:border-fjord-700">
+      <p className="text-xs text-fjord-500 dark:text-fjord-400 mb-0.5">
+        {data.payload.label}
+      </p>
+      <p className="text-sm font-semibold text-fjord-800 dark:text-fjord-100 tabular-nums">
+        {formatNOK(data.value, locale)} kr
+      </p>
+    </div>
+  );
 }
 
 export function SpendTrendCard({
@@ -123,6 +153,62 @@ export function SpendTrendCard({
     >
       {hasData && data.trends.length > 1 && (
         <div className="space-y-4">
+          {/* Area Chart - hidden on mobile */}
+          <div className="hidden md:block h-40">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={data.trends.map((point) => ({
+                  ...point,
+                  label: formatPeriodLabel(point.period, data.granularity, locale),
+                }))}
+                margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient id="spendGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#A9C7D5" stopOpacity={0.6} />
+                    <stop offset="95%" stopColor="#A9C7D5" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis
+                  dataKey="label"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: "#6B7280" }}
+                  dy={8}
+                />
+                <Tooltip
+                  content={<CustomTooltip locale={locale} />}
+                  cursor={{
+                    stroke: "#538FAB",
+                    strokeWidth: 1,
+                    strokeDasharray: "4 4",
+                  }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="total_spent"
+                  stroke="#538FAB"
+                  strokeWidth={2}
+                  fill="url(#spendGradient)"
+                  dot={{
+                    r: 4,
+                    fill: "#2D4A5E",
+                    stroke: "#FFFFFF",
+                    strokeWidth: 2,
+                  }}
+                  activeDot={{
+                    r: 6,
+                    fill: "#2D4A5E",
+                    stroke: "#FFFFFF",
+                    strokeWidth: 2,
+                  }}
+                  animationDuration={800}
+                  animationEasing="ease-out"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
           <h4 className="text-sm font-medium text-fjord-600 dark:text-fjord-300">
             {t("spendTrend.periodBreakdown")}
           </h4>

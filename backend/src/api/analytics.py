@@ -54,6 +54,37 @@ class ByCategory(BaseModel):
     uncategorized_count: int
 
 
+class TopItemEntry(BaseModel):
+    item_name: str
+    total_spent: Decimal
+    total_quantity: Decimal
+    purchase_count: int
+    unit: str | None
+    average_price: Decimal
+
+
+class TopItemsResponse(BaseModel):
+    items: list[TopItemEntry]
+    total_items: int
+    sort_by: str
+    period_start: datetime | None
+    period_end: datetime | None
+
+
+class StoreSpending(BaseModel):
+    store_name: str
+    total_spent: Decimal
+    receipt_count: int
+    avg_receipt: Decimal
+    last_visit: datetime | None
+
+
+class ByStoreResponse(BaseModel):
+    stores: list[StoreSpending]
+    period_start: datetime | None
+    period_end: datetime | None
+
+
 @router.get("/analytics/summary", response_model=SummaryResponse)
 async def get_summary(
     db: DbSession,
@@ -159,6 +190,124 @@ async def get_by_category(
         categories=categories,
         uncategorized_total=Decimal(str(uncat_row.total or 0)),
         uncategorized_count=uncat_row.count or 0,
+    )
+
+
+@router.get("/analytics/top-items", response_model=TopItemsResponse)
+async def get_top_items(
+    db: DbSession,
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
+    sort_by: str = Query("spend", pattern="^(spend|count)$"),
+    limit: int = Query(10, ge=1, le=50),
+):
+    """Get top purchased items by spend or frequency."""
+    # Use canonical_name if available, otherwise raw_name
+    item_name = func.coalesce(Item.canonical_name, Item.raw_name)
+
+    query = (
+        select(
+            item_name.label("item_name"),
+            func.sum(Item.total_price).label("total_spent"),
+            func.sum(Item.quantity).label("total_quantity"),
+            func.count(Item.id).label("purchase_count"),
+            func.max(Item.unit).label("unit"),  # Take any unit (assuming consistent)
+        )
+        .join(Receipt, Item.receipt_id == Receipt.id)
+        .where(Item.is_pant == False)  # Exclude bottle deposits  # noqa: E712
+        .group_by(item_name)
+    )
+
+    if start_date:
+        query = query.where(Receipt.purchase_date >= start_date)
+    if end_date:
+        query = query.where(Receipt.purchase_date <= end_date)
+
+    # Order by spend or count
+    if sort_by == "spend":
+        query = query.order_by(func.sum(Item.total_price).desc())
+    else:
+        query = query.order_by(func.count(Item.id).desc())
+
+    query = query.limit(limit)
+
+    result = await db.execute(query)
+    rows = result.all()
+
+    items = [
+        TopItemEntry(
+            item_name=row.item_name,
+            total_spent=Decimal(str(row.total_spent)),
+            total_quantity=Decimal(str(row.total_quantity or 0)),
+            purchase_count=row.purchase_count,
+            unit=row.unit,
+            average_price=(
+                Decimal(str(row.total_spent)) / row.purchase_count
+                if row.purchase_count > 0
+                else Decimal("0")
+            ).quantize(Decimal("0.01")),
+        )
+        for row in rows
+    ]
+
+    return TopItemsResponse(
+        items=items,
+        total_items=len(items),
+        sort_by=sort_by,
+        period_start=start_date,
+        period_end=end_date,
+    )
+
+
+@router.get("/analytics/by-store", response_model=ByStoreResponse)
+async def get_by_store(
+    db: DbSession,
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
+):
+    """Get spending breakdown by store/merchant."""
+    # Normalize store names: uppercase, trim whitespace
+    store_name = func.upper(func.trim(Receipt.merchant_name))
+
+    query = (
+        select(
+            store_name.label("store_name"),
+            func.sum(Receipt.total_amount).label("total_spent"),
+            func.count(Receipt.id).label("receipt_count"),
+            func.max(Receipt.purchase_date).label("last_visit"),
+        )
+        .where(Receipt.merchant_name.isnot(None))
+        .group_by(store_name)
+        .order_by(func.sum(Receipt.total_amount).desc())
+    )
+
+    if start_date:
+        query = query.where(Receipt.purchase_date >= start_date)
+    if end_date:
+        query = query.where(Receipt.purchase_date <= end_date)
+
+    result = await db.execute(query)
+    rows = result.all()
+
+    stores = [
+        StoreSpending(
+            store_name=row.store_name,
+            total_spent=Decimal(str(row.total_spent)),
+            receipt_count=row.receipt_count,
+            avg_receipt=(
+                Decimal(str(row.total_spent)) / row.receipt_count
+                if row.receipt_count > 0
+                else Decimal("0")
+            ).quantize(Decimal("0.01")),
+            last_visit=row.last_visit,
+        )
+        for row in rows
+    ]
+
+    return ByStoreResponse(
+        stores=stores,
+        period_start=start_date,
+        period_end=end_date,
     )
 
 
