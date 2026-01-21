@@ -67,9 +67,14 @@ async def list_meal_plans(
     """List meal plans for a household with optional date range filter."""
     query = select(MealPlan).where(MealPlan.household_id == household_id)
 
+    # Convert timezone-aware dates to naive (DB stores naive dates)
     if start_date:
+        if start_date.tzinfo is not None:
+            start_date = start_date.replace(tzinfo=None)
         query = query.where(MealPlan.planned_date >= start_date)
     if end_date:
+        if end_date.tzinfo is not None:
+            end_date = end_date.replace(tzinfo=None)
         query = query.where(MealPlan.planned_date <= end_date)
     if status:
         query = query.where(MealPlan.status == status)
