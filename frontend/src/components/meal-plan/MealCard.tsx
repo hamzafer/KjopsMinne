@@ -70,7 +70,7 @@ export function MealCard({ meal, onClick }: MealCardProps) {
 
           {meal.status === "cooked" && meal.cost_per_serving && (
             <p className="mt-1 text-xs font-medium text-forest-600 tabular-nums">
-              {meal.cost_per_serving.toFixed(0)} kr/porsjon
+              {parseFloat(String(meal.cost_per_serving)).toFixed(0)} kr/porsjon
             </p>
           )}
         </div>

@@ -194,10 +194,10 @@ export function MealDetail({
             <div className="p-4 bg-forest-50/50 dark:bg-forest-900/20 rounded-xl border border-forest-200/50 dark:border-forest-700/50">
               <div className="flex items-center gap-2 text-forest-700 dark:text-forest-400 font-medium">
                 <Check className="w-4 h-4" />
-                {t("costCalculated")}: {meal.actual_cost.toFixed(2)} kr
+                {t("costCalculated")}: {parseFloat(String(meal.actual_cost)).toFixed(2)} kr
               </div>
               <div className="text-sm text-forest-600 dark:text-forest-500 mt-1 tabular-nums">
-                {meal.cost_per_serving?.toFixed(2)} kr/porsjon
+                {parseFloat(String(meal.cost_per_serving)).toFixed(2)} kr/porsjon
               </div>
             </div>
           )}
