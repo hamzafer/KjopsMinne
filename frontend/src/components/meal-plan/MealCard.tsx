@@ -16,18 +16,18 @@ export function MealCard({ meal, onClick }: MealCardProps) {
   const statusStyles = {
     planned: {
       card: "paper-card hover:shadow-paper-hover",
-      icon: "bg-fjord-50 text-fjord-500",
+      icon: "bg-fjord-50 dark:bg-fjord-700 text-fjord-500 dark:text-fjord-300",
       badge: "",
     },
     cooked: {
-      card: "paper-card bg-forest-50/30 border border-forest-200/50",
-      icon: "bg-forest-100 text-forest-500",
-      badge: "bg-forest-100 text-forest-600",
+      card: "paper-card bg-forest-50/30 dark:bg-forest-900/30 border border-forest-200/50 dark:border-forest-700/50",
+      icon: "bg-forest-100 dark:bg-forest-800 text-forest-500 dark:text-forest-400",
+      badge: "bg-forest-100 dark:bg-forest-800 text-forest-600 dark:text-forest-400",
     },
     skipped: {
       card: "paper-card opacity-50",
-      icon: "bg-stone-light/30 text-stone",
-      badge: "bg-stone-light/30 text-stone",
+      icon: "bg-stone-light/30 dark:bg-fjord-700/30 text-stone dark:text-fjord-400",
+      badge: "bg-stone-light/30 dark:bg-fjord-700/30 text-stone dark:text-fjord-400",
     },
   };
 
@@ -59,17 +59,17 @@ export function MealCard({ meal, onClick }: MealCardProps) {
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-sm text-fjord-700 line-clamp-2 leading-tight">
+          <h4 className="font-medium text-sm text-fjord-700 dark:text-fjord-200 line-clamp-2 leading-tight">
             {meal.recipe?.name || "Unknown recipe"}
           </h4>
 
-          <div className="mt-1.5 flex items-center gap-2 text-xs text-stone">
+          <div className="mt-1.5 flex items-center gap-2 text-xs text-stone dark:text-fjord-400">
             <Users className="w-3 h-3" />
             <span>{meal.servings} {t("servings")}</span>
           </div>
 
           {meal.status === "cooked" && meal.cost_per_serving && (
-            <p className="mt-1 text-xs font-medium text-forest-600 tabular-nums">
+            <p className="mt-1 text-xs font-medium text-forest-600 dark:text-forest-400 tabular-nums">
               {parseFloat(String(meal.cost_per_serving)).toFixed(0)} kr/porsjon
             </p>
           )}
