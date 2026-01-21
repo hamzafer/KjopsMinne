@@ -166,7 +166,7 @@ export function RestockCard({
                         {item.ingredient_name}
                       </p>
                       <p className="text-xs text-fjord-500 dark:text-fjord-400">
-                        {item.current_quantity.toFixed(1)} {item.unit}{" "}
+                        {parseFloat(String(item.current_quantity)).toFixed(1)} {item.unit}{" "}
                         {t("restock.remaining")}
                       </p>
                     </div>
