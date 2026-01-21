@@ -9,12 +9,16 @@ import {
   type WasteResponse,
   type SpendTrendResponse,
   type RestockPredictionsResponse,
+  type ByCategory,
+  type Summary,
 } from "@/lib/api";
 import {
   CostPerMealCard,
   WasteCard,
   SpendTrendCard,
   RestockCard,
+  CategoryCard,
+  SummaryStats,
 } from "@/components/analytics";
 
 // TODO: Get from auth context
@@ -33,6 +37,8 @@ export default function AnalyticsPage() {
   const [wasteData, setWasteData] = useState<WasteResponse | null>(null);
   const [trendData, setTrendData] = useState<SpendTrendResponse | null>(null);
   const [restockData, setRestockData] = useState<RestockPredictionsResponse | null>(null);
+  const [categoryData, setCategoryData] = useState<ByCategory | null>(null);
+  const [summaryData, setSummaryData] = useState<Summary | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,8 +54,8 @@ export default function AnalyticsPage() {
           startDate.setDate(now.getDate() - 7);
           break;
         case "month":
-          startDate = new Date(now);
-          startDate.setMonth(now.getMonth() - 1);
+          // Start of current month (e.g., Jan 1 for January)
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
           break;
         case "30days":
         default:
@@ -62,17 +68,21 @@ export default function AnalyticsPage() {
       const endStr = endDate.toISOString().split("T")[0];
 
       try {
-        const [cost, waste, trend, restock] = await Promise.all([
+        const [cost, waste, trend, restock, category, summary] = await Promise.all([
           api.getCostPerMeal(DEMO_HOUSEHOLD_ID, startStr, endStr).catch(() => null),
           api.getWasteAnalytics(DEMO_HOUSEHOLD_ID, startStr, endStr).catch(() => null),
           api.getSpendTrend(DEMO_HOUSEHOLD_ID, startStr, endStr, "weekly").catch(() => null),
           api.getRestockPredictions(DEMO_HOUSEHOLD_ID).catch(() => null),
+          api.getByCategory(startStr, endStr).catch(() => null),
+          api.getSummary(startStr, endStr).catch(() => null),
         ]);
 
         setCostData(cost);
         setWasteData(waste);
         setTrendData(trend);
         setRestockData(restock);
+        setCategoryData(category);
+        setSummaryData(summary);
       } catch (error) {
         console.error("Failed to fetch analytics:", error);
       } finally {
@@ -116,18 +126,26 @@ export default function AnalyticsPage() {
           </div>
         </header>
 
+        {/* Summary Stats Hero */}
+        <div className="mb-6 animate-fade-in">
+          <SummaryStats data={summaryData} loading={loading} />
+        </div>
+
         {/* Dashboard grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="animate-slide-up stagger-1">
-            <CostPerMealCard data={costData} loading={loading} />
+            <CategoryCard data={categoryData} loading={loading} />
           </div>
           <div className="animate-slide-up stagger-2">
-            <WasteCard data={wasteData} loading={loading} />
+            <CostPerMealCard data={costData} loading={loading} />
           </div>
           <div className="animate-slide-up stagger-3">
             <SpendTrendCard data={trendData} loading={loading} />
           </div>
           <div className="animate-slide-up stagger-4">
+            <WasteCard data={wasteData} loading={loading} />
+          </div>
+          <div className="animate-slide-up stagger-5">
             <RestockCard data={restockData} loading={loading} />
           </div>
         </div>
