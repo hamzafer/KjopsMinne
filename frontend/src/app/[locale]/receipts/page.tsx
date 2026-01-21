@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { Receipt, Search, Calendar, ChevronRight, ShoppingBag } from "lucide-react";
 import { api, formatNOK, formatDate, type ReceiptListItem } from "@/lib/api";
-import { cn } from "@/lib/utils";
+import { cn, toNumber } from "@/lib/utils";
 
 export default function ReceiptsPage() {
   const t = useTranslations("Receipts");
@@ -87,7 +87,7 @@ export default function ReceiptsPage() {
                 </h2>
                 <span className="text-xs text-stone-light">
                   {t("receiptsInMonth", { count: monthReceipts.length })} · {formatNOK(
-                    monthReceipts.reduce((sum, r) => sum + r.total_amount, 0),
+                    monthReceipts.reduce((sum, r) => sum + toNumber(r.total_amount), 0),
                     locale
                   )} kr
                 </span>

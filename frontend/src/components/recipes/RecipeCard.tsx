@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Clock, Users, ChefHat } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,10 +33,12 @@ export function RecipeCard({ recipe, animationDelay = 0 }: RecipeCardProps) {
       {/* Image or Placeholder */}
       <div className="aspect-[4/3] bg-fjord-100 dark:bg-fjord-700/50 overflow-hidden relative">
         {recipe.image_url ? (
-          <img
+          <Image
             src={recipe.image_url}
             alt={recipe.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            fill
+            unoptimized
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-fjord-100 to-fjord-200 dark:from-fjord-700/50 dark:to-fjord-800/50">

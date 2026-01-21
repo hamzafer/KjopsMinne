@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import {
@@ -117,11 +118,13 @@ export default function UploadPage() {
         {preview ? (
           <div className="relative">
             {/* Preview Image */}
-            <div className="relative rounded-xl overflow-hidden bg-white shadow-paper max-h-96">
-              <img
+            <div className="relative rounded-xl overflow-hidden bg-white shadow-paper max-h-96 min-h-48">
+              <Image
                 src={preview}
                 alt={t("preview")}
-                className="w-full h-full object-contain"
+                fill
+                unoptimized
+                className="object-contain"
               />
 
               {/* Overlay based on state */}

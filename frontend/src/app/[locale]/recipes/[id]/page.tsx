@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -191,11 +192,15 @@ export default function RecipeDetailPage() {
       {/* Image */}
       <div className="animate-fade-in" style={{ animationDelay: '150ms' }}>
         {recipe.image_url ? (
-          <img
-            src={recipe.image_url}
-            alt={recipe.name}
-            className="w-full aspect-video object-cover rounded-2xl mb-8 shadow-lg"
-          />
+          <div className="relative w-full aspect-video rounded-2xl mb-8 shadow-lg overflow-hidden">
+            <Image
+              src={recipe.image_url}
+              alt={recipe.name}
+              fill
+              unoptimized
+              className="object-cover"
+            />
+          </div>
         ) : (
           <div className="w-full aspect-video bg-gradient-to-br from-fjord-100 to-fjord-200 dark:from-fjord-700/50 dark:to-fjord-800/50 rounded-2xl mb-8 flex items-center justify-center">
             <ChefHat className="w-16 h-16 text-fjord-300 dark:text-fjord-600" />
