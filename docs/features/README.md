@@ -21,11 +21,12 @@ Kvitteringshvelv transforms paper and digital receipts into actionable financial
 | 09 | [Auth & Security](./09-auth-security.md) | BankID login, PSD2/SCA compliance | Not Started |
 | 10 | [Business Mode](./10-business-mode.md) | ENK/SMB features, accounting export | Not Started |
 | 11 | [Internationalization](./11-i18n.md) | Multi-language support (Norwegian, English) | Implemented |
-| 12 | [Meal Planning](./12-meal-planning.md) | Weekly meal planning with recipes | Implemented |
-| 13 | [Recipes](./13-recipes.md) | Recipe management with URL import | Implemented |
-| 14 | [Shopping Lists](./14-shopping-lists.md) | Auto-generated shopping lists from meal plans | Implemented |
-| 15 | [Inventory](./15-inventory.md) | Ingredient tracking with FIFO cost | Implemented |
-| 16 | [Leftovers](./16-leftovers.md) | Leftover tracking and waste analytics | Implemented |
+| 12 | [Dark Mode](./12-dark-mode.md) | Nordic twilight dark theme | Implemented |
+| 13 | [Meal Planning](./13-meal-planning.md) | Weekly meal planning with recipes | Implemented |
+| 14 | [Recipes](./14-recipes.md) | Recipe management with URL import | Implemented |
+| 15 | [Shopping Lists](./15-shopping-lists.md) | Auto-generated shopping lists from meal plans | Implemented |
+| 16 | [Inventory](./16-inventory.md) | Ingredient tracking with FIFO cost | Implemented |
+| 17 | [Leftovers](./17-leftovers.md) | Leftover tracking and waste analytics | Implemented |
 
 ## Implementation Phases
 
