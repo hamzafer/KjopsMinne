@@ -1,5 +1,6 @@
 # backend/src/schemas/recipe.py
 """Recipe Pydantic schemas."""
+
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID

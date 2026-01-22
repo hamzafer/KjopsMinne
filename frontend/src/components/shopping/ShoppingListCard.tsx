@@ -1,20 +1,18 @@
 "use client";
 
+import { ShoppingCart, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { ShoppingCart, CheckCircle2 } from "lucide-react";
-import { cn } from "@/lib/utils";
+
 import { formatDate, type ShoppingList } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 interface ShoppingListCardProps {
   shoppingList: ShoppingList;
   animationDelay?: number;
 }
 
-export function ShoppingListCard({
-  shoppingList,
-  animationDelay = 0,
-}: ShoppingListCardProps) {
+export function ShoppingListCard({ shoppingList, animationDelay = 0 }: ShoppingListCardProps) {
   const locale = useLocale();
   const t = useTranslations("Shopping");
 
@@ -30,7 +28,7 @@ export function ShoppingListCard({
     <Link
       href={`/${locale}/shopping/${shoppingList.id}`}
       className={cn(
-        "group block paper-card overflow-hidden",
+        "paper-card group block overflow-hidden",
         "animate-slide-up opacity-0",
         "hover:scale-[1.02] active:scale-[0.98]",
         "transition-all duration-200"
@@ -46,26 +44,24 @@ export function ShoppingListCard({
           {/* Icon */}
           <div
             className={cn(
-              "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0",
+              "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl",
               "transition-all duration-300",
-              isComplete
-                ? "bg-forest-100 text-forest-500"
-                : "bg-fjord-100 text-fjord-500"
+              isComplete ? "bg-forest-100 text-forest-500" : "bg-fjord-100 text-fjord-500"
             )}
           >
             {isComplete ? (
-              <CheckCircle2 className="w-6 h-6" />
+              <CheckCircle2 className="h-6 w-6" />
             ) : (
-              <ShoppingCart className="w-6 h-6" />
+              <ShoppingCart className="h-6 w-6" />
             )}
           </div>
 
           {/* Content */}
-          <div className="flex-1 min-w-0">
-            <h3 className="font-display font-semibold text-fjord-800 group-hover:text-fjord-600 transition-colors line-clamp-1">
+          <div className="min-w-0 flex-1">
+            <h3 className="line-clamp-1 font-display font-semibold text-fjord-800 transition-colors group-hover:text-fjord-600">
               {shoppingList.name}
             </h3>
-            <p className="text-sm text-fjord-500 mt-0.5">
+            <p className="mt-0.5 text-sm text-fjord-500">
               {t("dateRange", { start: startDate, end: endDate })}
             </p>
           </div>
@@ -73,7 +69,7 @@ export function ShoppingListCard({
 
         {/* Progress section */}
         <div className="mt-4">
-          <div className="flex items-center justify-between mb-1.5">
+          <div className="mb-1.5 flex items-center justify-between">
             <span className="text-sm text-fjord-500">
               {isComplete
                 ? t("allDone")
@@ -90,7 +86,7 @@ export function ShoppingListCard({
           </div>
 
           {/* Progress bar */}
-          <div className="h-2 bg-fjord-100 rounded-full overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-fjord-100">
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-500 ease-out",
@@ -104,7 +100,7 @@ export function ShoppingListCard({
         {/* Status badge */}
         {isComplete && (
           <div className="mt-3 flex justify-end">
-            <span className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-forest-100 text-forest-600">
+            <span className="rounded-full bg-forest-100 px-2.5 py-0.5 text-xs font-medium text-forest-600">
               {t("completed")}
             </span>
           </div>

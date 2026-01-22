@@ -1,9 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useTranslations, useLocale } from "next-intl";
-import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Upload,
@@ -17,9 +13,15 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
+import { useState, useEffect } from "react";
+
+import { cn } from "@/lib/utils";
+
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { ThemeSwitcher } from "./ThemeSwitcher";
-import { useState, useEffect } from "react";
 
 export function MobileNav() {
   const pathname = usePathname();
@@ -58,23 +60,23 @@ export function MobileNav() {
   return (
     <>
       {/* Mobile Header Bar */}
-      <header className="fixed top-0 left-0 right-0 z-50 lg:hidden h-14 bg-cream/95 dark:bg-[#1a2332]/95 backdrop-blur-md border-b border-fjord-100/50 dark:border-fjord-700/30">
-        <div className="flex items-center justify-between h-full px-4">
+      <header className="fixed left-0 right-0 top-0 z-50 h-14 border-b border-fjord-100/50 bg-cream/95 backdrop-blur-md dark:border-fjord-700/30 dark:bg-[#1a2332]/95 lg:hidden">
+        <div className="flex h-full items-center justify-between px-4">
           {/* Hamburger */}
           <button
             onClick={() => setIsOpen(true)}
-            className="p-2 -ml-2 rounded-xl text-fjord-600 dark:text-fjord-300 hover:bg-fjord-50 dark:hover:bg-fjord-800/50 transition-colors"
+            className="-ml-2 rounded-xl p-2 text-fjord-600 transition-colors hover:bg-fjord-50 dark:text-fjord-300 dark:hover:bg-fjord-800/50"
             aria-label="Open menu"
           >
-            <Menu className="w-6 h-6" />
+            <Menu className="h-6 w-6" />
           </button>
 
           {/* Logo */}
           <Link href={`/${locale}`} className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-fjord-500 to-fjord-600 flex items-center justify-center shadow-sm">
-              <Vault className="w-4 h-4 text-white" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-fjord-500 to-fjord-600 shadow-sm">
+              <Vault className="h-4 w-4 text-white" />
             </div>
-            <span className="font-display text-lg text-fjord-700 dark:text-fjord-200 tracking-tight">
+            <span className="font-display text-lg tracking-tight text-fjord-700 dark:text-fjord-200">
               {t("appName")}
             </span>
           </Link>
@@ -89,7 +91,7 @@ export function MobileNav() {
         className={cn(
           "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm lg:hidden",
           "transition-opacity duration-300",
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          isOpen ? "opacity-100" : "pointer-events-none opacity-0"
         )}
         onClick={() => setIsOpen(false)}
         aria-hidden="true"
@@ -98,7 +100,7 @@ export function MobileNav() {
       {/* Drawer */}
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-full w-[280px] lg:hidden",
+          "fixed left-0 top-0 z-50 h-full w-[280px] lg:hidden",
           "bg-cream dark:bg-[#1a2332]",
           "border-r border-fjord-100/50 dark:border-fjord-700/30",
           "transition-transform duration-300 ease-out",
@@ -106,30 +108,30 @@ export function MobileNav() {
         )}
       >
         {/* Drawer Header */}
-        <div className="flex items-center justify-between h-14 px-4 border-b border-fjord-100/50 dark:border-fjord-700/30">
+        <div className="flex h-14 items-center justify-between border-b border-fjord-100/50 px-4 dark:border-fjord-700/30">
           <Link
             href={`/${locale}`}
             className="flex items-center gap-2"
             onClick={() => setIsOpen(false)}
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-fjord-500 to-fjord-600 flex items-center justify-center shadow-sm">
-              <Vault className="w-5 h-5 text-white" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-fjord-500 to-fjord-600 shadow-sm">
+              <Vault className="h-5 w-5 text-white" />
             </div>
-            <span className="font-display text-xl text-fjord-700 dark:text-fjord-200 tracking-tight">
+            <span className="font-display text-xl tracking-tight text-fjord-700 dark:text-fjord-200">
               {t("appName")}
             </span>
           </Link>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-2 -mr-2 rounded-xl text-fjord-600 dark:text-fjord-300 hover:bg-fjord-50 dark:hover:bg-fjord-800/50 transition-colors"
+            className="-mr-2 rounded-xl p-2 text-fjord-600 transition-colors hover:bg-fjord-50 dark:text-fjord-300 dark:hover:bg-fjord-800/50"
             aria-label="Close menu"
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 px-3">
+        <nav className="flex-1 overflow-y-auto px-3 py-4">
           <ul className="space-y-1">
             {navItems.map((item, index) => {
               const Icon = item.icon;
@@ -147,14 +149,14 @@ export function MobileNav() {
                     href={item.href}
                     onClick={() => setIsOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium",
+                      "flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium",
                       "transition-all duration-200",
                       isActive
                         ? "bg-fjord-500 text-white shadow-sm"
-                        : "text-fjord-600 dark:text-fjord-300 hover:bg-fjord-50 dark:hover:bg-fjord-800/50 hover:text-fjord-700 dark:hover:text-fjord-100"
+                        : "text-fjord-600 hover:bg-fjord-50 hover:text-fjord-700 dark:text-fjord-300 dark:hover:bg-fjord-800/50 dark:hover:text-fjord-100"
                     )}
                   >
-                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <Icon className="h-5 w-5 flex-shrink-0" />
                     <span>{item.label}</span>
                   </Link>
                 </li>
@@ -164,11 +166,9 @@ export function MobileNav() {
         </nav>
 
         {/* Bottom Section */}
-        <div className="border-t border-fjord-100/50 dark:border-fjord-700/30 p-4">
+        <div className="border-t border-fjord-100/50 p-4 dark:border-fjord-700/30">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-fjord-500 dark:text-fjord-400">
-              {t("language")}
-            </span>
+            <span className="text-sm text-fjord-500 dark:text-fjord-400">{t("language")}</span>
             <LanguageSwitcher />
           </div>
         </div>

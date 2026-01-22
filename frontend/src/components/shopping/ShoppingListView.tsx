@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
-import { useTranslations } from "next-intl";
 import { CheckCircle2, ShoppingBag } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+import { useMemo } from "react";
+
 import type { ShoppingList, ShoppingListItem as ShoppingListItemType } from "@/lib/api";
+import { cn } from "@/lib/utils";
+
 import { ShoppingListItem } from "./ShoppingListItem";
 
 interface ShoppingListViewProps {
@@ -66,17 +68,17 @@ export function ShoppingListView({
     <div className="space-y-6">
       {/* Progress bar */}
       <div className="paper-card p-5">
-        <div className="flex items-center justify-between mb-3">
+        <div className="mb-3 flex items-center justify-between">
           <span className="text-sm font-medium text-fjord-600 dark:text-fjord-300">
             {allChecked
               ? t("allDone")
               : t("progress", { checked: checkedItems, total: totalItems })}
           </span>
-          <span className="text-sm font-semibold text-fjord-800 dark:text-fjord-100 tabular-nums">
+          <span className="text-sm font-semibold tabular-nums text-fjord-800 dark:text-fjord-100">
             {Math.round(progressPercent)}%
           </span>
         </div>
-        <div className="h-3 bg-fjord-100 dark:bg-fjord-700/50 rounded-full overflow-hidden">
+        <div className="h-3 overflow-hidden rounded-full bg-fjord-100 dark:bg-fjord-700/50">
           <div
             className={cn(
               "h-full rounded-full transition-all duration-500 ease-out",
@@ -97,25 +99,25 @@ export function ShoppingListView({
               {/* Sticky category header */}
               <div
                 className={cn(
-                  "sticky top-0 z-10 py-2.5 -mx-4 px-4",
+                  "sticky top-0 z-10 -mx-4 px-4 py-2.5",
                   "bg-[#FAF9F6]/95 dark:bg-[#1a2332]/95",
-                  "backdrop-blur-md border-b border-fjord-100/50 dark:border-fjord-700/30"
+                  "border-b border-fjord-100/50 backdrop-blur-md dark:border-fjord-700/30"
                 )}
               >
                 <div className="flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-lg bg-fjord-100 dark:bg-fjord-700/50 flex items-center justify-center">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-fjord-100 dark:bg-fjord-700/50">
                     <span className="text-sm font-bold text-fjord-500 dark:text-fjord-300">
                       {category}
                     </span>
                   </span>
-                  <span className="text-xs font-medium text-fjord-400 dark:text-fjord-500 uppercase tracking-wider">
+                  <span className="text-xs font-medium uppercase tracking-wider text-fjord-400 dark:text-fjord-500">
                     {items.length} {items.length === 1 ? "item" : "items"}
                   </span>
                 </div>
               </div>
 
               {/* Items in category */}
-              <div className="paper-card p-4 mt-2 space-y-1">
+              <div className="paper-card mt-2 space-y-1 p-4">
                 {items.map((item) => (
                   <ShoppingListItem
                     key={item.id}
@@ -133,14 +135,14 @@ export function ShoppingListView({
       {/* Checked items section at bottom */}
       {checkedItemsList.length > 0 && (
         <div className="mt-8">
-          <div className="py-3 -mx-4 px-4 border-t border-fjord-100 dark:border-fjord-700/30">
-            <h3 className="font-display font-semibold text-fjord-400 dark:text-fjord-500 text-base flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-forest-500 dark:text-forest-400" />
+          <div className="-mx-4 border-t border-fjord-100 px-4 py-3 dark:border-fjord-700/30">
+            <h3 className="flex items-center gap-2 font-display text-base font-semibold text-fjord-400 dark:text-fjord-500">
+              <CheckCircle2 className="h-5 w-5 text-forest-500 dark:text-forest-400" />
               {t("checked")} ({checkedItemsList.length})
             </h3>
           </div>
 
-          <div className="paper-card p-4 opacity-60 dark:opacity-50 space-y-1">
+          <div className="paper-card space-y-1 p-4 opacity-60 dark:opacity-50">
             {checkedItemsList.map((item) => (
               <ShoppingListItem
                 key={item.id}
@@ -155,11 +157,11 @@ export function ShoppingListView({
 
       {/* Mark Complete button when all items checked */}
       {allChecked && shoppingList.status !== "completed" && (
-        <div className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 md:w-auto z-20">
+        <div className="fixed bottom-6 left-4 right-4 z-20 md:left-auto md:right-6 md:w-auto">
           <button
             onClick={onComplete}
             className={cn(
-              "w-full md:w-auto px-8 py-4 rounded-2xl font-semibold text-lg",
+              "w-full rounded-2xl px-8 py-4 text-lg font-semibold md:w-auto",
               "bg-gradient-to-r from-forest-500 to-forest-600 text-white",
               "shadow-lg shadow-forest-500/25 dark:shadow-forest-500/15",
               "hover:from-forest-600 hover:to-forest-700 active:from-forest-700 active:to-forest-800",
@@ -168,7 +170,7 @@ export function ShoppingListView({
               "animate-slide-up"
             )}
           >
-            <CheckCircle2 className="w-6 h-6" />
+            <CheckCircle2 className="h-6 w-6" />
             {t("markComplete")}
           </button>
         </div>
@@ -177,8 +179,8 @@ export function ShoppingListView({
       {/* Empty state */}
       {totalItems === 0 && (
         <div className="paper-card p-12 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-fjord-100 dark:bg-fjord-700/50 flex items-center justify-center">
-            <ShoppingBag className="w-8 h-8 text-fjord-400 dark:text-fjord-500" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-fjord-100 dark:bg-fjord-700/50">
+            <ShoppingBag className="h-8 w-8 text-fjord-400 dark:text-fjord-500" />
           </div>
           <p className="text-fjord-500 dark:text-fjord-400">{t("emptyMessage")}</p>
         </div>

@@ -1,9 +1,10 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Users, Check, X, ChefHat } from "lucide-react";
-import { cn, toNumber } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+
 import type { MealPlan } from "@/lib/api";
+import { cn, toNumber } from "@/lib/utils";
 
 interface MealCardProps {
   meal: MealPlan;
@@ -37,39 +38,43 @@ export function MealCard({ meal, onClick }: MealCardProps) {
     <button
       onClick={onClick}
       className={cn(
-        "w-full text-left p-3 rounded-xl transition-all duration-200",
+        "w-full rounded-xl p-3 text-left transition-all duration-200",
         "hover:scale-[1.02] active:scale-[0.98]",
         styles.card
       )}
     >
       <div className="flex items-start gap-3">
         {/* Icon */}
-        <div className={cn(
-          "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
-          styles.icon
-        )}>
+        <div
+          className={cn(
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+            styles.icon
+          )}
+        >
           {meal.status === "cooked" ? (
-            <Check className="w-4 h-4" />
+            <Check className="h-4 w-4" />
           ) : meal.status === "skipped" ? (
-            <X className="w-4 h-4" />
+            <X className="h-4 w-4" />
           ) : (
-            <ChefHat className="w-4 h-4" />
+            <ChefHat className="h-4 w-4" />
           )}
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-sm text-fjord-700 dark:text-fjord-200 line-clamp-2 leading-tight">
+        <div className="min-w-0 flex-1">
+          <h4 className="line-clamp-2 text-sm font-medium leading-tight text-fjord-700 dark:text-fjord-200">
             {meal.recipe?.name || "Unknown recipe"}
           </h4>
 
           <div className="mt-1.5 flex items-center gap-2 text-xs text-stone dark:text-fjord-400">
-            <Users className="w-3 h-3" />
-            <span>{meal.servings} {t("servings")}</span>
+            <Users className="h-3 w-3" />
+            <span>
+              {meal.servings} {t("servings")}
+            </span>
           </div>
 
           {meal.status === "cooked" && meal.cost_per_serving && (
-            <p className="mt-1 text-xs font-medium text-forest-600 dark:text-forest-400 tabular-nums">
+            <p className="mt-1 text-xs font-medium tabular-nums text-forest-600 dark:text-forest-400">
               {toNumber(meal.cost_per_serving).toFixed(0)} kr/porsjon
             </p>
           )}

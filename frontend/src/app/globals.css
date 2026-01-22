@@ -1,25 +1,25 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --color-cream: #FAF9F6;
-  --color-paper: #FFFFFF;
-  --color-fjord: #2D4A5E;
-  --color-forest: #3D5A47;
-  --color-amber: #C4956A;
-  --color-stone: #6B7280;
+  --color-cream: #faf9f6;
+  --color-paper: #ffffff;
+  --color-fjord: #2d4a5e;
+  --color-forest: #3d5a47;
+  --color-amber: #c4956a;
+  --color-stone: #6b7280;
 }
 
 html.dark {
   --color-cream: #1a2332;
   --color-paper: #243447;
   --color-fjord: #94a3b8;
-  --color-forest: #78A287;
+  --color-forest: #78a287;
   --color-amber: #d4a574;
-  --color-stone: #9CA3AF;
+  --color-stone: #9ca3af;
 }
 
 * {
@@ -31,17 +31,19 @@ html {
 }
 
 body {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: "DM Sans", system-ui, sans-serif;
   background-color: var(--color-cream);
   color: var(--color-fjord);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 /* Subtle paper texture overlay */
 body::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -69,12 +71,12 @@ html.dark body::before {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
+  background: #d1d5db;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+  background: #9ca3af;
 }
 
 html.dark ::-webkit-scrollbar-thumb {
@@ -86,24 +88,44 @@ html.dark ::-webkit-scrollbar-thumb:hover {
 }
 
 /* Typography refinements */
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Fraunces', Georgia, serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Fraunces", Georgia, serif;
   font-weight: 500;
   letter-spacing: -0.02em;
 }
 
 /* Stagger animation delays */
-.stagger-1 { animation-delay: 0.05s; }
-.stagger-2 { animation-delay: 0.1s; }
-.stagger-3 { animation-delay: 0.15s; }
-.stagger-4 { animation-delay: 0.2s; }
-.stagger-5 { animation-delay: 0.25s; }
-.stagger-6 { animation-delay: 0.3s; }
+.stagger-1 {
+  animation-delay: 0.05s;
+}
+.stagger-2 {
+  animation-delay: 0.1s;
+}
+.stagger-3 {
+  animation-delay: 0.15s;
+}
+.stagger-4 {
+  animation-delay: 0.2s;
+}
+.stagger-5 {
+  animation-delay: 0.25s;
+}
+.stagger-6 {
+  animation-delay: 0.3s;
+}
 
 /* Paper card effect */
 .paper-card {
-  @apply bg-paper rounded-2xl shadow-paper transition-all duration-300;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  @apply rounded-2xl bg-paper shadow-paper transition-all duration-300;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .paper-card:hover {
@@ -113,23 +135,29 @@ h1, h2, h3, h4, h5, h6 {
 html.dark .paper-card {
   background-color: #243447 !important;
   border: 1px solid rgba(148, 163, 184, 0.15) !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2) !important;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.2) !important;
 }
 
 html.dark .paper-card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.35), 0 8px 24px rgba(0,0,0,0.25) !important;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.35),
+    0 8px 24px rgba(0, 0, 0, 0.25) !important;
 }
 
 /* Receipt paper effect */
 .receipt-paper {
-  background: linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #fafafa 100%);
   border: 1px solid rgba(0, 0, 0, 0.04);
   position: relative;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .receipt-paper::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -139,8 +167,8 @@ html.dark .paper-card:hover {
     90deg,
     transparent,
     transparent 4px,
-    #E5E7EB 4px,
-    #E5E7EB 8px
+    #e5e7eb 4px,
+    #e5e7eb 8px
   );
 }
 
@@ -178,15 +206,15 @@ html.dark .focus-ring {
 
 /* Button base */
 .btn {
-  @apply inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 focus-ring rounded-xl;
+  @apply focus-ring inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200;
 }
 
 .btn-primary {
-  @apply btn bg-fjord-500 text-white hover:bg-fjord-600 active:bg-fjord-700 px-5 py-2.5;
+  @apply btn bg-fjord-500 px-5 py-2.5 text-white hover:bg-fjord-600 active:bg-fjord-700;
 }
 
 .btn-secondary {
-  @apply btn bg-paper text-fjord-500 border border-fjord-200 hover:bg-fjord-50 hover:border-fjord-300 px-5 py-2.5;
+  @apply btn border border-fjord-200 bg-paper px-5 py-2.5 text-fjord-500 hover:border-fjord-300 hover:bg-fjord-50;
 }
 
 html.dark .btn-secondary {
@@ -201,7 +229,7 @@ html.dark .btn-secondary:hover {
 }
 
 .btn-ghost {
-  @apply btn text-fjord-500 hover:bg-fjord-50 px-4 py-2;
+  @apply btn px-4 py-2 text-fjord-500 hover:bg-fjord-50;
 }
 
 html.dark .btn-ghost:hover {
@@ -210,7 +238,7 @@ html.dark .btn-ghost:hover {
 
 /* Drag and drop zone */
 .dropzone {
-  @apply border-2 border-dashed border-fjord-200 rounded-2xl transition-all duration-300;
+  @apply rounded-2xl border-2 border-dashed border-fjord-200 transition-all duration-300;
 }
 
 .dropzone:hover,
@@ -219,7 +247,7 @@ html.dark .btn-ghost:hover {
 }
 
 .dropzone.dragover {
-  @apply border-forest-400 bg-forest-50/50 scale-[1.01];
+  @apply scale-[1.01] border-forest-400 bg-forest-50/50;
 }
 
 html.dark .dropzone {
@@ -233,7 +261,7 @@ html.dark .dropzone.active {
 }
 
 html.dark .dropzone.dragover {
-  border-color: #78A287;
+  border-color: #78a287;
   background-color: rgba(120, 162, 135, 0.1);
 }
 
@@ -244,7 +272,7 @@ html.dark .dropzone.dragover {
 
 /* Receipt item row */
 .receipt-item {
-  @apply flex justify-between items-baseline py-2 border-b border-fjord-100/50 last:border-b-0;
+  @apply flex items-baseline justify-between border-b border-fjord-100/50 py-2 last:border-b-0;
 }
 
 html.dark .receipt-item {
@@ -252,7 +280,7 @@ html.dark .receipt-item {
 }
 
 .receipt-item-name {
-  @apply text-fjord-600 truncate mr-4;
+  @apply mr-4 truncate text-fjord-600;
 }
 
 html.dark .receipt-item-name {
@@ -260,7 +288,7 @@ html.dark .receipt-item-name {
 }
 
 .receipt-item-price {
-  @apply text-fjord-800 font-medium tabular-nums whitespace-nowrap;
+  @apply whitespace-nowrap font-medium tabular-nums text-fjord-800;
 }
 
 html.dark .receipt-item-price {
@@ -269,12 +297,12 @@ html.dark .receipt-item-price {
 
 /* Category badge */
 .category-badge {
-  @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+  @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium;
 }
 
 /* Chart tooltip */
 .chart-tooltip {
-  @apply bg-fjord-800 text-white px-3 py-2 rounded-lg shadow-lg text-sm;
+  @apply rounded-lg bg-fjord-800 px-3 py-2 text-sm text-white shadow-lg;
 }
 
 html.dark .chart-tooltip {
@@ -284,7 +312,7 @@ html.dark .chart-tooltip {
 
 /* Skeleton loading */
 .skeleton {
-  @apply animate-pulse bg-fjord-100 rounded;
+  @apply animate-pulse rounded bg-fjord-100;
 }
 
 html.dark .skeleton {
@@ -297,8 +325,8 @@ html.dark .skeleton {
 }
 
 .nok::after {
-  content: ' kr';
-  @apply text-stone-light text-sm ml-0.5;
+  content: " kr";
+  @apply ml-0.5 text-sm text-stone-light;
 }
 
 html.dark .nok::after {

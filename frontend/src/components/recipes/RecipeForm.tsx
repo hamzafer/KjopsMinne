@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Loader2 } from "lucide-react";
-import { IngredientList } from "./IngredientList";
+import { useState } from "react";
+
 import { api, type Recipe, type RecipeCreate } from "@/lib/api";
 import { cn } from "@/lib/utils";
+
+import { IngredientList } from "./IngredientList";
 
 interface RecipeFormProps {
   recipe?: Recipe;
@@ -14,11 +16,7 @@ interface RecipeFormProps {
   householdId: string;
 }
 
-export function RecipeForm({
-  recipe,
-  defaultValues,
-  householdId,
-}: RecipeFormProps) {
+export function RecipeForm({ recipe, defaultValues, householdId }: RecipeFormProps) {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("Recipes");
@@ -27,15 +25,11 @@ export function RecipeForm({
   const [error, setError] = useState<string | null>(null);
 
   const [name, setName] = useState(recipe?.name ?? defaultValues?.name ?? "");
-  const [servings, setServings] = useState(
-    recipe?.servings ?? defaultValues?.servings ?? 2
-  );
+  const [servings, setServings] = useState(recipe?.servings ?? defaultValues?.servings ?? 2);
   const [prepTime, setPrepTime] = useState<number | "">(
     recipe?.prep_time_minutes ?? defaultValues?.prep_time_minutes ?? ""
   );
-  const [tags, setTags] = useState(
-    (recipe?.tags ?? defaultValues?.tags ?? []).join(", ")
-  );
+  const [tags, setTags] = useState((recipe?.tags ?? defaultValues?.tags ?? []).join(", "));
   const [instructions, setInstructions] = useState(
     recipe?.instructions ?? defaultValues?.instructions ?? ""
   );
@@ -98,7 +92,7 @@ export function RecipeForm({
   };
 
   const inputClasses = cn(
-    "w-full px-4 py-3 rounded-xl",
+    "w-full rounded-xl px-4 py-3",
     "bg-white dark:bg-fjord-800/50",
     "border border-fjord-200 dark:border-fjord-700",
     "text-fjord-800 dark:text-fjord-100",
@@ -110,14 +104,14 @@ export function RecipeForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 animate-fade-in">
+        <div className="animate-fade-in rounded-xl border border-red-200 bg-red-50 p-4 text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
           {error}
         </div>
       )}
 
       {/* Name */}
-      <div className="animate-fade-in" style={{ animationDelay: '0ms' }}>
-        <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-2">
+      <div className="animate-fade-in" style={{ animationDelay: "0ms" }}>
+        <label className="mb-2 block text-sm font-medium text-fjord-700 dark:text-fjord-200">
           {t("nameLabel")} *
         </label>
         <input
@@ -131,9 +125,9 @@ export function RecipeForm({
       </div>
 
       {/* Servings & Prep Time */}
-      <div className="grid grid-cols-2 gap-4 animate-fade-in" style={{ animationDelay: '50ms' }}>
+      <div className="grid animate-fade-in grid-cols-2 gap-4" style={{ animationDelay: "50ms" }}>
         <div>
-          <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-2">
+          <label className="mb-2 block text-sm font-medium text-fjord-700 dark:text-fjord-200">
             {t("servingsLabel")} *
           </label>
           <input
@@ -146,15 +140,13 @@ export function RecipeForm({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-2">
+          <label className="mb-2 block text-sm font-medium text-fjord-700 dark:text-fjord-200">
             {t("prepTimeLabel")}
           </label>
           <input
             type="number"
             value={prepTime}
-            onChange={(e) =>
-              setPrepTime(e.target.value ? parseInt(e.target.value) : "")
-            }
+            onChange={(e) => setPrepTime(e.target.value ? parseInt(e.target.value) : "")}
             placeholder={t("prepTimePlaceholder")}
             className={inputClasses}
             min="1"
@@ -163,8 +155,8 @@ export function RecipeForm({
       </div>
 
       {/* Tags */}
-      <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
-        <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-2">
+      <div className="animate-fade-in" style={{ animationDelay: "100ms" }}>
+        <label className="mb-2 block text-sm font-medium text-fjord-700 dark:text-fjord-200">
           {t("tagsLabel")}
         </label>
         <input
@@ -177,13 +169,13 @@ export function RecipeForm({
       </div>
 
       {/* Ingredients */}
-      <div className="animate-fade-in" style={{ animationDelay: '150ms' }}>
+      <div className="animate-fade-in" style={{ animationDelay: "150ms" }}>
         <IngredientList ingredients={ingredients} onChange={setIngredients} />
       </div>
 
       {/* Instructions */}
-      <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
-        <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-2">
+      <div className="animate-fade-in" style={{ animationDelay: "200ms" }}>
+        <label className="mb-2 block text-sm font-medium text-fjord-700 dark:text-fjord-200">
           {t("instructionsLabel")}
         </label>
         <textarea
@@ -196,12 +188,15 @@ export function RecipeForm({
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 justify-end pt-4 border-t border-fjord-200 dark:border-fjord-700 animate-fade-in" style={{ animationDelay: '250ms' }}>
+      <div
+        className="flex animate-fade-in justify-end gap-3 border-t border-fjord-200 pt-4 dark:border-fjord-700"
+        style={{ animationDelay: "250ms" }}
+      >
         <button
           type="button"
           onClick={() => router.back()}
           className={cn(
-            "px-5 py-2.5 rounded-xl font-medium",
+            "rounded-xl px-5 py-2.5 font-medium",
             "text-fjord-600 dark:text-fjord-300",
             "hover:bg-fjord-100 dark:hover:bg-fjord-800",
             "hover:scale-[1.02] active:scale-[0.98]",
@@ -214,15 +209,15 @@ export function RecipeForm({
           type="submit"
           disabled={saving || !name.trim()}
           className={cn(
-            "px-5 py-2.5 rounded-xl font-medium",
+            "rounded-xl px-5 py-2.5 font-medium",
             "bg-fjord-500 text-white",
-            "hover:bg-fjord-600 disabled:opacity-50 disabled:cursor-not-allowed",
+            "hover:bg-fjord-600 disabled:cursor-not-allowed disabled:opacity-50",
             "shadow-lg shadow-fjord-500/20",
             "hover:scale-[1.02] active:scale-[0.98]",
-            "transition-all duration-200 flex items-center gap-2"
+            "flex items-center gap-2 transition-all duration-200"
           )}
         >
-          {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+          {saving && <Loader2 className="h-4 w-4 animate-spin" />}
           {saving ? t("saving") : t("save")}
         </button>
       </div>

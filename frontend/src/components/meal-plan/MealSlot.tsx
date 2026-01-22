@@ -1,10 +1,12 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Plus, Coffee, Sun, Moon } from "lucide-react";
-import { MealCard } from "./MealCard";
-import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+
 import type { MealPlan } from "@/lib/api";
+import { cn } from "@/lib/utils";
+
+import { MealCard } from "./MealCard";
 
 interface MealSlotProps {
   mealType: "breakfast" | "lunch" | "dinner";
@@ -31,7 +33,7 @@ export function MealSlot({ mealType, meal, onAddClick, onMealClick }: MealSlotPr
     <button
       onClick={onAddClick}
       className={cn(
-        "group w-full h-20 rounded-xl",
+        "group h-20 w-full rounded-xl",
         "border-2 border-dashed border-fjord-200/60 dark:border-fjord-700/60",
         "hover:border-fjord-400 dark:hover:border-fjord-500",
         "hover:bg-fjord-50/50 dark:hover:bg-fjord-800/30",
@@ -43,8 +45,8 @@ export function MealSlot({ mealType, meal, onAddClick, onMealClick }: MealSlotPr
     >
       <div className="flex items-center gap-2 transition-transform group-hover:scale-105">
         <div className="relative">
-          <Icon className="w-4 h-4 opacity-50" />
-          <Plus className="w-3 h-3 absolute -bottom-1 -right-1 bg-white dark:bg-fjord-900 rounded-full" />
+          <Icon className="h-4 w-4 opacity-50" />
+          <Plus className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full bg-white dark:bg-fjord-900" />
         </div>
         <span className="text-sm font-medium">{t(mealType)}</span>
       </div>

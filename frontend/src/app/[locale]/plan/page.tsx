@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { Plus, CalendarDays } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { Plus, CalendarDays } from "lucide-react";
-import { api, type MealPlan } from "@/lib/api";
-import { WeeklyCalendar } from "@/components/meal-plan/WeeklyCalendar";
+import { useEffect, useState, useCallback, useMemo } from "react";
+
 import { MealDetail } from "@/components/meal-plan/MealDetail";
+import { WeeklyCalendar } from "@/components/meal-plan/WeeklyCalendar";
 import { GenerateButton } from "@/components/shopping";
+import { api, type MealPlan } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 // TODO: Get from user context
@@ -79,7 +80,11 @@ export default function MealPlanPage() {
     router.push(`/${locale}/plan/add?date=${dateStr}&meal=${mealType}`);
   };
 
-  const handleCook = async (data: { actual_servings?: number; create_leftover: boolean; leftover_servings?: number }) => {
+  const handleCook = async (data: {
+    actual_servings?: number;
+    create_leftover: boolean;
+    leftover_servings?: number;
+  }) => {
     if (!selectedMeal) return;
 
     setCooking(true);
@@ -119,20 +124,18 @@ export default function MealPlanPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="mx-auto max-w-7xl px-6 py-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 animate-slide-up">
+      <div className="mb-8 flex animate-slide-up flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-fjord-500 to-fjord-600 flex items-center justify-center shadow-lg shadow-fjord-500/20">
-            <CalendarDays className="w-7 h-7 text-white" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-fjord-500 to-fjord-600 shadow-lg shadow-fjord-500/20">
+            <CalendarDays className="h-7 w-7 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-display font-semibold text-fjord-800 dark:text-fjord-100">
+            <h1 className="font-display text-2xl font-semibold text-fjord-800 dark:text-fjord-100">
               {t("title")}
             </h1>
-            <p className="mt-0.5 text-fjord-500 dark:text-fjord-400">
-              {t("subtitle")}
-            </p>
+            <p className="mt-0.5 text-fjord-500 dark:text-fjord-400">{t("subtitle")}</p>
           </div>
         </div>
 
@@ -140,7 +143,7 @@ export default function MealPlanPage() {
           <button
             onClick={() => router.push(`/${locale}/plan/add`)}
             className={cn(
-              "flex items-center gap-2 px-5 py-3 rounded-xl font-medium",
+              "flex items-center gap-2 rounded-xl px-5 py-3 font-medium",
               "bg-fjord-500 text-white",
               "hover:bg-fjord-600",
               "shadow-lg shadow-fjord-500/20",
@@ -148,16 +151,12 @@ export default function MealPlanPage() {
               "hover:scale-[1.02] active:scale-[0.98]"
             )}
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="h-5 w-5" />
             {t("addMeal")}
           </button>
 
           <div className="w-auto">
-            <GenerateButton
-              householdId={HOUSEHOLD_ID}
-              weekStart={weekStart}
-              weekEnd={weekEnd}
-            />
+            <GenerateButton householdId={HOUSEHOLD_ID} weekStart={weekStart} weekEnd={weekEnd} />
           </div>
         </div>
       </div>

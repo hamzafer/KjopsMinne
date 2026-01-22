@@ -1,4 +1,5 @@
 """Seed database with common Norwegian grocery ingredients."""
+
 import asyncio
 import uuid
 
@@ -29,45 +30,36 @@ INGREDIENTS = [
     _ing("Romme", "romme", "ml", ["sour cream", "lettromme"], "Meieri"),
     _ing("Flote", "flote", "ml", ["cream", "matflote", "kremflote"], "Meieri"),
     _ing("Egg", "egg", "pcs", ["eggs", "eggehvite"], "Meieri"),
-
     # Kjott (Meat)
-    _ing("Kyllingfilet", "kyllingfilet", "g",
-         ["chicken breast", "kylling", "kyl filet"], "Kjott"),
-    _ing("Kjottdeig", "kjottdeig", "g",
-         ["minced meat", "deig", "storfedeig"], "Kjott"),
+    _ing("Kyllingfilet", "kyllingfilet", "g", ["chicken breast", "kylling", "kyl filet"], "Kjott"),
+    _ing("Kjottdeig", "kjottdeig", "g", ["minced meat", "deig", "storfedeig"], "Kjott"),
     _ing("Bacon", "bacon", "g", ["bakon"], "Kjott"),
     _ing("Polser", "polser", "pcs", ["sausages", "grillpolser", "wiener"], "Kjott"),
     _ing("Skinke", "skinke", "g", ["ham", "kokt skinke"], "Kjott"),
-
     # Fisk (Fish)
     _ing("Laks", "laks", "g", ["salmon", "laksefilet"], "Fisk"),
     _ing("Torsk", "torsk", "g", ["cod", "torskefilet"], "Fisk"),
     _ing("Reker", "reker", "g", ["shrimp", "prawns"], "Fisk"),
-
     # Gronnsaker (Vegetables)
     _ing("Tomat", "tomat", "g", ["tomato", "tomater", "cherrytomater"], "Gronnsaker"),
     _ing("Lok", "lok", "pcs", ["onion", "rodlok", "gul lok"], "Gronnsaker"),
     _ing("Hvitlok", "hvitlok", "pcs", ["garlic", "hvitloksfedd"], "Gronnsaker"),
     _ing("Gulrot", "gulrot", "g", ["carrot", "gulrotter"], "Gronnsaker"),
-    _ing("Paprika", "paprika", "pcs",
-         ["bell pepper", "rod paprika", "gul paprika"], "Gronnsaker"),
+    _ing("Paprika", "paprika", "pcs", ["bell pepper", "rod paprika", "gul paprika"], "Gronnsaker"),
     _ing("Agurk", "agurk", "pcs", ["cucumber", "slangeagurk"], "Gronnsaker"),
     _ing("Salat", "salat", "pcs", ["lettuce", "isbergsalat", "romaine"], "Gronnsaker"),
     _ing("Brokkoli", "brokkoli", "g", ["broccoli"], "Gronnsaker"),
     _ing("Spinat", "spinat", "g", ["spinach"], "Gronnsaker"),
     _ing("Potet", "potet", "g", ["potato", "poteter", "mandelpoteter"], "Gronnsaker"),
-
     # Frukt (Fruit)
     _ing("Banan", "banan", "pcs", ["banana", "bananer"], "Frukt"),
     _ing("Eple", "eple", "pcs", ["apple", "epler"], "Frukt"),
     _ing("Appelsin", "appelsin", "pcs", ["orange", "appelsiner"], "Frukt"),
     _ing("Sitron", "sitron", "pcs", ["lemon", "sitroner"], "Frukt"),
     _ing("Avokado", "avokado", "pcs", ["avocado"], "Frukt"),
-
     # Brod (Bread)
     _ing("Brod", "brod", "pcs", ["bread", "grovbrod", "loff"], "Brod"),
     _ing("Rundstykker", "rundstykker", "pcs", ["rolls", "rundstykke"], "Brod"),
-
     # Torrvarer (Dry goods)
     _ing("Pasta", "pasta", "g", ["spaghetti", "penne", "makaroni"], "Torrvarer"),
     _ing("Ris", "ris", "g", ["rice", "jasminris", "basmati"], "Torrvarer"),
@@ -76,9 +68,13 @@ INGREDIENTS = [
     _ing("Salt", "salt", "g", ["sea salt", "havsalt"], "Torrvarer"),
     _ing("Pepper", "pepper", "g", ["black pepper", "sort pepper"], "Torrvarer"),
     _ing("Olivenolje", "olivenolje", "ml", ["olive oil", "extra virgin"], "Torrvarer"),
-    _ing("Hermetiske tomater", "hermetiske_tomater", "g",
-         ["canned tomatoes", "hakkede tomater"], "Torrvarer"),
-
+    _ing(
+        "Hermetiske tomater",
+        "hermetiske_tomater",
+        "g",
+        ["canned tomatoes", "hakkede tomater"],
+        "Torrvarer",
+    ),
     # Drikke (Beverages)
     _ing("Kaffe", "kaffe", "g", ["coffee", "filterkaffe"], "Drikke"),
     _ing("Te", "te", "pcs", ["tea", "teposer"], "Drikke"),
@@ -97,9 +93,7 @@ async def seed_ingredients():
         for ing_data in INGREDIENTS:
             # Check if exists
             result = await session.execute(
-                select(Ingredient).where(
-                    Ingredient.canonical_name == ing_data["canonical_name"]
-                )
+                select(Ingredient).where(Ingredient.canonical_name == ing_data["canonical_name"])
             )
             if not result.scalar_one_or_none():
                 category_id = categories.get(ing_data.get("category"))

@@ -53,7 +53,7 @@ async def upload_receipt(
     except Exception as e:
         # Clean up file on OCR failure
         file_path.unlink(missing_ok=True)
-        raise HTTPException(status_code=500, detail=f"OCR processing failed: {e}")
+        raise HTTPException(status_code=500, detail=f"OCR processing failed: {e}") from e
 
     # Parse OCR result
     parsed = parse_ocr_result(ocr_result)
@@ -104,6 +104,4 @@ async def upload_receipt(
         .where(Receipt.id == receipt.id)
     )
     result = await db.execute(query)
-    receipt = result.scalar_one()
-
-    return receipt
+    return result.scalar_one()

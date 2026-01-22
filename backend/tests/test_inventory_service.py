@@ -1,4 +1,5 @@
 """Tests for inventory service."""
+
 from decimal import Decimal
 from unittest.mock import MagicMock
 
@@ -16,8 +17,8 @@ class TestInventoryService:
 
         events = [
             MagicMock(quantity_delta=Decimal("-100")),  # consumed 100
-            MagicMock(quantity_delta=Decimal("-50")),   # consumed 50
-            MagicMock(quantity_delta=Decimal("200")),   # adjustment +200
+            MagicMock(quantity_delta=Decimal("-50")),  # consumed 50
+            MagicMock(quantity_delta=Decimal("200")),  # adjustment +200
         ]
 
         result = self.service.calculate_remaining(lot, events)
@@ -33,24 +34,15 @@ class TestInventoryService:
 
     def test_can_consume_sufficient_quantity(self):
         """Can consume when quantity available."""
-        result = self.service.can_consume(
-            available=Decimal("100"),
-            requested=Decimal("50")
-        )
+        result = self.service.can_consume(available=Decimal("100"), requested=Decimal("50"))
         assert result is True
 
     def test_can_consume_insufficient_quantity(self):
         """Cannot consume more than available."""
-        result = self.service.can_consume(
-            available=Decimal("100"),
-            requested=Decimal("150")
-        )
+        result = self.service.can_consume(available=Decimal("100"), requested=Decimal("150"))
         assert result is False
 
     def test_can_consume_exact_quantity(self):
         """Can consume exact available amount."""
-        result = self.service.can_consume(
-            available=Decimal("100"),
-            requested=Decimal("100")
-        )
+        result = self.service.can_consume(available=Decimal("100"), requested=Decimal("100"))
         assert result is True

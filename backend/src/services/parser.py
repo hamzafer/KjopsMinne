@@ -44,8 +44,18 @@ ABBREVIATIONS = {
 
 # Known merchants
 MERCHANTS = [
-    "REMA 1000", "KIWI", "MENY", "COOP EXTRA", "COOP PRIX", "COOP MEGA",
-    "JOKER", "BUNNPRIS", "SPAR", "EUROPRIS", "NORMAL", "ELKJØP",
+    "REMA 1000",
+    "KIWI",
+    "MENY",
+    "COOP EXTRA",
+    "COOP PRIX",
+    "COOP MEGA",
+    "JOKER",
+    "BUNNPRIS",
+    "SPAR",
+    "EUROPRIS",
+    "NORMAL",
+    "ELKJØP",
 ]
 
 
@@ -109,16 +119,18 @@ def parse_fixture_data(raw: dict[str, Any]) -> ParsedReceipt:
         is_pant = "PANT" in name.upper()
         is_discount = price < 0 or "RABATT" in name.upper()
 
-        items.append(ParsedItem(
-            raw_name=name,
-            canonical_name=normalize_name(name) if not is_pant and not is_discount else None,
-            quantity=Decimal("1"),
-            unit=None,
-            unit_price=price_decimal if price_decimal > 0 else None,
-            total_price=abs(price_decimal),
-            is_pant=is_pant,
-            discount_amount=abs(price_decimal) if is_discount else Decimal("0"),
-        ))
+        items.append(
+            ParsedItem(
+                raw_name=name,
+                canonical_name=normalize_name(name) if not is_pant and not is_discount else None,
+                quantity=Decimal("1"),
+                unit=None,
+                unit_price=price_decimal if price_decimal > 0 else None,
+                total_price=abs(price_decimal),
+                is_pant=is_pant,
+                discount_amount=abs(price_decimal) if is_discount else Decimal("0"),
+            )
+        )
         total += price_decimal
 
     # Parse date
@@ -149,8 +161,8 @@ def parse_lines(lines: list[str]) -> ParsedReceipt:
     date_pattern = re.compile(r"(\d{1,2}[./]\d{1,2}[./]\d{2,4})")
     pant_pattern = re.compile(r"PANT.*?(\d+)\s*[xX]\s*(\d+[,.]?\d*)", re.IGNORECASE)
 
-    for i, line in enumerate(lines):
-        line = line.strip()
+    for i, raw_line in enumerate(lines):
+        line = raw_line.strip()
         if not line:
             continue
 
@@ -176,7 +188,7 @@ def parse_lines(lines: list[str]) -> ParsedReceipt:
         price_match = price_pattern.search(line)
         if price_match and "TOTAL" not in line.upper():
             price = parse_price(price_match.group(1))
-            name = line[:price_match.start()].strip()
+            name = line[: price_match.start()].strip()
 
             if name and price != Decimal("0"):
                 is_pant = "PANT" in name.upper()
@@ -191,21 +203,22 @@ def parse_lines(lines: list[str]) -> ParsedReceipt:
                 canonical = None
                 if not is_pant and not is_discount:
                     canonical = normalize_name(name)
-                items.append(ParsedItem(
-                    raw_name=name,
-                    canonical_name=canonical,
-                    quantity=quantity,
-                    unit=None,
-                    unit_price=abs(price) / quantity if quantity else None,
-                    total_price=abs(price),
-                    is_pant=is_pant,
-                    discount_amount=abs(price) if is_discount else Decimal("0"),
-                ))
+                items.append(
+                    ParsedItem(
+                        raw_name=name,
+                        canonical_name=canonical,
+                        quantity=quantity,
+                        unit=None,
+                        unit_price=abs(price) / quantity if quantity else None,
+                        total_price=abs(price),
+                        is_pant=is_pant,
+                        discount_amount=abs(price) if is_discount else Decimal("0"),
+                    )
+                )
 
     # Calculate total from items
     total = sum(
-        (item.total_price if not item.discount_amount else -item.discount_amount)
-        for item in items
+        (item.total_price if not item.discount_amount else -item.discount_amount) for item in items
     )
 
     return ParsedReceipt(

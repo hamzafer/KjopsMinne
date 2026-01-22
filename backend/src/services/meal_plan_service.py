@@ -72,10 +72,7 @@ class MealPlanService:
             take = min(available, remaining)
 
             # Calculate unit price (cost per single unit of quantity)
-            if lot["quantity"] > 0:
-                unit_price = lot["unit_cost"] / lot["quantity"]
-            else:
-                unit_price = Decimal("0")
+            unit_price = lot["unit_cost"] / lot["quantity"] if lot["quantity"] > 0 else Decimal("0")
 
             cost = take * unit_price
             total_cost += cost

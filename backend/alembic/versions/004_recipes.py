@@ -4,6 +4,7 @@ Revision ID: 004
 Revises: 003
 Create Date: 2026-01-20
 """
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa
@@ -37,12 +38,8 @@ def upgrade() -> None:
         sa.Column("tags", postgresql.JSONB, server_default="[]"),
         sa.Column("image_url", sa.Text, nullable=True),
         sa.Column("import_confidence", sa.Numeric(3, 2), nullable=True),
-        sa.Column(
-            "created_at", sa.DateTime, server_default=sa.func.now(), nullable=False
-        ),
-        sa.Column(
-            "updated_at", sa.DateTime, server_default=sa.func.now(), nullable=False
-        ),
+        sa.Column("created_at", sa.DateTime, server_default=sa.func.now(), nullable=False),
+        sa.Column("updated_at", sa.DateTime, server_default=sa.func.now(), nullable=False),
     )
 
     # Create recipe_ingredients table
@@ -73,9 +70,7 @@ def upgrade() -> None:
 
     # Create indexes for recipe_ingredients
     op.create_index("idx_recipe_ingredients_recipe", "recipe_ingredients", ["recipe_id"])
-    op.create_index(
-        "idx_recipe_ingredients_ingredient", "recipe_ingredients", ["ingredient_id"]
-    )
+    op.create_index("idx_recipe_ingredients_ingredient", "recipe_ingredients", ["ingredient_id"])
 
 
 def downgrade() -> None:

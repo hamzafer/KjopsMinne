@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
 import { ShoppingCart } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { StatCard } from "./StatCard";
+import { useState } from "react";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from "recharts";
+
 import { formatNOK, type TopItemsResponse } from "@/lib/api";
 import { cn } from "@/lib/utils";
+
+import { StatCard } from "./StatCard";
 
 interface TopItemsCardProps {
   data: TopItemsResponse | null;
@@ -16,7 +18,7 @@ interface TopItemsCardProps {
 }
 
 // Truncate long item names
-function truncateName(name: string, maxLength: number = 20): string {
+function truncateName(name: string, maxLength = 20): string {
   if (name.length <= maxLength) return name;
   return name.substring(0, maxLength - 1) + "…";
 }
@@ -34,40 +36,26 @@ function RoundedBar(props: {
 
   if (width <= 0) return null;
 
-  return (
-    <rect
-      x={x}
-      y={y}
-      width={width}
-      height={height}
-      fill={fill}
-      rx={radius}
-      ry={radius}
-    />
-  );
+  return <rect x={x} y={y} width={width} height={height} fill={fill} rx={radius} ry={radius} />;
 }
 
 // Custom tooltip
 interface CustomTooltipProps {
   active?: boolean;
-  payload?: Array<{ payload: { name: string; value: number; count: number; unit: string | null } }>;
+  payload?: { payload: { name: string; value: number; count: number; unit: string | null } }[];
   locale: string;
   sortBy: "spend" | "count";
 }
 
 function CustomTooltip({ active, payload, locale, sortBy }: CustomTooltipProps) {
-  if (!active || !payload || !payload.length) return null;
+  if (!active || !payload?.length) return null;
 
   const data = payload[0].payload;
   return (
-    <div className="bg-paper dark:bg-fjord-800 rounded-lg shadow-paper-hover px-3 py-2 border border-fjord-100 dark:border-fjord-700">
-      <p className="text-sm font-medium text-fjord-800 dark:text-fjord-100 mb-1">
-        {data.name}
-      </p>
+    <div className="rounded-lg border border-fjord-100 bg-paper px-3 py-2 shadow-paper-hover dark:border-fjord-700 dark:bg-fjord-800">
+      <p className="mb-1 text-sm font-medium text-fjord-800 dark:text-fjord-100">{data.name}</p>
       <p className="text-xs text-fjord-500 dark:text-fjord-400">
-        {sortBy === "spend"
-          ? `${formatNOK(data.value, locale)} kr`
-          : `${data.count}x purchased`}
+        {sortBy === "spend" ? `${formatNOK(data.value, locale)} kr` : `${data.count}x purchased`}
       </p>
     </div>
   );
@@ -89,14 +77,7 @@ export function TopItemsCard({
   };
 
   if (loading || !data) {
-    return (
-      <StatCard
-        title={t("topItems.title")}
-        value=""
-        loading={true}
-        className={className}
-      />
-    );
+    return <StatCard title={t("topItems.title")} value="" loading={true} className={className} />;
   }
 
   const hasData = data.items.length > 0;
@@ -119,7 +100,7 @@ export function TopItemsCard({
       title={t("topItems.title")}
       value={hasData ? `${data.items.length} ${t("items")}` : "-"}
       subtitle={hasData ? t("topItems.subtitle") : t("noDataToShow")}
-      icon={<ShoppingCart className="w-6 h-6" />}
+      icon={<ShoppingCart className="h-6 w-6" />}
       expandable={hasData}
       className={className}
     >
@@ -130,10 +111,10 @@ export function TopItemsCard({
             <button
               onClick={() => handleSortChange("spend")}
               className={cn(
-                "px-3 py-1.5 text-xs font-medium rounded-full transition-colors",
+                "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
                 sortBy === "spend"
-                  ? "bg-fjord-800 dark:bg-fjord-100 text-white dark:text-fjord-900"
-                  : "bg-fjord-100 dark:bg-fjord-700 text-fjord-600 dark:text-fjord-300 hover:bg-fjord-200 dark:hover:bg-fjord-600"
+                  ? "bg-fjord-800 text-white dark:bg-fjord-100 dark:text-fjord-900"
+                  : "bg-fjord-100 text-fjord-600 hover:bg-fjord-200 dark:bg-fjord-700 dark:text-fjord-300 dark:hover:bg-fjord-600"
               )}
             >
               {t("topItems.bySpend")}
@@ -141,10 +122,10 @@ export function TopItemsCard({
             <button
               onClick={() => handleSortChange("count")}
               className={cn(
-                "px-3 py-1.5 text-xs font-medium rounded-full transition-colors",
+                "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
                 sortBy === "count"
-                  ? "bg-fjord-800 dark:bg-fjord-100 text-white dark:text-fjord-900"
-                  : "bg-fjord-100 dark:bg-fjord-700 text-fjord-600 dark:text-fjord-300 hover:bg-fjord-200 dark:hover:bg-fjord-600"
+                  ? "bg-fjord-800 text-white dark:bg-fjord-100 dark:text-fjord-900"
+                  : "bg-fjord-100 text-fjord-600 hover:bg-fjord-200 dark:bg-fjord-700 dark:text-fjord-300 dark:hover:bg-fjord-600"
               )}
             >
               {t("topItems.byFrequency")}
@@ -199,28 +180,25 @@ export function TopItemsCard({
           </div>
 
           {/* Detailed list */}
-          <div className="pt-3 border-t border-fjord-100 dark:border-fjord-700/50">
-            <h4 className="text-sm font-medium text-fjord-600 dark:text-fjord-300 mb-2">
+          <div className="border-t border-fjord-100 pt-3 dark:border-fjord-700/50">
+            <h4 className="mb-2 text-sm font-medium text-fjord-600 dark:text-fjord-300">
               {t("detailedOverview")}
             </h4>
-            <ul className="space-y-1.5 max-h-36 overflow-y-auto">
+            <ul className="max-h-36 space-y-1.5 overflow-y-auto">
               {data.items.map((item, index) => (
-                <li
-                  key={item.item_name}
-                  className="flex items-center justify-between py-1 text-sm"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-fjord-100 dark:bg-fjord-700 text-fjord-600 dark:text-fjord-300 text-xs flex items-center justify-center font-medium">
+                <li key={item.item_name} className="flex items-center justify-between py-1 text-sm">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-fjord-100 text-xs font-medium text-fjord-600 dark:bg-fjord-700 dark:text-fjord-300">
                       {index + 1}
                     </span>
-                    <span className="text-fjord-700 dark:text-fjord-200 truncate">
+                    <span className="truncate text-fjord-700 dark:text-fjord-200">
                       {item.item_name}
                     </span>
-                    <span className="text-fjord-400 dark:text-fjord-500 text-xs flex-shrink-0">
+                    <span className="flex-shrink-0 text-xs text-fjord-400 dark:text-fjord-500">
                       ({item.purchase_count}x)
                     </span>
                   </div>
-                  <span className="text-fjord-800 dark:text-fjord-100 font-medium tabular-nums ml-2 flex-shrink-0">
+                  <span className="ml-2 flex-shrink-0 font-medium tabular-nums text-fjord-800 dark:text-fjord-100">
                     {formatNOK(item.total_spent, locale)} kr
                   </span>
                 </li>

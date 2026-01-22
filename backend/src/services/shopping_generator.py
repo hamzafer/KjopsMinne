@@ -1,4 +1,5 @@
 """Shopping list generator service."""
+
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
@@ -8,9 +9,7 @@ from uuid import UUID
 class ShoppingGenerator:
     """Generate shopping lists from meal plans."""
 
-    def aggregate_ingredients(
-        self, meal_plans: list[dict[str, Any]]
-    ) -> dict[UUID, dict[str, Any]]:
+    def aggregate_ingredients(self, meal_plans: list[dict[str, Any]]) -> dict[UUID, dict[str, Any]]:
         """Aggregate ingredients from multiple meal plans."""
         aggregated: dict[UUID, dict[str, Any]] = {}
 
@@ -47,9 +46,7 @@ class ShoppingGenerator:
 
         return aggregated
 
-    def calculate_to_buy(
-        self, required_quantity: Decimal, on_hand_quantity: Decimal
-    ) -> Decimal:
+    def calculate_to_buy(self, required_quantity: Decimal, on_hand_quantity: Decimal) -> Decimal:
         """Calculate quantity to buy."""
         return max(Decimal("0"), required_quantity - on_hand_quantity)
 

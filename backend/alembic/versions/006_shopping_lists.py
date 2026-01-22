@@ -4,6 +4,7 @@ Revision ID: 006
 Revises: 005
 Create Date: 2026-01-20
 """
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa
@@ -32,12 +33,8 @@ def upgrade() -> None:
         sa.Column("date_range_start", sa.DateTime, nullable=False),
         sa.Column("date_range_end", sa.DateTime, nullable=False),
         sa.Column("status", sa.Text, server_default="active"),
-        sa.Column(
-            "created_at", sa.DateTime, server_default=sa.func.now(), nullable=False
-        ),
-        sa.Column(
-            "updated_at", sa.DateTime, server_default=sa.func.now(), nullable=False
-        ),
+        sa.Column("created_at", sa.DateTime, server_default=sa.func.now(), nullable=False),
+        sa.Column("updated_at", sa.DateTime, server_default=sa.func.now(), nullable=False),
     )
 
     # Create shopping_list_items table
@@ -80,15 +77,9 @@ def upgrade() -> None:
     )
 
     # Create indexes for shopping_list_items
-    op.create_index(
-        "idx_shopping_list_items_list", "shopping_list_items", ["shopping_list_id"]
-    )
-    op.create_index(
-        "idx_shopping_list_items_ingredient", "shopping_list_items", ["ingredient_id"]
-    )
-    op.create_index(
-        "idx_shopping_list_items_checked", "shopping_list_items", ["is_checked"]
-    )
+    op.create_index("idx_shopping_list_items_list", "shopping_list_items", ["shopping_list_id"])
+    op.create_index("idx_shopping_list_items_ingredient", "shopping_list_items", ["ingredient_id"])
+    op.create_index("idx_shopping_list_items_checked", "shopping_list_items", ["is_checked"])
 
 
 def downgrade() -> None:

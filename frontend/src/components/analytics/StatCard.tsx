@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useState, type ReactNode } from "react";
+
 import { cn } from "@/lib/utils";
 
 export type StatCardVariant = "default" | "success" | "warning" | "danger";
@@ -25,11 +26,14 @@ interface StatCardProps {
   className?: string;
 }
 
-const variantStyles: Record<StatCardVariant, {
-  iconBg: string;
-  iconText: string;
-  valueBg: string;
-}> = {
+const variantStyles: Record<
+  StatCardVariant,
+  {
+    iconBg: string;
+    iconText: string;
+    valueBg: string;
+  }
+> = {
   default: {
     iconBg: "bg-fjord-100 dark:bg-fjord-700/50",
     iconText: "text-fjord-500 dark:text-fjord-300",
@@ -62,7 +66,7 @@ function TrendIcon({ direction }: { direction: TrendDirection }) {
   if (direction === "up") {
     return (
       <svg
-        className="w-4 h-4"
+        className="h-4 w-4"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -75,7 +79,7 @@ function TrendIcon({ direction }: { direction: TrendDirection }) {
   if (direction === "down") {
     return (
       <svg
-        className="w-4 h-4"
+        className="h-4 w-4"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -86,13 +90,7 @@ function TrendIcon({ direction }: { direction: TrendDirection }) {
     );
   }
   return (
-    <svg
-      className="w-4 h-4"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14" />
     </svg>
   );
@@ -100,16 +98,16 @@ function TrendIcon({ direction }: { direction: TrendDirection }) {
 
 function StatCardSkeleton() {
   return (
-    <div className="paper-card p-5 animate-pulse">
+    <div className="paper-card animate-pulse p-5">
       <div className="flex items-start gap-4">
         {/* Icon skeleton */}
-        <div className="w-12 h-12 rounded-xl skeleton" />
+        <div className="skeleton h-12 w-12 rounded-xl" />
 
         {/* Content skeleton */}
         <div className="flex-1">
-          <div className="h-4 w-24 skeleton rounded mb-2" />
-          <div className="h-8 w-32 skeleton rounded mb-1" />
-          <div className="h-3 w-20 skeleton rounded" />
+          <div className="skeleton mb-2 h-4 w-24 rounded" />
+          <div className="skeleton mb-1 h-8 w-32 rounded" />
+          <div className="skeleton h-3 w-20 rounded" />
         </div>
       </div>
     </div>
@@ -145,7 +143,10 @@ export function StatCard({
     >
       {/* Main content */}
       <div
-        className={cn("p-5", expandable && "hover:bg-fjord-50/30 dark:hover:bg-fjord-700/20 transition-colors")}
+        className={cn(
+          "p-5",
+          expandable && "transition-colors hover:bg-fjord-50/30 dark:hover:bg-fjord-700/20"
+        )}
         onClick={expandable ? () => setIsExpanded(!isExpanded) : undefined}
         role={expandable ? "button" : undefined}
         tabIndex={expandable ? 0 : undefined}
@@ -165,7 +166,7 @@ export function StatCard({
           {icon && (
             <div
               className={cn(
-                "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors",
+                "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl transition-colors",
                 styles.iconBg,
                 styles.iconText
               )}
@@ -175,24 +176,22 @@ export function StatCard({
           )}
 
           {/* Content */}
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-fjord-500 dark:text-fjord-400">
-                {title}
-              </h3>
+              <h3 className="text-sm font-medium text-fjord-500 dark:text-fjord-400">{title}</h3>
               {expandable && (
-                <div className="text-fjord-400 dark:text-fjord-500 ml-2">
+                <div className="ml-2 text-fjord-400 dark:text-fjord-500">
                   {isExpanded ? (
-                    <ChevronUp className="w-5 h-5" />
+                    <ChevronUp className="h-5 w-5" />
                   ) : (
-                    <ChevronDown className="w-5 h-5" />
+                    <ChevronDown className="h-5 w-5" />
                   )}
                 </div>
               )}
             </div>
 
             <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-2xl font-display font-semibold text-fjord-800 dark:text-fjord-100 tabular-nums">
+              <span className="font-display text-2xl font-semibold tabular-nums text-fjord-800 dark:text-fjord-100">
                 {value}
               </span>
               {trend && (
@@ -209,9 +208,7 @@ export function StatCard({
             </div>
 
             {subtitle && (
-              <p className="mt-0.5 text-sm text-fjord-500 dark:text-fjord-400">
-                {subtitle}
-              </p>
+              <p className="mt-0.5 text-sm text-fjord-500 dark:text-fjord-400">{subtitle}</p>
             )}
           </div>
         </div>
@@ -221,7 +218,7 @@ export function StatCard({
       {expandable && children && (
         <div
           className={cn(
-            "border-t border-fjord-100 dark:border-fjord-700/50 overflow-hidden transition-all duration-300 ease-in-out",
+            "overflow-hidden border-t border-fjord-100 transition-all duration-300 ease-in-out dark:border-fjord-700/50",
             isExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
           )}
         >

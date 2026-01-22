@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Sector } from "recharts";
 import { PieChartIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { StatCard } from "./StatCard";
+import { useState, useCallback } from "react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Sector } from "recharts";
+
 import { formatNOK, type ByCategory } from "@/lib/api";
 import { cn } from "@/lib/utils";
+
+import { StatCard } from "./StatCard";
 
 // Category icons mapping
 const categoryIcons: Record<string, string> = {
@@ -81,11 +83,7 @@ const renderActiveShape = (props: unknown) => {
   );
 };
 
-export function CategoryCard({
-  data,
-  loading = false,
-  className,
-}: CategoryCardProps) {
+export function CategoryCard({ data, loading = false, className }: CategoryCardProps) {
   const locale = useLocale();
   const t = useTranslations("Analytics");
   const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
@@ -100,12 +98,7 @@ export function CategoryCard({
 
   if (loading || !data) {
     return (
-      <StatCard
-        title={t("spendingByCategory")}
-        value=""
-        loading={true}
-        className={className}
-      />
+      <StatCard title={t("spendingByCategory")} value="" loading={true} className={className} />
     );
   }
 
@@ -154,12 +147,8 @@ export function CategoryCard({
     <StatCard
       title={t("spendingByCategory")}
       value={hasData ? `${formatNOK(totalSpent, locale)} kr` : "-"}
-      subtitle={
-        hasData
-          ? t("spendingRanked")
-          : t("noDataToShow")
-      }
-      icon={<PieChartIcon className="w-6 h-6" />}
+      subtitle={hasData ? t("spendingRanked") : t("noDataToShow")}
+      icon={<PieChartIcon className="h-6 w-6" />}
       expandable={hasData}
       className={className}
     >
@@ -200,7 +189,7 @@ export function CategoryCard({
                   animationDuration={800}
                   animationEasing="ease-out"
                 >
-                  {displayData.map((entry, index) => (
+                  {displayData.map((_entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={`url(#categoryGradient-${index})`}
@@ -213,9 +202,9 @@ export function CategoryCard({
             </ResponsiveContainer>
 
             {/* Center label */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
               <div className="text-center">
-                <p className="text-lg font-display font-semibold text-fjord-800 dark:text-fjord-100 tabular-nums">
+                <p className="font-display text-lg font-semibold tabular-nums text-fjord-800 dark:text-fjord-100">
                   {formatNOK(totalSpent, locale)}
                 </p>
                 <p className="text-xs text-fjord-500 dark:text-fjord-400">kr</p>
@@ -233,23 +222,23 @@ export function CategoryCard({
                 <button
                   key={item.name}
                   className={cn(
-                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
+                    "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
                     "transition-all duration-200",
                     isActive
-                      ? "bg-fjord-100 dark:bg-fjord-700 ring-2 ring-fjord-300 dark:ring-fjord-500"
-                      : "bg-fjord-50 dark:bg-fjord-800/50 hover:bg-fjord-100 dark:hover:bg-fjord-700"
+                      ? "bg-fjord-100 ring-2 ring-fjord-300 dark:bg-fjord-700 dark:ring-fjord-500"
+                      : "bg-fjord-50 hover:bg-fjord-100 dark:bg-fjord-800/50 dark:hover:bg-fjord-700"
                   )}
                   onMouseEnter={() => setActiveIndex(index)}
                   onMouseLeave={() => setActiveIndex(undefined)}
                 >
                   <span
-                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                    className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
                     style={{ backgroundColor: item.color }}
                   />
                   <span className="text-fjord-700 dark:text-fjord-200">
                     {item.icon} {item.name}
                   </span>
-                  <span className="text-fjord-500 dark:text-fjord-400 tabular-nums">
+                  <span className="tabular-nums text-fjord-500 dark:text-fjord-400">
                     {percentage}%
                   </span>
                 </button>
@@ -258,29 +247,26 @@ export function CategoryCard({
           </div>
 
           {/* Detailed list */}
-          <div className="pt-3 border-t border-fjord-100 dark:border-fjord-700/50">
-            <h4 className="text-sm font-medium text-fjord-600 dark:text-fjord-300 mb-2">
+          <div className="border-t border-fjord-100 pt-3 dark:border-fjord-700/50">
+            <h4 className="mb-2 text-sm font-medium text-fjord-600 dark:text-fjord-300">
               {t("detailedOverview")}
             </h4>
-            <ul className="space-y-1.5 max-h-36 overflow-y-auto">
+            <ul className="max-h-36 space-y-1.5 overflow-y-auto">
               {chartData.map((item) => (
-                <li
-                  key={item.name}
-                  className="flex items-center justify-between py-1 text-sm"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
+                <li key={item.name} className="flex items-center justify-between py-1 text-sm">
+                  <div className="flex min-w-0 items-center gap-2">
                     <span
-                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      className="h-2 w-2 flex-shrink-0 rounded-full"
                       style={{ backgroundColor: item.color }}
                     />
-                    <span className="text-fjord-700 dark:text-fjord-200 truncate">
+                    <span className="truncate text-fjord-700 dark:text-fjord-200">
                       {item.icon} {item.name}
                     </span>
-                    <span className="text-fjord-400 dark:text-fjord-500 text-xs">
+                    <span className="text-xs text-fjord-400 dark:text-fjord-500">
                       ({item.itemCount} {t("items")})
                     </span>
                   </div>
-                  <span className="text-fjord-800 dark:text-fjord-100 font-medium tabular-nums ml-2">
+                  <span className="ml-2 font-medium tabular-nums text-fjord-800 dark:text-fjord-100">
                     {formatNOK(item.value, locale)} kr
                   </span>
                 </li>

@@ -1,4 +1,5 @@
 """Seed database with common unit conversions."""
+
 import asyncio
 import uuid
 from decimal import Decimal
@@ -18,19 +19,16 @@ CONVERSIONS = [
     {"from_unit": "tbsp", "to_unit": "ml", "factor": Decimal("15")},
     {"from_unit": "tsp", "to_unit": "ml", "factor": Decimal("5")},
     {"from_unit": "ss", "to_unit": "ml", "factor": Decimal("15")},  # Norwegian: spiseskje
-    {"from_unit": "ts", "to_unit": "ml", "factor": Decimal("5")},   # Norwegian: teskje
-
+    {"from_unit": "ts", "to_unit": "ml", "factor": Decimal("5")},  # Norwegian: teskje
     # Weight to g
     {"from_unit": "kg", "to_unit": "g", "factor": Decimal("1000")},
     {"from_unit": "hg", "to_unit": "g", "factor": Decimal("100")},  # Norwegian: hektogram
     {"from_unit": "oz", "to_unit": "g", "factor": Decimal("28.3495")},
     {"from_unit": "lb", "to_unit": "g", "factor": Decimal("453.592")},
-
     # Count to pcs
     {"from_unit": "stk", "to_unit": "pcs", "factor": Decimal("1")},  # Norwegian: stykk
-    {"from_unit": "pk", "to_unit": "pcs", "factor": Decimal("1")},   # pakke
-    {"from_unit": "bx", "to_unit": "pcs", "factor": Decimal("1")},   # box
-
+    {"from_unit": "pk", "to_unit": "pcs", "factor": Decimal("1")},  # pakke
+    {"from_unit": "bx", "to_unit": "pcs", "factor": Decimal("1")},  # box
     # Identity conversions (canonical to canonical)
     {"from_unit": "g", "to_unit": "g", "factor": Decimal("1")},
     {"from_unit": "ml", "to_unit": "ml", "factor": Decimal("1")},

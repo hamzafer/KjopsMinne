@@ -1,4 +1,4 @@
-.PHONY: dev up down rebuild restart reset ps shell-backend shell-db logs migrate seed seed-categories seed-ingredients seed-units seed-demo seed-all test lint fmt install clean
+.PHONY: dev up down rebuild restart reset ps shell-backend shell-db logs migrate seed seed-categories seed-ingredients seed-units seed-demo seed-all test test-coverage lint lint-fix fmt typecheck install clean pre-commit-install pre-commit-run
 
 dev:
 	@echo "Backend: http://localhost:8000"
@@ -60,18 +60,36 @@ test:
 	cd backend && uv run pytest
 	cd frontend && npm test
 
+test-coverage:
+	cd backend && uv run pytest --cov=src --cov-report=term-missing --cov-report=html
+	cd frontend && npm run test:coverage
+
 lint:
 	cd backend && uv run ruff check .
 	cd frontend && npm run lint
+
+lint-fix:
+	cd backend && uv run ruff check . --fix
+	cd frontend && npm run lint:fix
 
 fmt:
 	cd backend && uv run ruff format .
 	cd frontend && npm run format
 
+typecheck:
+	cd backend && uv run mypy src
+	cd frontend && npm run typecheck
+
 install:
-	cd backend && uv sync
+	cd backend && uv sync --all-extras
 	cd frontend && npm install
 
 clean:
 	docker-compose down -v
 	rm -rf backend/.venv frontend/node_modules frontend/.next
+
+pre-commit-install:
+	cd backend && uv run pre-commit install --install-hooks
+
+pre-commit-run:
+	cd backend && uv run pre-commit run --all-files

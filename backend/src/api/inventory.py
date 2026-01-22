@@ -1,4 +1,5 @@
 """Inventory management API routes."""
+
 import uuid
 from decimal import Decimal
 
@@ -125,16 +126,12 @@ async def create_inventory_lot(
 ):
     """Create a new inventory lot manually."""
     # Verify household exists
-    result = await db.execute(
-        select(Household).where(Household.id == household_id)
-    )
+    result = await db.execute(select(Household).where(Household.id == household_id))
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Household not found")
 
     # Verify ingredient exists
-    result = await db.execute(
-        select(Ingredient).where(Ingredient.id == data.ingredient_id)
-    )
+    result = await db.execute(select(Ingredient).where(Ingredient.id == data.ingredient_id))
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Ingredient not found")
 
@@ -186,9 +183,7 @@ async def update_inventory_lot(
     db: DbSession,
 ):
     """Update an inventory lot (location, expiry only)."""
-    result = await db.execute(
-        select(InventoryLot).where(InventoryLot.id == lot_id)
-    )
+    result = await db.execute(select(InventoryLot).where(InventoryLot.id == lot_id))
     lot = result.scalar_one_or_none()
 
     if not lot:
@@ -217,9 +212,7 @@ async def consume_from_lot(
     db: DbSession,
 ):
     """Consume quantity from an inventory lot."""
-    result = await db.execute(
-        select(InventoryLot).where(InventoryLot.id == lot_id)
-    )
+    result = await db.execute(select(InventoryLot).where(InventoryLot.id == lot_id))
     lot = result.scalar_one_or_none()
 
     if not lot:
@@ -228,7 +221,7 @@ async def consume_from_lot(
     if lot.quantity < data.quantity:
         raise HTTPException(
             status_code=400,
-            detail=f"Insufficient quantity. Available: {lot.quantity}, requested: {data.quantity}"
+            detail=f"Insufficient quantity. Available: {lot.quantity}, requested: {data.quantity}",
         )
 
     # Update quantity
@@ -263,9 +256,7 @@ async def discard_lot(
     db: DbSession,
 ):
     """Discard entire inventory lot (expired, spoiled, etc)."""
-    result = await db.execute(
-        select(InventoryLot).where(InventoryLot.id == lot_id)
-    )
+    result = await db.execute(select(InventoryLot).where(InventoryLot.id == lot_id))
     lot = result.scalar_one_or_none()
 
     if not lot:
@@ -305,9 +296,7 @@ async def transfer_lot(
     db: DbSession,
 ):
     """Transfer inventory lot to a different location."""
-    result = await db.execute(
-        select(InventoryLot).where(InventoryLot.id == lot_id)
-    )
+    result = await db.execute(select(InventoryLot).where(InventoryLot.id == lot_id))
     lot = result.scalar_one_or_none()
 
     if not lot:
@@ -316,8 +305,7 @@ async def transfer_lot(
     valid_locations = ["pantry", "fridge", "freezer"]
     if data.location not in valid_locations:
         raise HTTPException(
-            status_code=400,
-            detail=f"Invalid location. Must be one of: {valid_locations}"
+            status_code=400, detail=f"Invalid location. Must be one of: {valid_locations}"
         )
 
     old_location = lot.location
@@ -345,10 +333,7 @@ async def transfer_lot(
     return result.scalar_one()
 
 
-@router.get(
-    "/inventory/lots/{lot_id}/events",
-    response_model=list[InventoryEventResponse]
-)
+@router.get("/inventory/lots/{lot_id}/events", response_model=list[InventoryEventResponse])
 async def get_lot_events(
     lot_id: uuid.UUID,
     db: DbSession,
@@ -357,9 +342,7 @@ async def get_lot_events(
 ):
     """Get event history for an inventory lot."""
     # Verify lot exists
-    result = await db.execute(
-        select(InventoryLot).where(InventoryLot.id == lot_id)
-    )
+    result = await db.execute(select(InventoryLot).where(InventoryLot.id == lot_id))
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Inventory lot not found")
 

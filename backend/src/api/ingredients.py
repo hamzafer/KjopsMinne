@@ -1,4 +1,5 @@
 """Ingredient management API routes."""
+
 import uuid
 
 from fastapi import APIRouter, HTTPException, Query
@@ -30,8 +31,7 @@ async def list_ingredients(
     if search:
         search_lower = f"%{search.lower()}%"
         query = query.where(
-            Ingredient.name.ilike(search_lower) |
-            Ingredient.canonical_name.ilike(search_lower)
+            Ingredient.name.ilike(search_lower) | Ingredient.canonical_name.ilike(search_lower)
         )
 
     if category_id:
@@ -99,9 +99,7 @@ async def update_ingredient(
     db: DbSession,
 ):
     """Update an ingredient."""
-    result = await db.execute(
-        select(Ingredient).where(Ingredient.id == ingredient_id)
-    )
+    result = await db.execute(select(Ingredient).where(Ingredient.id == ingredient_id))
     ingredient = result.scalar_one_or_none()
 
     if not ingredient:
@@ -133,9 +131,7 @@ async def update_ingredient(
 @router.delete("/ingredients/{ingredient_id}")
 async def delete_ingredient(ingredient_id: uuid.UUID, db: DbSession):
     """Delete an ingredient."""
-    result = await db.execute(
-        select(Ingredient).where(Ingredient.id == ingredient_id)
-    )
+    result = await db.execute(select(Ingredient).where(Ingredient.id == ingredient_id))
     ingredient = result.scalar_one_or_none()
 
     if not ingredient:

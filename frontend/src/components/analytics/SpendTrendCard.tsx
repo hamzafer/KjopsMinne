@@ -1,17 +1,13 @@
 "use client";
 
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { StatCard, type TrendDirection } from "./StatCard";
+import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
+
 import { formatNOK, type SpendTrendResponse } from "@/lib/api";
 import { cn } from "@/lib/utils";
+
+import { StatCard, type TrendDirection } from "./StatCard";
 
 interface SpendTrendCardProps {
   data: SpendTrendResponse | null;
@@ -30,8 +26,7 @@ function calculateTrend(
   if (previous === 0) return null;
 
   const change = ((current - previous) / previous) * 100;
-  const direction: TrendDirection =
-    change > 0 ? "up" : change < 0 ? "down" : "neutral";
+  const direction: TrendDirection = change > 0 ? "up" : change < 0 ? "down" : "neutral";
 
   return { direction, percentage: Math.abs(change) };
 }
@@ -46,7 +41,7 @@ function formatPeriodLabel(period: string, granularity: string, locale: string):
     }
     case "weekly": {
       // Backend returns ISO week format: "YYYY-WXX" (e.g., "2026-W03")
-      const weekMatch = period.match(/^\d{4}-W(\d{2})$/);
+      const weekMatch = /^\d{4}-W(\d{2})$/.exec(period);
       if (weekMatch) {
         const weekNum = parseInt(weekMatch[1], 10);
         const weekLabel = locale === "en" ? "Week" : "Uke";
@@ -75,49 +70,34 @@ function getWeekNumber(date: Date): number {
 // Custom tooltip component matching StatCard aesthetic
 interface CustomTooltipProps {
   active?: boolean;
-  payload?: Array<{ value: number; payload: { period: string; label: string } }>;
+  payload?: { value: number; payload: { period: string; label: string } }[];
   locale: string;
 }
 
 function CustomTooltip({ active, payload, locale }: CustomTooltipProps) {
-  if (!active || !payload || !payload.length) return null;
+  if (!active || !payload?.length) return null;
 
   const data = payload[0];
   return (
-    <div className="bg-paper dark:bg-fjord-800 rounded-lg shadow-paper-hover px-3 py-2 border border-fjord-100 dark:border-fjord-700">
-      <p className="text-xs text-fjord-500 dark:text-fjord-400 mb-0.5">
-        {data.payload.label}
-      </p>
-      <p className="text-sm font-semibold text-fjord-800 dark:text-fjord-100 tabular-nums">
+    <div className="rounded-lg border border-fjord-100 bg-paper px-3 py-2 shadow-paper-hover dark:border-fjord-700 dark:bg-fjord-800">
+      <p className="mb-0.5 text-xs text-fjord-500 dark:text-fjord-400">{data.payload.label}</p>
+      <p className="text-sm font-semibold tabular-nums text-fjord-800 dark:text-fjord-100">
         {formatNOK(data.value, locale)} kr
       </p>
     </div>
   );
 }
 
-export function SpendTrendCard({
-  data,
-  loading = false,
-  className,
-}: SpendTrendCardProps) {
+export function SpendTrendCard({ data, loading = false, className }: SpendTrendCardProps) {
   const locale = useLocale();
   const t = useTranslations("Analytics");
 
   if (loading || !data) {
-    return (
-      <StatCard
-        title={t("spendTrend.title")}
-        value=""
-        loading={true}
-        className={className}
-      />
-    );
+    return <StatCard title={t("spendTrend.title")} value="" loading={true} className={className} />;
   }
 
   const hasData = data.trends.length > 0;
-  const latestSpend = hasData
-    ? data.trends[data.trends.length - 1].total_spent
-    : 0;
+  const latestSpend = hasData ? data.trends[data.trends.length - 1].total_spent : 0;
   const trend = calculateTrend(data.trends);
 
   // Determine variant: success if trending down (saving money), default otherwise
@@ -126,11 +106,11 @@ export function SpendTrendCard({
   // Choose icon based on trend
   const icon =
     trend?.direction === "down" ? (
-      <TrendingDown className="w-6 h-6" />
+      <TrendingDown className="h-6 w-6" />
     ) : trend?.direction === "up" ? (
-      <TrendingUp className="w-6 h-6" />
+      <TrendingUp className="h-6 w-6" />
     ) : (
-      <TrendingUp className="w-6 h-6" />
+      <TrendingUp className="h-6 w-6" />
     );
 
   return (
@@ -154,7 +134,7 @@ export function SpendTrendCard({
       {hasData && data.trends.length > 1 && (
         <div className="space-y-4">
           {/* Area Chart - hidden on mobile */}
-          <div className="hidden md:block h-40">
+          <div className="hidden h-40 md:block">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={data.trends.map((point) => ({
@@ -214,7 +194,7 @@ export function SpendTrendCard({
           </h4>
 
           {/* Period breakdown list */}
-          <ul className="space-y-2 max-h-48 overflow-y-auto">
+          <ul className="max-h-48 space-y-2 overflow-y-auto">
             {[...data.trends].reverse().map((point, index) => {
               const isLatest = index === 0;
               return (
@@ -222,13 +202,13 @@ export function SpendTrendCard({
                   key={point.period}
                   className={cn(
                     "flex items-center justify-between py-2",
-                    "border-b border-fjord-100/50 dark:border-fjord-700/50 last:border-b-0"
+                    "border-b border-fjord-100/50 last:border-b-0 dark:border-fjord-700/50"
                   )}
                 >
                   <div className="flex items-center gap-3">
                     <span
                       className={cn(
-                        "w-2 h-2 rounded-full",
+                        "h-2 w-2 rounded-full",
                         isLatest
                           ? "bg-fjord-500 dark:bg-fjord-400"
                           : "bg-fjord-200 dark:bg-fjord-600"
@@ -268,12 +248,12 @@ export function SpendTrendCard({
 
           {/* Trend summary */}
           {trend && (
-            <div className="pt-3 border-t border-fjord-100 dark:border-fjord-700/50">
+            <div className="border-t border-fjord-100 pt-3 dark:border-fjord-700/50">
               <div className="flex items-center gap-2 text-sm">
                 {trend.direction === "down" ? (
                   <>
                     <span className="flex items-center gap-1 text-forest-600 dark:text-forest-400">
-                      <TrendingDown className="w-4 h-4" />
+                      <TrendingDown className="h-4 w-4" />
                       {t("spendTrend.savingMoney")}
                     </span>
                     <span className="text-fjord-500 dark:text-fjord-400">
@@ -283,7 +263,7 @@ export function SpendTrendCard({
                 ) : trend.direction === "up" ? (
                   <>
                     <span className="flex items-center gap-1 text-amber-dark dark:text-amber-warm">
-                      <TrendingUp className="w-4 h-4" />
+                      <TrendingUp className="h-4 w-4" />
                       {t("spendTrend.spendingMore")}
                     </span>
                     <span className="text-fjord-500 dark:text-fjord-400">
@@ -292,7 +272,7 @@ export function SpendTrendCard({
                   </>
                 ) : (
                   <span className="flex items-center gap-1 text-fjord-500 dark:text-fjord-400">
-                    <Minus className="w-4 h-4" />
+                    <Minus className="h-4 w-4" />
                     {t("spendTrend.stable")}
                   </span>
                 )}

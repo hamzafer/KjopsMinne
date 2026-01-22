@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
 import { Search, Loader2, ChefHat, Coffee, Sun, Moon, X } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useState, useEffect } from "react";
+
 import { api, type Recipe } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -42,7 +43,9 @@ export function AddMealForm({
 
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [date, setDate] = useState(defaultDate || new Date().toISOString().split("T")[0]);
-  const [mealType, setMealType] = useState<"breakfast" | "lunch" | "dinner">(defaultMealType || "dinner");
+  const [mealType, setMealType] = useState<"breakfast" | "lunch" | "dinner">(
+    defaultMealType || "dinner"
+  );
   const [servings, setServings] = useState(2);
 
   useEffect(() => {
@@ -76,42 +79,42 @@ export function AddMealForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
+    <form onSubmit={handleSubmit} className="animate-fade-in space-y-6">
       {/* Recipe Search */}
       <div>
-        <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-3">
+        <label className="mb-3 block text-sm font-medium text-fjord-700 dark:text-fjord-200">
           {t("selectRecipe")} *
         </label>
 
         {!selectedRecipe ? (
           <div className="space-y-3">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-fjord-400" />
+              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-fjord-400" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t("searchRecipes")}
                 className={cn(
-                  "w-full pl-12 pr-4 py-3.5 rounded-xl",
+                  "w-full rounded-xl py-3.5 pl-12 pr-4",
                   "bg-white dark:bg-fjord-800/50",
                   "border border-fjord-200 dark:border-fjord-700",
                   "text-fjord-800 dark:text-fjord-100",
                   "placeholder:text-fjord-400 dark:placeholder:text-fjord-500",
-                  "focus:outline-none focus:ring-2 focus:ring-fjord-500/50 focus:border-fjord-400",
+                  "focus:border-fjord-400 focus:outline-none focus:ring-2 focus:ring-fjord-500/50",
                   "transition-all"
                 )}
               />
             </div>
 
-            <div className="paper-card overflow-hidden max-h-56 overflow-y-auto">
+            <div className="paper-card max-h-56 overflow-hidden overflow-y-auto">
               {loading ? (
                 <div className="p-6 text-center">
-                  <Loader2 className="w-6 h-6 animate-spin mx-auto text-fjord-400" />
+                  <Loader2 className="mx-auto h-6 w-6 animate-spin text-fjord-400" />
                 </div>
               ) : filteredRecipes.length === 0 ? (
                 <div className="p-6 text-center text-fjord-500">
-                  <ChefHat className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <ChefHat className="mx-auto mb-2 h-8 w-8 opacity-50" />
                   <p>{t("noRecipesFound")}</p>
                 </div>
               ) : (
@@ -125,9 +128,9 @@ export function AddMealForm({
                         setServings(recipe.servings);
                       }}
                       className={cn(
-                        "w-full text-left px-4 py-3.5",
+                        "w-full px-4 py-3.5 text-left",
                         "hover:bg-fjord-50 dark:hover:bg-fjord-800/50",
-                        "text-fjord-700 dark:text-fjord-200 font-medium",
+                        "font-medium text-fjord-700 dark:text-fjord-200",
                         "transition-colors",
                         "animate-fade-in"
                       )}
@@ -141,10 +144,10 @@ export function AddMealForm({
             </div>
           </div>
         ) : (
-          <div className="paper-card p-4 flex items-center justify-between animate-scale-in">
+          <div className="paper-card flex animate-scale-in items-center justify-between p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-fjord-100 dark:bg-fjord-800 flex items-center justify-center">
-                <ChefHat className="w-5 h-5 text-fjord-500" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-fjord-100 dark:bg-fjord-800">
+                <ChefHat className="h-5 w-5 text-fjord-500" />
               </div>
               <span className="font-medium text-fjord-800 dark:text-fjord-100">
                 {selectedRecipe.name}
@@ -154,13 +157,13 @@ export function AddMealForm({
               type="button"
               onClick={() => setSelectedRecipe(null)}
               className={cn(
-                "p-2 rounded-lg",
+                "rounded-lg p-2",
                 "text-fjord-500 hover:text-fjord-700 dark:hover:text-fjord-300",
                 "hover:bg-fjord-100 dark:hover:bg-fjord-800",
                 "transition-colors"
               )}
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4" />
             </button>
           </div>
         )}
@@ -168,7 +171,7 @@ export function AddMealForm({
 
       {/* Date */}
       <div>
-        <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-3">
+        <label className="mb-3 block text-sm font-medium text-fjord-700 dark:text-fjord-200">
           {t("date")} *
         </label>
         <input
@@ -176,11 +179,11 @@ export function AddMealForm({
           value={date}
           onChange={(e) => setDate(e.target.value)}
           className={cn(
-            "w-full px-4 py-3.5 rounded-xl",
+            "w-full rounded-xl px-4 py-3.5",
             "bg-white dark:bg-fjord-800/50",
             "border border-fjord-200 dark:border-fjord-700",
             "text-fjord-800 dark:text-fjord-100",
-            "focus:outline-none focus:ring-2 focus:ring-fjord-500/50 focus:border-fjord-400",
+            "focus:border-fjord-400 focus:outline-none focus:ring-2 focus:ring-fjord-500/50",
             "transition-all"
           )}
           required
@@ -189,7 +192,7 @@ export function AddMealForm({
 
       {/* Meal Type */}
       <div>
-        <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-3">
+        <label className="mb-3 block text-sm font-medium text-fjord-700 dark:text-fjord-200">
           {t("mealType")} *
         </label>
         <div className="grid grid-cols-3 gap-3">
@@ -204,15 +207,15 @@ export function AddMealForm({
                 type="button"
                 onClick={() => setMealType(type)}
                 className={cn(
-                  "flex flex-col items-center gap-2 py-4 rounded-xl font-medium",
+                  "flex flex-col items-center gap-2 rounded-xl py-4 font-medium",
                   "transition-all duration-200",
                   "hover:scale-[1.02] active:scale-[0.98]",
                   isSelected
                     ? "bg-fjord-500 text-white shadow-lg shadow-fjord-500/20"
-                    : "bg-fjord-50 dark:bg-fjord-800/50 text-fjord-600 dark:text-fjord-300 hover:bg-fjord-100 dark:hover:bg-fjord-800"
+                    : "bg-fjord-50 text-fjord-600 hover:bg-fjord-100 dark:bg-fjord-800/50 dark:text-fjord-300 dark:hover:bg-fjord-800"
                 )}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="h-5 w-5" />
                 <span className="text-sm">{t(type)}</span>
               </button>
             );
@@ -222,7 +225,7 @@ export function AddMealForm({
 
       {/* Servings */}
       <div>
-        <label className="block text-sm font-medium text-fjord-700 dark:text-fjord-200 mb-3">
+        <label className="mb-3 block text-sm font-medium text-fjord-700 dark:text-fjord-200">
           {t("servings")}
         </label>
         <div className="flex items-center gap-4">
@@ -230,8 +233,8 @@ export function AddMealForm({
             type="button"
             onClick={() => setServings(Math.max(1, servings - 1))}
             className={cn(
-              "w-12 h-12 rounded-xl font-bold text-lg",
-              "bg-fjord-100 dark:bg-fjord-800 text-fjord-600 dark:text-fjord-300",
+              "h-12 w-12 rounded-xl text-lg font-bold",
+              "bg-fjord-100 text-fjord-600 dark:bg-fjord-800 dark:text-fjord-300",
               "hover:bg-fjord-200 dark:hover:bg-fjord-700",
               "transition-all duration-200",
               "hover:scale-105 active:scale-95"
@@ -245,10 +248,10 @@ export function AddMealForm({
             onChange={(e) => setServings(parseInt(e.target.value) || 1)}
             min="1"
             className={cn(
-              "w-20 text-center px-4 py-3 rounded-xl",
+              "w-20 rounded-xl px-4 py-3 text-center",
               "bg-white dark:bg-fjord-800/50",
               "border border-fjord-200 dark:border-fjord-700",
-              "text-fjord-800 dark:text-fjord-100 font-semibold text-lg",
+              "text-lg font-semibold text-fjord-800 dark:text-fjord-100",
               "focus:outline-none focus:ring-2 focus:ring-fjord-500/50",
               "tabular-nums"
             )}
@@ -257,8 +260,8 @@ export function AddMealForm({
             type="button"
             onClick={() => setServings(servings + 1)}
             className={cn(
-              "w-12 h-12 rounded-xl font-bold text-lg",
-              "bg-fjord-100 dark:bg-fjord-800 text-fjord-600 dark:text-fjord-300",
+              "h-12 w-12 rounded-xl text-lg font-bold",
+              "bg-fjord-100 text-fjord-600 dark:bg-fjord-800 dark:text-fjord-300",
               "hover:bg-fjord-200 dark:hover:bg-fjord-700",
               "transition-all duration-200",
               "hover:scale-105 active:scale-95"
@@ -275,7 +278,7 @@ export function AddMealForm({
           type="button"
           onClick={onCancel}
           className={cn(
-            "flex-1 py-3.5 rounded-xl font-medium",
+            "flex-1 rounded-xl py-3.5 font-medium",
             "text-fjord-600 dark:text-fjord-300",
             "hover:bg-fjord-100 dark:hover:bg-fjord-800",
             "transition-all duration-200",
@@ -288,16 +291,16 @@ export function AddMealForm({
           type="submit"
           disabled={saving || !selectedRecipe}
           className={cn(
-            "flex-1 py-3.5 rounded-xl font-medium",
+            "flex-1 rounded-xl py-3.5 font-medium",
             "bg-fjord-500 text-white",
             "hover:bg-fjord-600",
-            "disabled:opacity-50 disabled:cursor-not-allowed",
+            "disabled:cursor-not-allowed disabled:opacity-50",
             "transition-all duration-200",
             "hover:scale-[1.01] active:scale-[0.99]",
             "flex items-center justify-center gap-2"
           )}
         >
-          {saving && <Loader2 className="w-5 h-5 animate-spin" />}
+          {saving && <Loader2 className="h-5 w-5 animate-spin" />}
           {t("save")}
         </button>
       </div>

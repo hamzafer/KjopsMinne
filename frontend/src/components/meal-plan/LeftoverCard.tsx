@@ -1,9 +1,10 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { Clock, Utensils, Trash2, Check, AlertTriangle, XCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
+
 import type { Leftover } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 interface LeftoverCardProps {
   leftover: Leftover;
@@ -71,29 +72,33 @@ export function LeftoverCard({
   const BadgeIcon = config.badgeIcon;
 
   return (
-    <div className={cn(
-      config.card,
-      "p-4 transition-all duration-200",
-      leftover.status === "available" && "hover:scale-[1.02]"
-    )}>
+    <div
+      className={cn(
+        config.card,
+        "p-4 transition-all duration-200",
+        leftover.status === "available" && "hover:scale-[1.02]"
+      )}
+    >
       {/* Header */}
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <h4 className="font-display font-semibold text-fjord-800 dark:text-fjord-100 leading-tight">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <h4 className="font-display font-semibold leading-tight text-fjord-800 dark:text-fjord-100">
           {recipeName}
         </h4>
-        <div className={cn(
-          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium shrink-0",
-          config.badge
-        )}>
-          <BadgeIcon className="w-3.5 h-3.5" />
+        <div
+          className={cn(
+            "inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
+            config.badge
+          )}
+        >
+          <BadgeIcon className="h-3.5 w-3.5" />
           {config.badgeText}
         </div>
       </div>
 
       {/* Servings */}
       <div className="flex items-center gap-2 text-sm text-fjord-600 dark:text-fjord-300">
-        <div className="w-7 h-7 rounded-lg bg-fjord-100 dark:bg-fjord-800 flex items-center justify-center">
-          <Utensils className="w-3.5 h-3.5 text-fjord-500" />
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-fjord-100 dark:bg-fjord-800">
+          <Utensils className="h-3.5 w-3.5 text-fjord-500" />
         </div>
         <span className="font-medium">
           {leftover.remaining_servings} {t("servingsLeft")}
@@ -102,13 +107,15 @@ export function LeftoverCard({
 
       {/* Expiry info for available leftovers */}
       {leftover.status === "available" && !isExpired && (
-        <div className={cn(
-          "mt-3 text-xs flex items-center gap-1.5",
-          isExpiringSoon
-            ? "text-amber-600 dark:text-amber-400"
-            : "text-fjord-500 dark:text-fjord-400"
-        )}>
-          <Clock className="w-3.5 h-3.5" />
+        <div
+          className={cn(
+            "mt-3 flex items-center gap-1.5 text-xs",
+            isExpiringSoon
+              ? "text-amber-600 dark:text-amber-400"
+              : "text-fjord-500 dark:text-fjord-400"
+          )}
+        >
+          <Clock className="h-3.5 w-3.5" />
           {t("expiresIn")} {daysUntilExpiry} {t("days")}
         </div>
       )}
@@ -119,26 +126,26 @@ export function LeftoverCard({
           <button
             onClick={onMarkConsumed}
             className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium",
+              "flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium",
               "bg-forest-500 text-white",
               "hover:bg-forest-600",
               "transition-all duration-200",
               "hover:scale-[1.02] active:scale-[0.98]"
             )}
           >
-            <Check className="w-4 h-4" />
+            <Check className="h-4 w-4" />
             {t("markConsumed")}
           </button>
           <button
             onClick={onMarkDiscarded}
             className={cn(
-              "p-2.5 rounded-xl",
+              "rounded-xl p-2.5",
               "text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20",
               "transition-all duration-200",
               "hover:scale-105 active:scale-95"
             )}
           >
-            <Trash2 className="w-5 h-5" />
+            <Trash2 className="h-5 w-5" />
           </button>
         </div>
       )}

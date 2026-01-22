@@ -1,5 +1,6 @@
 # backend/src/schemas/meal_plan.py
 """MealPlan and Leftover Pydantic schemas."""
+
 from datetime import datetime
 from decimal import Decimal
 from typing import Literal

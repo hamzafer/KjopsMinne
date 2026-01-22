@@ -298,9 +298,7 @@ class ShoppingList(Base):
 class ShoppingListItem(Base):
     __tablename__ = "shopping_list_items"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     shopping_list_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("shopping_lists.id"), nullable=False
     )
@@ -316,9 +314,7 @@ class ShoppingListItem(Base):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     source_meal_plans: Mapped[list] = mapped_column(ARRAY(UUID(as_uuid=True)), default=list)
 
-    shopping_list: Mapped["ShoppingList"] = relationship(
-        "ShoppingList", back_populates="items"
-    )
+    shopping_list: Mapped["ShoppingList"] = relationship("ShoppingList", back_populates="items")
     ingredient: Mapped["Ingredient"] = relationship("Ingredient")
 
     __table_args__ = (

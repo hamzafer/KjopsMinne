@@ -2,9 +2,11 @@
 
 import { AlertTriangle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { StatCard, type StatCardVariant } from "./StatCard";
+
 import { formatDate, type RestockPredictionsResponse, type RestockPrediction } from "@/lib/api";
 import { cn, formatQty } from "@/lib/utils";
+
+import { StatCard, type StatCardVariant } from "./StatCard";
 
 interface RestockCardProps {
   data: RestockPredictionsResponse | null;
@@ -44,17 +46,12 @@ function getUrgencyStyles(level: UrgencyLevel): {
   }
 }
 
-function getVariantFromPredictions(
-  predictions: RestockPrediction[]
-): StatCardVariant {
+function getVariantFromPredictions(predictions: RestockPrediction[]): StatCardVariant {
   const hasCritical = predictions.some(
     (p) => p.days_until_empty !== null && p.days_until_empty < 3
   );
   const hasWarning = predictions.some(
-    (p) =>
-      p.days_until_empty !== null &&
-      p.days_until_empty >= 3 &&
-      p.days_until_empty <= 7
+    (p) => p.days_until_empty !== null && p.days_until_empty >= 3 && p.days_until_empty <= 7
   );
 
   if (hasCritical) return "danger";
@@ -62,23 +59,12 @@ function getVariantFromPredictions(
   return "success";
 }
 
-export function RestockCard({
-  data,
-  loading = false,
-  className,
-}: RestockCardProps) {
+export function RestockCard({ data, loading = false, className }: RestockCardProps) {
   const locale = useLocale();
   const t = useTranslations("Analytics");
 
   if (loading || !data) {
-    return (
-      <StatCard
-        title={t("restock.title")}
-        value=""
-        loading={true}
-        className={className}
-      />
-    );
+    return <StatCard title={t("restock.title")} value="" loading={true} className={className} />;
   }
 
   // Filter to items that need restocking (have a predicted runout date)
@@ -94,31 +80,22 @@ export function RestockCard({
   });
 
   const hasItems = sortedItems.length > 0;
-  const variant = hasItems
-    ? getVariantFromPredictions(sortedItems)
-    : "success";
+  const variant = hasItems ? getVariantFromPredictions(sortedItems) : "success";
 
   // Count items by urgency
   const criticalCount = sortedItems.filter(
     (p) => p.days_until_empty !== null && p.days_until_empty < 3
   ).length;
   const warningCount = sortedItems.filter(
-    (p) =>
-      p.days_until_empty !== null &&
-      p.days_until_empty >= 3 &&
-      p.days_until_empty <= 7
+    (p) => p.days_until_empty !== null && p.days_until_empty >= 3 && p.days_until_empty <= 7
   ).length;
 
   return (
     <StatCard
       title={t("restock.title")}
       value={hasItems ? sortedItems.length.toString() : "0"}
-      subtitle={
-        hasItems
-          ? t("restock.itemsRunningLow")
-          : t("restock.allStocked")
-      }
-      icon={<AlertTriangle className="w-6 h-6" />}
+      subtitle={hasItems ? t("restock.itemsRunningLow") : t("restock.allStocked")}
+      icon={<AlertTriangle className="h-6 w-6" />}
       variant={variant}
       expandable={hasItems}
       className={className}
@@ -129,7 +106,7 @@ export function RestockCard({
           <div className="flex gap-3">
             {criticalCount > 0 && (
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-red-500" />
+                <span className="h-2 w-2 rounded-full bg-red-500" />
                 <span className="text-xs font-medium text-red-700 dark:text-red-400">
                   {criticalCount} {t("restock.critical")}
                 </span>
@@ -137,7 +114,7 @@ export function RestockCard({
             )}
             {warningCount > 0 && (
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-warm" />
+                <span className="h-2 w-2 rounded-full bg-amber-warm" />
                 <span className="text-xs font-medium text-amber-dark dark:text-amber-warm">
                   {warningCount} {t("restock.soon")}
                 </span>
@@ -146,7 +123,7 @@ export function RestockCard({
           </div>
 
           {/* Items list */}
-          <ul className="space-y-2 max-h-48 overflow-y-auto">
+          <ul className="max-h-48 space-y-2 overflow-y-auto">
             {sortedItems.map((item) => {
               const urgency = getUrgencyLevel(item.days_until_empty);
               const styles = getUrgencyStyles(urgency);
@@ -156,34 +133,30 @@ export function RestockCard({
                   key={item.ingredient_id}
                   className={cn(
                     "flex items-center justify-between py-2",
-                    "border-b border-fjord-100/50 dark:border-fjord-700/50 last:border-b-0"
+                    "border-b border-fjord-100/50 last:border-b-0 dark:border-fjord-700/50"
                   )}
                 >
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <span className={cn("w-2 h-2 rounded-full flex-shrink-0", styles.dot)} />
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <span className={cn("h-2 w-2 flex-shrink-0 rounded-full", styles.dot)} />
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-fjord-700 dark:text-fjord-200 truncate">
+                      <p className="truncate text-sm font-medium text-fjord-700 dark:text-fjord-200">
                         {item.ingredient_name}
                       </p>
                       <p className="text-xs text-fjord-500 dark:text-fjord-400">
-                        {formatQty(item.current_quantity)} {item.unit}{" "}
-                        {t("restock.remaining")}
+                        {formatQty(item.current_quantity)} {item.unit} {t("restock.remaining")}
                       </p>
                     </div>
                   </div>
-                  <div className="ml-3 flex flex-col items-end gap-1 flex-shrink-0">
+                  <div className="ml-3 flex flex-shrink-0 flex-col items-end gap-1">
                     <span
-                      className={cn(
-                        "px-2 py-0.5 text-xs font-medium rounded-full",
-                        styles.badge
-                      )}
+                      className={cn("rounded-full px-2 py-0.5 text-xs font-medium", styles.badge)}
                     >
                       {item.days_until_empty !== null
                         ? item.days_until_empty < 1
                           ? t("restock.today")
                           : item.days_until_empty === 1
-                          ? t("restock.tomorrow")
-                          : t("restock.daysLeft", { days: Math.round(item.days_until_empty) })
+                            ? t("restock.tomorrow")
+                            : t("restock.daysLeft", { days: Math.round(item.days_until_empty) })
                         : t("restock.unknown")}
                     </span>
                     {item.recommended_restock_date && (
@@ -200,10 +173,8 @@ export function RestockCard({
           </ul>
 
           {/* Tip */}
-          <div className="pt-3 border-t border-fjord-100 dark:border-fjord-700/50">
-            <p className="text-xs text-fjord-500 dark:text-fjord-400">
-              {t("restock.tip")}
-            </p>
+          <div className="border-t border-fjord-100 pt-3 dark:border-fjord-700/50">
+            <p className="text-xs text-fjord-500 dark:text-fjord-400">{t("restock.tip")}</p>
           </div>
         </div>
       )}

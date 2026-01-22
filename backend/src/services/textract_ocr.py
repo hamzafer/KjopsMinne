@@ -11,6 +11,7 @@ class TextractOCRService(OCRService):
         # Lazy import to avoid dependency when using mock
         try:
             import boto3
+
             self.client = boto3.client("textract")
         except ImportError:
             raise ImportError("boto3 is required for Textract. Install with: uv add boto3")
@@ -20,9 +21,7 @@ class TextractOCRService(OCRService):
         with open(image_path, "rb") as f:
             image_bytes = f.read()
 
-        response = self.client.detect_document_text(
-            Document={"Bytes": image_bytes}
-        )
+        response = self.client.detect_document_text(Document={"Bytes": image_bytes})
 
         lines = []
         blocks = []

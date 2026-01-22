@@ -1,4 +1,5 @@
 """Seed database with initial categories."""
+
 import asyncio
 import uuid
 

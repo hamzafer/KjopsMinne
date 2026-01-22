@@ -1,16 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Receipt, TrendingUp, ShoppingCart, ArrowRight, Upload, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
-import {
-  Receipt,
-  TrendingUp,
-  ShoppingCart,
-  ArrowRight,
-  Upload,
-  Sparkles
-} from "lucide-react";
+import { useEffect, useState } from "react";
+
 import { api, formatNOK, formatRelativeDate, type Summary, type ReceiptListItem } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -56,21 +50,17 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-8">
+    <div className="mx-auto max-w-6xl px-6 py-8">
       {/* Header */}
       <div className="mb-10 animate-fade-in">
-        <h1 className="text-3xl md:text-4xl font-display text-fjord-800 mb-2">
-          {t("greeting")}
-        </h1>
-        <p className="text-stone text-lg">
-          {t("subtitle")}
-        </p>
+        <h1 className="mb-2 font-display text-3xl text-fjord-800 md:text-4xl">{t("greeting")}</h1>
+        <p className="text-lg text-stone">{t("subtitle")}</p>
       </div>
 
       {hasData ? (
         <>
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+          <div className="mb-10 grid grid-cols-1 gap-5 md:grid-cols-3">
             <StatCard
               icon={Receipt}
               label={t("receipts")}
@@ -98,17 +88,15 @@ export default function Dashboard() {
           </div>
 
           {/* Recent Receipts */}
-          <section className="animate-slide-up stagger-4">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl font-display text-fjord-700">
-                {t("recentReceipts")}
-              </h2>
+          <section className="stagger-4 animate-slide-up">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="font-display text-xl text-fjord-700">{t("recentReceipts")}</h2>
               <Link
                 href={`/${locale}/receipts`}
-                className="flex items-center gap-1.5 text-sm text-fjord-500 hover:text-fjord-700 transition-colors"
+                className="flex items-center gap-1.5 text-sm text-fjord-500 transition-colors hover:text-fjord-700"
               >
                 {t("viewAll")}
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
 
@@ -169,21 +157,16 @@ function StatCard({
   const c = colors[color];
 
   return (
-    <div
-      className={cn(
-        "paper-card p-6 animate-slide-up",
-        `stagger-${delay}`
-      )}
-    >
-      <div className="flex items-start justify-between mb-4">
-        <div className={cn("w-11 h-11 rounded-xl flex items-center justify-center", c.bg)}>
-          <Icon className={cn("w-5 h-5", c.icon)} />
+    <div className={cn("paper-card animate-slide-up p-6", `stagger-${delay}`)}>
+      <div className="mb-4 flex items-start justify-between">
+        <div className={cn("flex h-11 w-11 items-center justify-center rounded-xl", c.bg)}>
+          <Icon className={cn("h-5 w-5", c.icon)} />
         </div>
       </div>
-      <p className="text-sm text-stone mb-1">{label}</p>
-      <p className="text-2xl font-display text-fjord-800 tabular-nums">
+      <p className="mb-1 text-sm text-stone">{label}</p>
+      <p className="font-display text-2xl tabular-nums text-fjord-800">
         {value}
-        <span className="text-sm font-body text-stone ml-1.5">{subtitle}</span>
+        <span className="ml-1.5 font-body text-sm text-stone">{subtitle}</span>
       </p>
     </div>
   );
@@ -210,27 +193,28 @@ function ReceiptRow({
     <Link
       href={`/${locale}/receipts/${receipt.id}`}
       className={cn(
-        "paper-card flex items-center justify-between p-4 group animate-slide-up",
+        "paper-card group flex animate-slide-up items-center justify-between p-4",
         `stagger-${index + 5}`
       )}
     >
       <div className="flex items-center gap-4">
-        <div className="w-10 h-10 rounded-xl bg-fjord-50 flex items-center justify-center text-fjord-500 group-hover:bg-fjord-100 transition-colors">
-          <Receipt className="w-5 h-5" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-fjord-50 text-fjord-500 transition-colors group-hover:bg-fjord-100">
+          <Receipt className="h-5 w-5" />
         </div>
         <div>
-          <p className="font-medium text-fjord-700 group-hover:text-fjord-800 transition-colors">
+          <p className="font-medium text-fjord-700 transition-colors group-hover:text-fjord-800">
             {receipt.merchant_name}
           </p>
           <p className="text-sm text-stone">
-            {formatRelativeDate(receipt.purchase_date, relativeTranslations, locale)} · {receipt.item_count} {itemsLabel}
+            {formatRelativeDate(receipt.purchase_date, relativeTranslations, locale)} ·{" "}
+            {receipt.item_count} {itemsLabel}
           </p>
         </div>
       </div>
       <div className="text-right">
-        <p className="font-display text-lg text-fjord-800 tabular-nums">
+        <p className="font-display text-lg tabular-nums text-fjord-800">
           {formatNOK(receipt.total_amount, locale)}
-          <span className="text-xs text-stone ml-1">kr</span>
+          <span className="ml-1 text-xs text-stone">kr</span>
         </p>
       </div>
     </Link>
@@ -245,18 +229,14 @@ function EmptyState({
   tEmpty: ReturnType<typeof useTranslations<"EmptyState">>;
 }) {
   return (
-    <div className="paper-card p-12 text-center animate-scale-in">
-      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-fjord-100 to-fjord-50 flex items-center justify-center mx-auto mb-6">
-        <Sparkles className="w-10 h-10 text-fjord-400" />
+    <div className="paper-card animate-scale-in p-12 text-center">
+      <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-fjord-100 to-fjord-50">
+        <Sparkles className="h-10 w-10 text-fjord-400" />
       </div>
-      <h2 className="text-2xl font-display text-fjord-700 mb-3">
-        {tEmpty("welcome")}
-      </h2>
-      <p className="text-stone max-w-md mx-auto mb-8">
-        {tEmpty("welcomeMessage")}
-      </p>
+      <h2 className="mb-3 font-display text-2xl text-fjord-700">{tEmpty("welcome")}</h2>
+      <p className="mx-auto mb-8 max-w-md text-stone">{tEmpty("welcomeMessage")}</p>
       <Link href={`/${locale}/upload`} className="btn-primary">
-        <Upload className="w-4 h-4" />
+        <Upload className="h-4 w-4" />
         {tEmpty("uploadReceipt")}
       </Link>
     </div>
@@ -265,28 +245,28 @@ function EmptyState({
 
 function DashboardSkeleton() {
   return (
-    <div className="max-w-6xl mx-auto px-6 py-8">
+    <div className="mx-auto max-w-6xl px-6 py-8">
       <div className="mb-10">
-        <div className="skeleton h-10 w-48 mb-2" />
+        <div className="skeleton mb-2 h-10 w-48" />
         <div className="skeleton h-6 w-80" />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+      <div className="mb-10 grid grid-cols-1 gap-5 md:grid-cols-3">
         {[1, 2, 3].map((i) => (
           <div key={i} className="paper-card p-6">
-            <div className="skeleton w-11 h-11 rounded-xl mb-4" />
-            <div className="skeleton h-4 w-20 mb-2" />
+            <div className="skeleton mb-4 h-11 w-11 rounded-xl" />
+            <div className="skeleton mb-2 h-4 w-20" />
             <div className="skeleton h-8 w-32" />
           </div>
         ))}
       </div>
-      <div className="skeleton h-6 w-40 mb-5" />
+      <div className="skeleton mb-5 h-6 w-40" />
       <div className="space-y-3">
         {[1, 2, 3].map((i) => (
           <div key={i} className="paper-card p-4">
             <div className="flex items-center gap-4">
-              <div className="skeleton w-10 h-10 rounded-xl" />
+              <div className="skeleton h-10 w-10 rounded-xl" />
               <div>
-                <div className="skeleton h-5 w-32 mb-1" />
+                <div className="skeleton mb-1 h-5 w-32" />
                 <div className="skeleton h-4 w-24" />
               </div>
             </div>

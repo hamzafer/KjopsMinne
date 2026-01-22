@@ -4,6 +4,7 @@ Revision ID: 005
 Revises: 004
 Create Date: 2026-01-20
 """
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa
@@ -48,12 +49,8 @@ def upgrade() -> None:
         sa.Column("cooked_at", sa.DateTime, nullable=True),
         sa.Column("actual_cost", sa.Numeric(10, 2), nullable=True),
         sa.Column("cost_per_serving", sa.Numeric(10, 2), nullable=True),
-        sa.Column(
-            "created_at", sa.DateTime, server_default=sa.func.now(), nullable=False
-        ),
-        sa.Column(
-            "updated_at", sa.DateTime, server_default=sa.func.now(), nullable=False
-        ),
+        sa.Column("created_at", sa.DateTime, server_default=sa.func.now(), nullable=False),
+        sa.Column("updated_at", sa.DateTime, server_default=sa.func.now(), nullable=False),
     )
 
     # Create leftovers table
@@ -80,9 +77,7 @@ def upgrade() -> None:
         ),
         sa.Column("remaining_servings", sa.Integer, nullable=False),
         sa.Column("status", sa.Text, server_default="available"),
-        sa.Column(
-            "created_at", sa.DateTime, server_default=sa.func.now(), nullable=False
-        ),
+        sa.Column("created_at", sa.DateTime, server_default=sa.func.now(), nullable=False),
         sa.Column("expires_at", sa.DateTime, nullable=False),
     )
 

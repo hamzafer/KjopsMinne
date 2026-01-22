@@ -37,6 +37,7 @@ class IngredientResponse(BaseModel):
 
 class IngredientMatch(BaseModel):
     """Result of matching a raw name to a canonical ingredient."""
+
     ingredient_id: UUID | None
     ingredient_name: str | None
     confidence: Decimal

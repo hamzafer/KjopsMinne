@@ -1,4 +1,5 @@
 """Household management API routes."""
+
 import uuid
 
 from fastapi import APIRouter, HTTPException
@@ -44,22 +45,16 @@ async def create_household(
 
     # Reload with relationships
     result = await db.execute(
-        select(Household)
-        .options(selectinload(Household.users))
-        .where(Household.id == household.id)
+        select(Household).options(selectinload(Household.users)).where(Household.id == household.id)
     )
-    household = result.scalar_one()
-
-    return household
+    return result.scalar_one()
 
 
 @router.get("/households/{household_id}", response_model=HouseholdWithUsers)
 async def get_household(household_id: uuid.UUID, db: DbSession):
     """Get a household with its users."""
     result = await db.execute(
-        select(Household)
-        .options(selectinload(Household.users))
-        .where(Household.id == household_id)
+        select(Household).options(selectinload(Household.users)).where(Household.id == household_id)
     )
     household = result.scalar_one_or_none()
 
@@ -77,9 +72,7 @@ async def add_member(
 ):
     """Add a member to a household."""
     # Verify household exists
-    result = await db.execute(
-        select(Household).where(Household.id == household_id)
-    )
+    result = await db.execute(select(Household).where(Household.id == household_id))
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Household not found")
 

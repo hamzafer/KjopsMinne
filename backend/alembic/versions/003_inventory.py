@@ -4,6 +4,7 @@ Revision ID: 003
 Revises: 002
 Create Date: 2026-01-20
 """
+
 from collections.abc import Sequence
 
 import sqlalchemy as sa
@@ -45,12 +46,8 @@ def upgrade() -> None:
         sa.Column("confidence", sa.Numeric(3, 2), server_default="1.0"),
         sa.Column("source_type", sa.Text, nullable=False),
         sa.Column("source_id", postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column(
-            "created_at", sa.DateTime, server_default=sa.func.now(), nullable=False
-        ),
-        sa.Column(
-            "updated_at", sa.DateTime, server_default=sa.func.now(), nullable=False
-        ),
+        sa.Column("created_at", sa.DateTime, server_default=sa.func.now(), nullable=False),
+        sa.Column("updated_at", sa.DateTime, server_default=sa.func.now(), nullable=False),
     )
 
     # Create inventory_events table
@@ -73,18 +70,14 @@ def upgrade() -> None:
             sa.ForeignKey("users.id"),
             nullable=True,
         ),
-        sa.Column(
-            "created_at", sa.DateTime, server_default=sa.func.now(), nullable=False
-        ),
+        sa.Column("created_at", sa.DateTime, server_default=sa.func.now(), nullable=False),
     )
 
     # Create indexes for inventory_lots
     op.create_index("idx_inventory_lots_household", "inventory_lots", ["household_id"])
     op.create_index("idx_inventory_lots_ingredient", "inventory_lots", ["ingredient_id"])
     op.create_index("idx_inventory_lots_location", "inventory_lots", ["location"])
-    op.create_index(
-        "idx_inventory_lots_purchase_date", "inventory_lots", ["purchase_date"]
-    )
+    op.create_index("idx_inventory_lots_purchase_date", "inventory_lots", ["purchase_date"])
 
     # Create indexes for inventory_events
     op.create_index("idx_inventory_events_lot", "inventory_events", ["lot_id"])

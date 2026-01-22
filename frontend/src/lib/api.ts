@@ -351,11 +351,10 @@ class ApiClient {
   }
 
   private async fetch<T>(path: string, options?: RequestInit): Promise<T> {
+    const headers = new Headers(options?.headers);
     const response = await fetch(`${this.baseUrl}${path}`, {
       ...options,
-      headers: {
-        ...options?.headers,
-      },
+      headers,
     });
 
     if (!response.ok) {
@@ -363,7 +362,7 @@ class ApiClient {
       throw new Error(error || `Request failed: ${response.status}`);
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
   }
 
   // Receipts
@@ -393,7 +392,7 @@ class ApiClient {
       throw new Error(error || `Upload failed: ${response.status}`);
     }
 
-    return response.json();
+    return response.json() as Promise<Receipt>;
   }
 
   // Analytics
@@ -417,7 +416,7 @@ class ApiClient {
     startDate?: string,
     endDate?: string,
     sortBy: "spend" | "count" = "spend",
-    limit: number = 10
+    limit = 10
   ): Promise<TopItemsResponse> {
     const params = new URLSearchParams();
     if (startDate) params.append("start_date", startDate);
@@ -540,10 +539,7 @@ class ApiClient {
   }
 
   // Leftovers
-  async getLeftovers(
-    householdId: string,
-    status?: string
-  ): Promise<LeftoverListResponse> {
+  async getLeftovers(householdId: string, status?: string): Promise<LeftoverListResponse> {
     const params = new URLSearchParams();
     params.append("household_id", householdId);
     if (status) params.append("status", status);
@@ -656,9 +652,7 @@ class ApiClient {
     return this.fetch(`/api/analytics/spend-trend?${params.toString()}`);
   }
 
-  async getRestockPredictions(
-    householdId: string
-  ): Promise<RestockPredictionsResponse> {
+  async getRestockPredictions(householdId: string): Promise<RestockPredictionsResponse> {
     const params = new URLSearchParams();
     params.append("household_id", householdId);
     return this.fetch(`/api/analytics/restock-predictions?${params.toString()}`);
@@ -668,7 +662,7 @@ class ApiClient {
 export const api = new ApiClient(API_URL);
 
 // Format Norwegian Krone (locale-aware)
-export function formatNOK(amount: number, locale: string = "nb"): string {
+export function formatNOK(amount: number, locale = "nb"): string {
   const localeCode = locale === "en" ? "en-NO" : "nb-NO";
   return new Intl.NumberFormat(localeCode, {
     minimumFractionDigits: 2,
@@ -677,7 +671,7 @@ export function formatNOK(amount: number, locale: string = "nb"): string {
 }
 
 // Format date (locale-aware)
-export function formatDate(dateString: string, locale: string = "nb"): string {
+export function formatDate(dateString: string, locale = "nb"): string {
   const date = new Date(dateString);
   const localeCode = locale === "en" ? "en-GB" : "nb-NO";
   return new Intl.DateTimeFormat(localeCode, {
@@ -695,7 +689,7 @@ export function formatRelativeDate(
     yesterday: string;
     daysAgo: (days: number) => string;
   },
-  locale: string = "nb"
+  locale = "nb"
 ): string {
   const date = new Date(dateString);
   const now = new Date();
@@ -708,7 +702,7 @@ export function formatRelativeDate(
 }
 
 // Format month for grouping (locale-aware)
-export function formatMonth(dateString: string, locale: string = "nb"): string {
+export function formatMonth(dateString: string, locale = "nb"): string {
   const date = new Date(dateString);
   const localeCode = locale === "en" ? "en-GB" : "nb-NO";
   return new Intl.DateTimeFormat(localeCode, {

@@ -1,4 +1,5 @@
 """API routes for shopping lists."""
+
 from decimal import Decimal
 from uuid import UUID
 
@@ -88,9 +89,7 @@ async def generate_shopping_list(
     # Create items with inventory check
     for ingredient_id, data in aggregated.items():
         # Get current inventory for this ingredient
-        inv_query = select(
-            func.coalesce(func.sum(InventoryLot.quantity), Decimal("0"))
-        ).where(
+        inv_query = select(func.coalesce(func.sum(InventoryLot.quantity), Decimal("0"))).where(
             InventoryLot.household_id == request.household_id,
             InventoryLot.ingredient_id == ingredient_id,
             InventoryLot.quantity > 0,
@@ -119,9 +118,7 @@ async def generate_shopping_list(
     query = (
         select(ShoppingList)
         .where(ShoppingList.id == shopping_list.id)
-        .options(
-            selectinload(ShoppingList.items).selectinload(ShoppingListItem.ingredient)
-        )
+        .options(selectinload(ShoppingList.items).selectinload(ShoppingListItem.ingredient))
     )
     result = await db.execute(query)
     shopping_list = result.scalar_one()
@@ -174,9 +171,7 @@ async def get_shopping_list(
     query = (
         select(ShoppingList)
         .where(ShoppingList.id == shopping_list_id)
-        .options(
-            selectinload(ShoppingList.items).selectinload(ShoppingListItem.ingredient)
-        )
+        .options(selectinload(ShoppingList.items).selectinload(ShoppingListItem.ingredient))
     )
     result = await db.execute(query)
     shopping_list = result.scalar_one_or_none()
@@ -197,9 +192,7 @@ async def update_shopping_list(
     query = (
         select(ShoppingList)
         .where(ShoppingList.id == shopping_list_id)
-        .options(
-            selectinload(ShoppingList.items).selectinload(ShoppingListItem.ingredient)
-        )
+        .options(selectinload(ShoppingList.items).selectinload(ShoppingListItem.ingredient))
     )
     result = await db.execute(query)
     shopping_list = result.scalar_one_or_none()
@@ -209,9 +202,8 @@ async def update_shopping_list(
 
     data = update_data.model_dump(exclude_unset=True)
 
-    if "status" in data:
-        if data["status"] not in ("active", "completed", "archived"):
-            raise HTTPException(status_code=400, detail="Invalid status")
+    if "status" in data and data["status"] not in ("active", "completed", "archived"):
+        raise HTTPException(status_code=400, detail="Invalid status")
 
     for key, value in data.items():
         setattr(shopping_list, key, value)

@@ -1,4 +1,5 @@
 """Restock predictor service."""
+
 from datetime import datetime, timedelta
 from decimal import Decimal
 from typing import Any
@@ -7,9 +8,7 @@ from typing import Any
 class RestockPredictor:
     """Predict ingredient restock needs."""
 
-    def calculate_average_daily_usage(
-        self, consumption_events: list[dict[str, Any]]
-    ) -> Decimal:
+    def calculate_average_daily_usage(self, consumption_events: list[dict[str, Any]]) -> Decimal:
         """Calculate average daily usage from consumption events.
 
         Args:

@@ -95,14 +95,16 @@ class MockOCRService(OCRService):
             lines.append(f"{name:<30} {price:>8.2f}")
             total += price
 
-        lines.extend([
-            "-" * 40,
-            f"{'TOTAL':<30} {total:>8.2f} NOK",
-            "",
-            f"Betalt med: {fixture['payment']}",
-            "",
-            "Takk for handelen!",
-        ])
+        lines.extend(
+            [
+                "-" * 40,
+                f"{'TOTAL':<30} {total:>8.2f} NOK",
+                "",
+                f"Betalt med: {fixture['payment']}",
+                "",
+                "Takk for handelen!",
+            ]
+        )
 
         return {
             "lines": lines,

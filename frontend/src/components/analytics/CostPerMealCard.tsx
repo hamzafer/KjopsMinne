@@ -2,9 +2,11 @@
 
 import { DollarSign } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { StatCard } from "./StatCard";
+
 import { formatNOK, formatDate, type CostPerMealResponse } from "@/lib/api";
 import { cn } from "@/lib/utils";
+
+import { StatCard } from "./StatCard";
 
 interface CostPerMealCardProps {
   data: CostPerMealResponse | null;
@@ -12,22 +14,13 @@ interface CostPerMealCardProps {
   className?: string;
 }
 
-export function CostPerMealCard({
-  data,
-  loading = false,
-  className,
-}: CostPerMealCardProps) {
+export function CostPerMealCard({ data, loading = false, className }: CostPerMealCardProps) {
   const locale = useLocale();
   const t = useTranslations("Analytics");
 
   if (loading || !data) {
     return (
-      <StatCard
-        title={t("costPerMeal.title")}
-        value=""
-        loading={true}
-        className={className}
-      />
+      <StatCard title={t("costPerMeal.title")} value="" loading={true} className={className} />
     );
   }
 
@@ -43,7 +36,7 @@ export function CostPerMealCard({
           ? t("costPerMeal.mealsTracked", { count: data.total_meals })
           : t("costPerMeal.noMeals")
       }
-      icon={<DollarSign className="w-6 h-6" />}
+      icon={<DollarSign className="h-6 w-6" />}
       expandable={hasData}
       className={className}
     >
@@ -59,11 +52,11 @@ export function CostPerMealCard({
                 key={meal.meal_plan_id}
                 className={cn(
                   "flex items-center justify-between py-2",
-                  "border-b border-fjord-100/50 dark:border-fjord-700/50 last:border-b-0"
+                  "border-b border-fjord-100/50 last:border-b-0 dark:border-fjord-700/50"
                 )}
               >
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-fjord-700 dark:text-fjord-200 truncate">
+                  <p className="truncate text-sm font-medium text-fjord-700 dark:text-fjord-200">
                     {meal.recipe_name}
                   </p>
                   <p className="text-xs text-fjord-500 dark:text-fjord-400">
@@ -71,11 +64,11 @@ export function CostPerMealCard({
                     {t("costPerMeal.servings", { count: meal.servings })}
                   </p>
                 </div>
-                <div className="ml-4 text-right flex-shrink-0">
-                  <p className="text-sm font-semibold text-fjord-800 dark:text-fjord-100 tabular-nums">
+                <div className="ml-4 flex-shrink-0 text-right">
+                  <p className="text-sm font-semibold tabular-nums text-fjord-800 dark:text-fjord-100">
                     {formatNOK(meal.actual_cost, locale)} kr
                   </p>
-                  <p className="text-xs text-fjord-500 dark:text-fjord-400 tabular-nums">
+                  <p className="text-xs tabular-nums text-fjord-500 dark:text-fjord-400">
                     {formatNOK(meal.cost_per_serving, locale)} kr/{t("costPerMeal.perServing")}
                   </p>
                 </div>
@@ -84,12 +77,12 @@ export function CostPerMealCard({
           </ul>
 
           {/* Summary */}
-          <div className="pt-3 border-t border-fjord-100 dark:border-fjord-700/50">
+          <div className="border-t border-fjord-100 pt-3 dark:border-fjord-700/50">
             <div className="flex justify-between text-sm">
               <span className="text-fjord-600 dark:text-fjord-400">
                 {t("costPerMeal.totalSpent")}
               </span>
-              <span className="font-semibold text-fjord-800 dark:text-fjord-100 tabular-nums">
+              <span className="font-semibold tabular-nums text-fjord-800 dark:text-fjord-100">
                 {formatNOK(data.total_cost, locale)} kr
               </span>
             </div>

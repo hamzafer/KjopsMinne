@@ -1,4 +1,5 @@
 """Pydantic schemas for shopping lists."""
+
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID

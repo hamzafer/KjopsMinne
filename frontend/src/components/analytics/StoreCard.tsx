@@ -1,10 +1,12 @@
 "use client";
 
 import { Store } from "lucide-react";
-import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { useLocale, useTranslations } from "next-intl";
-import { StatCard } from "./StatCard";
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+
 import { formatNOK, type ByStoreResponse } from "@/lib/api";
+
+import { StatCard } from "./StatCard";
 
 interface StoreCardProps {
   data: ByStoreResponse | null;
@@ -52,24 +54,35 @@ function getStoreColor(storeName: string): string {
 // Custom tooltip
 interface CustomTooltipProps {
   active?: boolean;
-  payload?: Array<{ payload: { store_name: string; total_spent: number; receipt_count: number; avg_receipt: number } }>;
+  payload?: {
+    payload: {
+      store_name: string;
+      total_spent: number;
+      receipt_count: number;
+      avg_receipt: number;
+    };
+  }[];
   locale: string;
   t: ReturnType<typeof useTranslations>;
 }
 
 function CustomTooltip({ active, payload, locale, t }: CustomTooltipProps) {
-  if (!active || !payload || !payload.length) return null;
+  if (!active || !payload?.length) return null;
 
   const data = payload[0].payload;
   return (
-    <div className="bg-paper dark:bg-fjord-800 rounded-lg shadow-paper-hover px-3 py-2 border border-fjord-100 dark:border-fjord-700">
-      <p className="text-sm font-medium text-fjord-800 dark:text-fjord-100 mb-1">
+    <div className="rounded-lg border border-fjord-100 bg-paper px-3 py-2 shadow-paper-hover dark:border-fjord-700 dark:bg-fjord-800">
+      <p className="mb-1 text-sm font-medium text-fjord-800 dark:text-fjord-100">
         {data.store_name}
       </p>
       <div className="space-y-0.5 text-xs text-fjord-500 dark:text-fjord-400">
         <p>{formatNOK(data.total_spent, locale)} kr</p>
-        <p>{data.receipt_count} {t("visits")}</p>
-        <p>{t("avgReceipt")}: {formatNOK(data.avg_receipt, locale)} kr</p>
+        <p>
+          {data.receipt_count} {t("visits")}
+        </p>
+        <p>
+          {t("avgReceipt")}: {formatNOK(data.avg_receipt, locale)} kr
+        </p>
       </div>
     </div>
   );
@@ -85,23 +98,12 @@ function formatLastVisit(dateStr: string | null, locale: string): string {
   });
 }
 
-export function StoreCard({
-  data,
-  loading = false,
-  className,
-}: StoreCardProps) {
+export function StoreCard({ data, loading = false, className }: StoreCardProps) {
   const locale = useLocale();
   const t = useTranslations("Analytics.byStore");
 
   if (loading || !data) {
-    return (
-      <StatCard
-        title={t("title")}
-        value=""
-        loading={true}
-        className={className}
-      />
-    );
+    return <StatCard title={t("title")} value="" loading={true} className={className} />;
   }
 
   const hasData = data.stores.length > 0;
@@ -119,9 +121,11 @@ export function StoreCard({
   return (
     <StatCard
       title={t("title")}
-      value={hasData ? `${data.stores.length} ${data.stores.length === 1 ? "butikk" : "butikker"}` : "-"}
+      value={
+        hasData ? `${data.stores.length} ${data.stores.length === 1 ? "butikk" : "butikker"}` : "-"
+      }
       subtitle={hasData ? t("subtitle") : undefined}
-      icon={<Store className="w-6 h-6" />}
+      icon={<Store className="h-6 w-6" />}
       expandable={hasData}
       className={className}
     >
@@ -130,10 +134,7 @@ export function StoreCard({
           {/* Bar Chart */}
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={chartData}
-                margin={{ top: 10, right: 0, left: 0, bottom: 20 }}
-              >
+              <BarChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 20 }}>
                 <XAxis
                   dataKey="store_name"
                   tick={{ fontSize: 10, fill: "#6B7280" }}
@@ -169,16 +170,18 @@ export function StoreCard({
           </div>
 
           {/* Detailed table */}
-          <div className="pt-3 border-t border-fjord-100 dark:border-fjord-700/50">
+          <div className="border-t border-fjord-100 pt-3 dark:border-fjord-700/50">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-fjord-500 dark:text-fjord-400 text-xs">
-                    <th className="text-left font-medium pb-2">Butikk</th>
-                    <th className="text-right font-medium pb-2">{t("visits")}</th>
-                    <th className="text-right font-medium pb-2">Total</th>
-                    <th className="text-right font-medium pb-2 hidden sm:table-cell">Snitt</th>
-                    <th className="text-right font-medium pb-2 hidden sm:table-cell">{t("lastVisit")}</th>
+                  <tr className="text-xs text-fjord-500 dark:text-fjord-400">
+                    <th className="pb-2 text-left font-medium">Butikk</th>
+                    <th className="pb-2 text-right font-medium">{t("visits")}</th>
+                    <th className="pb-2 text-right font-medium">Total</th>
+                    <th className="hidden pb-2 text-right font-medium sm:table-cell">Snitt</th>
+                    <th className="hidden pb-2 text-right font-medium sm:table-cell">
+                      {t("lastVisit")}
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-fjord-50 dark:divide-fjord-700/30">
@@ -187,10 +190,10 @@ export function StoreCard({
                       <td className="py-1.5">
                         <div className="flex items-center gap-2">
                           <span
-                            className="w-2 h-2 rounded-full flex-shrink-0"
+                            className="h-2 w-2 flex-shrink-0 rounded-full"
                             style={{ backgroundColor: getStoreColor(store.store_name) }}
                           />
-                          <span className="text-fjord-700 dark:text-fjord-200 truncate max-w-[120px]">
+                          <span className="max-w-[120px] truncate text-fjord-700 dark:text-fjord-200">
                             {store.store_name}
                           </span>
                         </div>
@@ -198,13 +201,13 @@ export function StoreCard({
                       <td className="py-1.5 text-right text-fjord-600 dark:text-fjord-300">
                         {store.receipt_count}
                       </td>
-                      <td className="py-1.5 text-right text-fjord-800 dark:text-fjord-100 font-medium tabular-nums">
+                      <td className="py-1.5 text-right font-medium tabular-nums text-fjord-800 dark:text-fjord-100">
                         {formatNOK(store.total_spent, locale)} kr
                       </td>
-                      <td className="py-1.5 text-right text-fjord-500 dark:text-fjord-400 tabular-nums hidden sm:table-cell">
+                      <td className="hidden py-1.5 text-right tabular-nums text-fjord-500 dark:text-fjord-400 sm:table-cell">
                         {formatNOK(store.avg_receipt, locale)} kr
                       </td>
-                      <td className="py-1.5 text-right text-fjord-400 dark:text-fjord-500 hidden sm:table-cell">
+                      <td className="hidden py-1.5 text-right text-fjord-400 dark:text-fjord-500 sm:table-cell">
                         {formatLastVisit(store.last_visit, locale)}
                       </td>
                     </tr>

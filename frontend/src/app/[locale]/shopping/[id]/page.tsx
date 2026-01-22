@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { ArrowLeft, Trash2, ShoppingCart, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { ArrowLeft, Trash2, ShoppingCart, Loader2 } from "lucide-react";
-import { api, formatDate, type ShoppingList } from "@/lib/api";
+import { useEffect, useState, useCallback } from "react";
+
 import { ShoppingListView } from "@/components/shopping/ShoppingListView";
+import { api, formatDate, type ShoppingList } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export default function ShoppingListDetailPage() {
@@ -84,9 +85,7 @@ export default function ShoppingListDetailPage() {
 
     try {
       await api.updateShoppingList(shoppingList.id, { status: "completed" });
-      setShoppingList((prev) =>
-        prev ? { ...prev, status: "completed" } : prev
-      );
+      setShoppingList((prev) => (prev ? { ...prev, status: "completed" } : prev));
     } catch (error) {
       console.error("Failed to complete shopping list:", error);
     }
@@ -108,9 +107,9 @@ export default function ShoppingListDetailPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="mx-auto max-w-4xl px-6 py-8">
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-fjord-400 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin text-fjord-400" />
         </div>
       </div>
     );
@@ -119,23 +118,23 @@ export default function ShoppingListDetailPage() {
   // Not found state
   if (!shoppingList) {
     return (
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="paper-card p-12 text-center animate-fade-in">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-fjord-100 dark:bg-fjord-800 flex items-center justify-center">
-            <ShoppingCart className="w-10 h-10 text-fjord-400 dark:text-fjord-500" />
+      <div className="mx-auto max-w-4xl px-6 py-8">
+        <div className="paper-card animate-fade-in p-12 text-center">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-fjord-100 dark:bg-fjord-800">
+            <ShoppingCart className="h-10 w-10 text-fjord-400 dark:text-fjord-500" />
           </div>
-          <h2 className="text-xl font-display font-semibold text-fjord-800 dark:text-fjord-100 mb-2">
+          <h2 className="mb-2 font-display text-xl font-semibold text-fjord-800 dark:text-fjord-100">
             {t("empty")}
           </h2>
           <Link
             href={`/${locale}/shopping`}
             className={cn(
-              "inline-flex items-center gap-2 mt-4",
+              "mt-4 inline-flex items-center gap-2",
               "text-fjord-500 hover:text-fjord-700 dark:hover:text-fjord-300",
               "transition-colors"
             )}
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="h-4 w-4" />
             {t("backToLists")}
           </Link>
         </div>
@@ -147,28 +146,28 @@ export default function ShoppingListDetailPage() {
   const endDate = formatDate(shoppingList.date_range_end, locale);
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8">
+    <div className="mx-auto max-w-4xl px-6 py-8">
       {/* Back Link */}
       <Link
         href={`/${locale}/shopping`}
         className={cn(
-          "inline-flex items-center gap-2 mb-6",
+          "mb-6 inline-flex items-center gap-2",
           "text-fjord-500 hover:text-fjord-700 dark:hover:text-fjord-300",
-          "transition-colors animate-fade-in"
+          "animate-fade-in transition-colors"
         )}
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="h-4 w-4" />
         {t("backToLists")}
       </Link>
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8 animate-slide-up">
+      <div className="mb-8 flex animate-slide-up flex-col justify-between gap-4 sm:flex-row sm:items-start">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-forest-500 to-forest-600 flex items-center justify-center shadow-lg shadow-forest-500/20">
-            <ShoppingCart className="w-7 h-7 text-white" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-forest-500 to-forest-600 shadow-lg shadow-forest-500/20">
+            <ShoppingCart className="h-7 w-7 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-display font-semibold text-fjord-800 dark:text-fjord-100">
+            <h1 className="font-display text-2xl font-semibold text-fjord-800 dark:text-fjord-100">
               {shoppingList.name}
             </h1>
             <p className="mt-0.5 text-fjord-500 dark:text-fjord-400">
@@ -178,26 +177,23 @@ export default function ShoppingListDetailPage() {
         </div>
 
         {/* Actions */}
-        <div
-          className="flex gap-2 animate-fade-in"
-          style={{ animationDelay: "100ms" }}
-        >
+        <div className="flex animate-fade-in gap-2" style={{ animationDelay: "100ms" }}>
           <button
             onClick={handleDelete}
             disabled={deleting}
             className={cn(
-              "flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium",
+              "flex items-center gap-2 rounded-xl px-4 py-2.5 font-medium",
               "text-red-600 dark:text-red-400",
               "hover:bg-red-50 dark:hover:bg-red-900/20",
               "hover:scale-[1.02] active:scale-[0.98]",
-              "disabled:opacity-50 disabled:cursor-not-allowed",
+              "disabled:cursor-not-allowed disabled:opacity-50",
               "transition-all duration-200"
             )}
           >
             {deleting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="h-4 w-4" />
             )}
             {t("delete")}
           </button>

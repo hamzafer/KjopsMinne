@@ -1,11 +1,13 @@
 """Inventory management service."""
+
 from decimal import Decimal
+from typing import Any
 
 
 class InventoryService:
     """Service for inventory operations."""
 
-    def calculate_remaining(self, lot, events: list) -> Decimal:
+    def calculate_remaining(self, lot: Any, events: list[Any]) -> Decimal:
         """
         Calculate remaining quantity for a lot based on events.
 

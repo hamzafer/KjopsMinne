@@ -1,5 +1,6 @@
 # backend/src/schemas/inventory.py
 """Inventory Pydantic schemas."""
+
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
@@ -11,6 +12,7 @@ from src.schemas.ingredient import IngredientResponse
 
 class InventoryLotCreate(BaseModel):
     """Create a new inventory lot."""
+
     ingredient_id: UUID
     quantity: Decimal = Field(..., ge=0)
     unit: str
@@ -27,12 +29,14 @@ class InventoryLotCreate(BaseModel):
 
 class InventoryLotUpdate(BaseModel):
     """Update an inventory lot."""
+
     location: str | None = None
     expiry_date: datetime | None = None
 
 
 class InventoryLotResponse(BaseModel):
     """Inventory lot response."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
@@ -56,6 +60,7 @@ class InventoryLotResponse(BaseModel):
 
 class InventoryEventCreate(BaseModel):
     """Create an inventory event."""
+
     event_type: str  # add|consume|adjust|discard|transfer
     quantity_delta: Decimal
     unit: str
@@ -64,6 +69,7 @@ class InventoryEventCreate(BaseModel):
 
 class InventoryEventResponse(BaseModel):
     """Inventory event response."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
@@ -78,6 +84,7 @@ class InventoryEventResponse(BaseModel):
 
 class InventoryAggregatedItem(BaseModel):
     """Aggregated inventory by ingredient."""
+
     ingredient_id: UUID
     ingredient_name: str
     canonical_name: str
@@ -90,15 +97,18 @@ class InventoryAggregatedItem(BaseModel):
 
 class ConsumeRequest(BaseModel):
     """Request to consume from a lot."""
+
     quantity: Decimal = Field(..., gt=0)
     reason: str | None = None
 
 
 class DiscardRequest(BaseModel):
     """Request to discard a lot."""
+
     reason: str = "expired"
 
 
 class TransferRequest(BaseModel):
     """Request to transfer lot to new location."""
+
     location: str  # pantry|fridge|freezer

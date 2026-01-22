@@ -1,12 +1,13 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { useLocale, useTranslations } from "next-intl";
 import { ArrowLeft, CalendarPlus } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
-import { api } from "@/lib/api";
+
 import { AddMealForm } from "@/components/meal-plan/AddMealForm";
+import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 // TODO: Get from user context
@@ -44,33 +45,33 @@ export default function AddMealPage() {
   };
 
   return (
-    <div className="max-w-lg mx-auto px-6 py-8">
+    <div className="mx-auto max-w-lg px-6 py-8">
       {/* Header */}
       <div className="mb-8 animate-slide-up">
         <Link
           href={`/${locale}/plan`}
           className={cn(
-            "inline-flex items-center gap-2 mb-4",
+            "mb-4 inline-flex items-center gap-2",
             "text-fjord-500 hover:text-fjord-700 dark:hover:text-fjord-300",
             "transition-colors"
           )}
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="h-4 w-4" />
           {t("title")}
         </Link>
 
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-fjord-500 to-fjord-600 flex items-center justify-center shadow-lg shadow-fjord-500/20">
-            <CalendarPlus className="w-6 h-6 text-white" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-fjord-500 to-fjord-600 shadow-lg shadow-fjord-500/20">
+            <CalendarPlus className="h-6 w-6 text-white" />
           </div>
-          <h1 className="text-2xl font-display font-semibold text-fjord-800 dark:text-fjord-100">
+          <h1 className="font-display text-2xl font-semibold text-fjord-800 dark:text-fjord-100">
             {t("addTitle")}
           </h1>
         </div>
       </div>
 
       {/* Form */}
-      <div className="paper-card p-6 animate-slide-up stagger-1">
+      <div className="paper-card stagger-1 animate-slide-up p-6">
         <AddMealForm
           householdId={HOUSEHOLD_ID}
           defaultDate={defaultDate}

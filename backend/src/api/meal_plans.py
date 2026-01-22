@@ -359,9 +359,12 @@ async def update_leftover(
     update_data = leftover_data.model_dump(exclude_unset=True)
 
     # Validate status if provided
-    if "status" in update_data:
-        if update_data["status"] not in ("available", "consumed", "discarded"):
-            raise HTTPException(status_code=400, detail="Invalid status")
+    if "status" in update_data and update_data["status"] not in (
+        "available",
+        "consumed",
+        "discarded",
+    ):
+        raise HTTPException(status_code=400, detail="Invalid status")
 
     for key, value in update_data.items():
         setattr(leftover, key, value)

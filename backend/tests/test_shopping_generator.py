@@ -1,4 +1,5 @@
 """Tests for shopping list generator service."""
+
 from datetime import datetime
 from decimal import Decimal
 from uuid import uuid4

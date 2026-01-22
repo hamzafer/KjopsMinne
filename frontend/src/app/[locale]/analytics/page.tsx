@@ -1,8 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+
+import {
+  CostPerMealCard,
+  WasteCard,
+  SpendTrendCard,
+  RestockCard,
+  CategoryCard,
+  SummaryStats,
+  TopItemsCard,
+  StoreCard,
+} from "@/components/analytics";
 import {
   api,
   type CostPerMealResponse,
@@ -14,16 +24,7 @@ import {
   type TopItemsResponse,
   type ByStoreResponse,
 } from "@/lib/api";
-import {
-  CostPerMealCard,
-  WasteCard,
-  SpendTrendCard,
-  RestockCard,
-  CategoryCard,
-  SummaryStats,
-  TopItemsCard,
-  StoreCard,
-} from "@/components/analytics";
+import { cn } from "@/lib/utils";
 
 // TODO: Get from auth context
 const DEMO_HOUSEHOLD_ID = "00000000-0000-0000-0000-000000000001";
@@ -75,16 +76,17 @@ export default function AnalyticsPage() {
       const endStr = endDate.toISOString().split("T")[0];
 
       try {
-        const [cost, waste, trend, restock, category, summary, topItems, stores] = await Promise.all([
-          api.getCostPerMeal(DEMO_HOUSEHOLD_ID, startStr, endStr).catch(() => null),
-          api.getWasteAnalytics(DEMO_HOUSEHOLD_ID, startStr, endStr).catch(() => null),
-          api.getSpendTrend(DEMO_HOUSEHOLD_ID, startStr, endStr, "weekly").catch(() => null),
-          api.getRestockPredictions(DEMO_HOUSEHOLD_ID).catch(() => null),
-          api.getByCategory(startStr, endStr).catch(() => null),
-          api.getSummary(startStr, endStr).catch(() => null),
-          api.getTopItems(startStr, endStr, topItemsSortBy).catch(() => null),
-          api.getByStore(startStr, endStr).catch(() => null),
-        ]);
+        const [cost, waste, trend, restock, category, summary, topItems, stores] =
+          await Promise.all([
+            api.getCostPerMeal(DEMO_HOUSEHOLD_ID, startStr, endStr).catch(() => null),
+            api.getWasteAnalytics(DEMO_HOUSEHOLD_ID, startStr, endStr).catch(() => null),
+            api.getSpendTrend(DEMO_HOUSEHOLD_ID, startStr, endStr, "weekly").catch(() => null),
+            api.getRestockPredictions(DEMO_HOUSEHOLD_ID).catch(() => null),
+            api.getByCategory(startStr, endStr).catch(() => null),
+            api.getSummary(startStr, endStr).catch(() => null),
+            api.getTopItems(startStr, endStr, topItemsSortBy).catch(() => null),
+            api.getByStore(startStr, endStr).catch(() => null),
+          ]);
 
         setCostData(cost);
         setWasteData(waste);
@@ -106,27 +108,25 @@ export default function AnalyticsPage() {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-8">
         {/* Header */}
         <header className="mb-8 animate-fade-in">
           <h1 className="font-display text-3xl font-bold text-fjord-800 dark:text-fjord-100">
             {tAnalytics("title")}
           </h1>
-          <p className="text-stone dark:text-fjord-400 mt-1">
-            {tAnalytics("subtitle")}
-          </p>
+          <p className="mt-1 text-stone dark:text-fjord-400">{tAnalytics("subtitle")}</p>
 
           {/* Period selector */}
-          <div className="flex gap-2 mt-4">
+          <div className="mt-4 flex gap-2">
             {(["week", "month", "30days"] as Period[]).map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
                 className={cn(
-                  "px-4 py-2 text-sm font-medium rounded-lg transition-colors",
+                  "rounded-lg px-4 py-2 text-sm font-medium transition-colors",
                   period === p
-                    ? "bg-fjord-800 dark:bg-fjord-100 text-white dark:text-fjord-900"
-                    : "bg-fjord-100 dark:bg-fjord-700 text-fjord-600 dark:text-fjord-300 hover:bg-fjord-200 dark:hover:bg-fjord-600"
+                    ? "bg-fjord-800 text-white dark:bg-fjord-100 dark:text-fjord-900"
+                    : "bg-fjord-100 text-fjord-600 hover:bg-fjord-200 dark:bg-fjord-700 dark:text-fjord-300 dark:hover:bg-fjord-600"
                 )}
               >
                 {p === "week" && t("thisWeek")}
@@ -143,30 +143,26 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Dashboard grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="animate-slide-up stagger-1">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="stagger-1 animate-slide-up">
             <CategoryCard data={categoryData} loading={loading} />
           </div>
-          <div className="animate-slide-up stagger-2">
-            <TopItemsCard
-              data={topItemsData}
-              loading={loading}
-              onSortChange={setTopItemsSortBy}
-            />
+          <div className="stagger-2 animate-slide-up">
+            <TopItemsCard data={topItemsData} loading={loading} onSortChange={setTopItemsSortBy} />
           </div>
-          <div className="animate-slide-up stagger-3">
+          <div className="stagger-3 animate-slide-up">
             <SpendTrendCard data={trendData} loading={loading} />
           </div>
-          <div className="animate-slide-up stagger-4">
+          <div className="stagger-4 animate-slide-up">
             <CostPerMealCard data={costData} loading={loading} />
           </div>
-          <div className="animate-slide-up stagger-5">
+          <div className="stagger-5 animate-slide-up">
             <WasteCard data={wasteData} loading={loading} />
           </div>
-          <div className="animate-slide-up stagger-6">
+          <div className="stagger-6 animate-slide-up">
             <RestockCard data={restockData} loading={loading} />
           </div>
-          <div className="animate-slide-up stagger-7 md:col-span-2">
+          <div className="stagger-7 animate-slide-up md:col-span-2">
             <StoreCard data={storeData} loading={loading} />
           </div>
         </div>

@@ -1,10 +1,12 @@
 "use client";
 
-import { useTranslations, useLocale } from "next-intl";
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
-import { DayColumn } from "./DayColumn";
-import { cn } from "@/lib/utils";
+import { useTranslations, useLocale } from "next-intl";
+
 import type { MealPlan } from "@/lib/api";
+import { cn } from "@/lib/utils";
+
+import { DayColumn } from "./DayColumn";
 
 interface WeeklyCalendarProps {
   weekStart: Date;
@@ -55,19 +57,23 @@ export function WeeklyCalendar({
     return (
       <div className="space-y-4">
         {/* Navigation skeleton */}
-        <div className="flex justify-between items-center">
-          <div className="h-10 w-28 bg-fjord-100 dark:bg-fjord-800 rounded-xl animate-pulse" />
-          <div className="h-8 w-40 bg-fjord-100 dark:bg-fjord-800 rounded-lg animate-pulse" />
-          <div className="h-10 w-28 bg-fjord-100 dark:bg-fjord-800 rounded-xl animate-pulse" />
+        <div className="flex items-center justify-between">
+          <div className="h-10 w-28 animate-pulse rounded-xl bg-fjord-100 dark:bg-fjord-800" />
+          <div className="h-8 w-40 animate-pulse rounded-lg bg-fjord-100 dark:bg-fjord-800" />
+          <div className="h-10 w-28 animate-pulse rounded-xl bg-fjord-100 dark:bg-fjord-800" />
         </div>
         {/* Calendar skeleton */}
         <div className="grid grid-cols-7 gap-3">
           {[...Array(7)].map((_, i) => (
-            <div key={i} className="space-y-2 animate-pulse" style={{ animationDelay: `${i * 50}ms` }}>
-              <div className="h-16 bg-fjord-100 dark:bg-fjord-800 rounded-xl" />
-              <div className="h-20 bg-fjord-100/50 dark:bg-fjord-800/50 rounded-xl" />
-              <div className="h-20 bg-fjord-100/50 dark:bg-fjord-800/50 rounded-xl" />
-              <div className="h-20 bg-fjord-100/50 dark:bg-fjord-800/50 rounded-xl" />
+            <div
+              key={i}
+              className="animate-pulse space-y-2"
+              style={{ animationDelay: `${i * 50}ms` }}
+            >
+              <div className="h-16 rounded-xl bg-fjord-100 dark:bg-fjord-800" />
+              <div className="h-20 rounded-xl bg-fjord-100/50 dark:bg-fjord-800/50" />
+              <div className="h-20 rounded-xl bg-fjord-100/50 dark:bg-fjord-800/50" />
+              <div className="h-20 rounded-xl bg-fjord-100/50 dark:bg-fjord-800/50" />
             </div>
           ))}
         </div>
@@ -78,24 +84,24 @@ export function WeeklyCalendar({
   return (
     <div className="space-y-4">
       {/* Week Navigation */}
-      <div className="flex justify-between items-center animate-fade-in">
+      <div className="flex animate-fade-in items-center justify-between">
         <button
           onClick={onPrevWeek}
           className={cn(
-            "group flex items-center gap-2 px-4 py-2.5 rounded-xl",
-            "text-fjord-600 dark:text-fjord-300 font-medium",
+            "group flex items-center gap-2 rounded-xl px-4 py-2.5",
+            "font-medium text-fjord-600 dark:text-fjord-300",
             "hover:bg-fjord-100 dark:hover:bg-fjord-800",
             "transition-all duration-200",
             "hover:scale-[1.02] active:scale-[0.98]"
           )}
         >
-          <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+          <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
           <span className="hidden sm:inline">{t("prevWeek")}</span>
         </button>
 
         <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-fjord-400 dark:text-fjord-500" />
-          <h2 className="text-lg font-display font-semibold text-fjord-800 dark:text-fjord-100">
+          <Calendar className="h-5 w-5 text-fjord-400 dark:text-fjord-500" />
+          <h2 className="font-display text-lg font-semibold text-fjord-800 dark:text-fjord-100">
             {formatWeekRange()}
           </h2>
         </div>
@@ -103,15 +109,15 @@ export function WeeklyCalendar({
         <button
           onClick={onNextWeek}
           className={cn(
-            "group flex items-center gap-2 px-4 py-2.5 rounded-xl",
-            "text-fjord-600 dark:text-fjord-300 font-medium",
+            "group flex items-center gap-2 rounded-xl px-4 py-2.5",
+            "font-medium text-fjord-600 dark:text-fjord-300",
             "hover:bg-fjord-100 dark:hover:bg-fjord-800",
             "transition-all duration-200",
             "hover:scale-[1.02] active:scale-[0.98]"
           )}
         >
           <span className="hidden sm:inline">{t("nextWeek")}</span>
-          <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+          <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
         </button>
       </div>
 

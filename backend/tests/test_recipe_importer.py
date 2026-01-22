@@ -418,9 +418,7 @@ class TestImportFromUrl:
             mock_client_instance.__aexit__.return_value = None
             mock_client.return_value = mock_client_instance
 
-            result = await importer.import_from_url(
-                "https://example.com/recipe", self.household_id
-            )
+            result = await importer.import_from_url("https://example.com/recipe", self.household_id)
 
         # Basic HTML extraction (low confidence)
         assert result["name"] == "Basic Recipe"

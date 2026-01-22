@@ -1,20 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import Link from "next/link";
-import { useTranslations, useLocale } from "next-intl";
 import {
   ArrowLeft,
   Calendar,
   MapPin,
   CreditCard,
   Trash2,
-  Receipt as ReceiptIcon,
   Package,
   Tag,
-  Loader2
+  Loader2,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useParams } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
+import { useEffect, useState } from "react";
+
 import { api, formatNOK, formatDate, type Receipt } from "@/lib/api";
 import { cn, formatQty } from "@/lib/utils";
 
@@ -72,34 +72,32 @@ export default function ReceiptDetailPage() {
   const discountItems = receipt.items.filter((i) => i.discount_amount > 0);
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-8">
+    <div className="mx-auto max-w-2xl px-6 py-8">
       {/* Back link */}
       <Link
         href={`/${locale}/receipts`}
-        className="inline-flex items-center gap-2 text-stone hover:text-fjord-600 transition-colors mb-6 animate-fade-in"
+        className="mb-6 inline-flex animate-fade-in items-center gap-2 text-stone transition-colors hover:text-fjord-600"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft className="h-4 w-4" />
         {t("backToReceipts")}
       </Link>
 
       {/* Receipt Card */}
-      <div className="receipt-paper rounded-2xl shadow-paper-lifted overflow-hidden animate-slide-up stagger-1">
+      <div className="receipt-paper stagger-1 animate-slide-up overflow-hidden rounded-2xl shadow-paper-lifted">
         {/* Header */}
-        <div className="p-6 pb-4 border-b border-fjord-100">
-          <div className="flex items-start justify-between mb-4">
+        <div className="border-b border-fjord-100 p-6 pb-4">
+          <div className="mb-4 flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-display text-fjord-800 mb-1">
-                {receipt.merchant_name}
-              </h1>
+              <h1 className="mb-1 font-display text-2xl text-fjord-800">{receipt.merchant_name}</h1>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-stone">
                 {receipt.store_location && (
                   <span className="flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4" />
+                    <MapPin className="h-4 w-4" />
                     {receipt.store_location}
                   </span>
                 )}
                 <span className="flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4" />
+                  <Calendar className="h-4 w-4" />
                   {formatDate(receipt.purchase_date, locale)}
                 </span>
               </div>
@@ -107,19 +105,19 @@ export default function ReceiptDetailPage() {
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="p-2 rounded-lg text-stone hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+              className="rounded-lg p-2 text-stone transition-colors hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
             >
               {deleting ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
-                <Trash2 className="w-5 h-5" />
+                <Trash2 className="h-5 w-5" />
               )}
             </button>
           </div>
 
           {receipt.payment_method && (
             <div className="flex items-center gap-2 text-sm text-stone">
-              <CreditCard className="w-4 h-4" />
+              <CreditCard className="h-4 w-4" />
               {receipt.payment_method}
             </div>
           )}
@@ -127,34 +125,36 @@ export default function ReceiptDetailPage() {
 
         {/* Items */}
         <div className="p-6">
-          <h2 className="text-sm font-medium text-stone uppercase tracking-wider mb-4 flex items-center gap-2">
-            <Package className="w-4 h-4" />
+          <h2 className="mb-4 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-stone">
+            <Package className="h-4 w-4" />
             {t("items", { count: receipt.items.length })}
           </h2>
 
           <div className="space-y-4">
             {/* Categorized items grouped by category */}
-            {Object.entries(groupByCategory(categorizedItems, t("other"))).map(([category, items]) => (
-              <div key={category}>
-                <div className="flex items-center gap-2 mb-2">
-                  <Tag className="w-3.5 h-3.5 text-stone-light" />
-                  <span className="text-xs font-medium text-stone uppercase tracking-wider">
-                    {category}
-                  </span>
+            {Object.entries(groupByCategory(categorizedItems, t("other"))).map(
+              ([category, items]) => (
+                <div key={category}>
+                  <div className="mb-2 flex items-center gap-2">
+                    <Tag className="h-3.5 w-3.5 text-stone-light" />
+                    <span className="text-xs font-medium uppercase tracking-wider text-stone">
+                      {category}
+                    </span>
+                  </div>
+                  <div className="space-y-0">
+                    {items.map((item) => (
+                      <ItemRow key={item.id} item={item} locale={locale} />
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-0">
-                  {items.map((item) => (
-                    <ItemRow key={item.id} item={item} locale={locale} />
-                  ))}
-                </div>
-              </div>
-            ))}
+              )
+            )}
 
             {/* Uncategorized items */}
             {uncategorizedItems.length > 0 && (
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-medium text-stone uppercase tracking-wider">
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="text-xs font-medium uppercase tracking-wider text-stone">
                     {t("other")}
                   </span>
                 </div>
@@ -168,7 +168,7 @@ export default function ReceiptDetailPage() {
 
             {/* Pant */}
             {pantItems.length > 0 && (
-              <div className="pt-2 border-t border-fjord-100">
+              <div className="border-t border-fjord-100 pt-2">
                 <div className="space-y-0">
                   {pantItems.map((item) => (
                     <ItemRow key={item.id} item={item} locale={locale} isPant />
@@ -179,7 +179,7 @@ export default function ReceiptDetailPage() {
 
             {/* Discounts */}
             {discountItems.length > 0 && (
-              <div className="pt-2 border-t border-fjord-100">
+              <div className="border-t border-fjord-100 pt-2">
                 {discountItems.map((item) => (
                   <div key={item.id} className="receipt-item text-forest-600">
                     <span className="receipt-item-name">{item.raw_name}</span>
@@ -194,12 +194,12 @@ export default function ReceiptDetailPage() {
         </div>
 
         {/* Total */}
-        <div className="p-6 pt-4 bg-fjord-50/50 border-t border-fjord-100">
-          <div className="flex justify-between items-baseline">
-            <span className="text-lg font-display text-fjord-700">{t("total")}</span>
-            <span className="text-3xl font-display text-fjord-800 tabular-nums">
+        <div className="border-t border-fjord-100 bg-fjord-50/50 p-6 pt-4">
+          <div className="flex items-baseline justify-between">
+            <span className="font-display text-lg text-fjord-700">{t("total")}</span>
+            <span className="font-display text-3xl tabular-nums text-fjord-800">
               {formatNOK(receipt.total_amount, locale)}
-              <span className="text-base text-stone ml-1.5">kr</span>
+              <span className="ml-1.5 text-base text-stone">kr</span>
             </span>
           </div>
         </div>
@@ -211,7 +211,7 @@ export default function ReceiptDetailPage() {
 function ItemRow({
   item,
   locale,
-  isPant = false
+  isPant = false,
 }: {
   item: Receipt["items"][0];
   locale: string;
@@ -219,36 +219,32 @@ function ItemRow({
 }) {
   return (
     <div className={cn("receipt-item", isPant && "text-forest-600")}>
-      <div className="flex items-center gap-2 min-w-0">
+      <div className="flex min-w-0 items-center gap-2">
         {item.category && (
           <span
-            className="w-2 h-2 rounded-full flex-shrink-0"
+            className="h-2 w-2 flex-shrink-0 rounded-full"
             style={{ backgroundColor: item.category.color || "#6B7280" }}
           />
         )}
         <span className="receipt-item-name">
           {item.raw_name}
           {item.quantity && Number(item.quantity) !== 1 && (
-            <span className="text-stone-light ml-1">
-              × {formatQty(item.quantity)}
-            </span>
+            <span className="ml-1 text-stone-light">× {formatQty(item.quantity)}</span>
           )}
         </span>
       </div>
-      <span className="receipt-item-price">
-        {formatNOK(item.total_price, locale)}
-      </span>
+      <span className="receipt-item-price">{formatNOK(item.total_price, locale)}</span>
     </div>
   );
 }
 
 function ReceiptDetailSkeleton() {
   return (
-    <div className="max-w-2xl mx-auto px-6 py-8">
-      <div className="skeleton h-5 w-40 mb-6" />
+    <div className="mx-auto max-w-2xl px-6 py-8">
+      <div className="skeleton mb-6 h-5 w-40" />
       <div className="paper-card p-6">
-        <div className="skeleton h-8 w-48 mb-2" />
-        <div className="skeleton h-5 w-64 mb-6" />
+        <div className="skeleton mb-2 h-8 w-48" />
+        <div className="skeleton mb-6 h-5 w-64" />
         <div className="space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="flex justify-between">
@@ -262,7 +258,10 @@ function ReceiptDetailSkeleton() {
   );
 }
 
-function groupByCategory(items: Receipt["items"], otherLabel: string): Record<string, Receipt["items"]> {
+function groupByCategory(
+  items: Receipt["items"],
+  otherLabel: string
+): Record<string, Receipt["items"]> {
   const groups: Record<string, Receipt["items"]> = {};
 
   for (const item of items) {

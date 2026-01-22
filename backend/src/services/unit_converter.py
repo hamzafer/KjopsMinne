@@ -1,4 +1,5 @@
 """Unit conversion service for canonical units (g, ml, pcs)."""
+
 from decimal import Decimal
 
 
@@ -15,7 +16,7 @@ class UnitConverter:
         "tbsp": ("ml", Decimal("15")),
         "tsp": ("ml", Decimal("5")),
         "ss": ("ml", Decimal("15")),  # Norwegian: spiseskje
-        "ts": ("ml", Decimal("5")),   # Norwegian: teskje
+        "ts": ("ml", Decimal("5")),  # Norwegian: teskje
         # Weight to g
         "kg": ("g", Decimal("1000")),
         "hg": ("g", Decimal("100")),

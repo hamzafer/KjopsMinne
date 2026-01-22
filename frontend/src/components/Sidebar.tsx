@@ -1,9 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useTranslations, useLocale } from "next-intl";
-import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Upload,
@@ -17,9 +13,15 @@ import {
   PanelLeftClose,
   PanelLeft,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useTranslations, useLocale } from "next-intl";
+
+import { cn } from "@/lib/utils";
+
 import { LanguageSwitcher } from "./LanguageSwitcher";
-import { ThemeSwitcher } from "./ThemeSwitcher";
 import { useSidebar } from "./SidebarContext";
+import { ThemeSwitcher } from "./ThemeSwitcher";
 
 interface SidebarProps {
   className?: string;
@@ -46,10 +48,10 @@ export function Sidebar({ className }: SidebarProps) {
     <aside
       className={cn(
         "fixed left-0 top-0 z-40 h-screen",
-        "bg-cream/95 dark:bg-[#1a2332]/95 backdrop-blur-md",
+        "bg-cream/95 backdrop-blur-md dark:bg-[#1a2332]/95",
         "border-r border-fjord-100/50 dark:border-fjord-700/30",
         "transition-all duration-300 ease-out",
-        "hidden lg:flex flex-col",
+        "hidden flex-col lg:flex",
         isCollapsed ? "w-[72px]" : "w-[240px]",
         className
       )}
@@ -57,22 +59,19 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Logo Section */}
       <div
         className={cn(
-          "flex items-center h-16 border-b border-fjord-100/50 dark:border-fjord-700/30",
+          "flex h-16 items-center border-b border-fjord-100/50 dark:border-fjord-700/30",
           isCollapsed ? "justify-center px-3" : "px-5"
         )}
       >
         <Link
           href={`/${locale}`}
-          className={cn(
-            "flex items-center gap-3 group",
-            isCollapsed && "justify-center"
-          )}
+          className={cn("group flex items-center gap-3", isCollapsed && "justify-center")}
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-fjord-500 to-fjord-600 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
-            <Vault className="w-5 h-5 text-white" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-fjord-500 to-fjord-600 shadow-sm transition-all duration-200 group-hover:scale-105 group-hover:shadow-md">
+            <Vault className="h-5 w-5 text-white" />
           </div>
           {!isCollapsed && (
-            <span className="font-display text-xl text-fjord-700 dark:text-fjord-200 tracking-tight">
+            <span className="font-display text-xl tracking-tight text-fjord-700 dark:text-fjord-200">
               {t("appName")}
             </span>
           )}
@@ -80,7 +79,7 @@ export function Sidebar({ className }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3">
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
         <ul className="space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -93,18 +92,16 @@ export function Sidebar({ className }: SidebarProps) {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium",
+                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium",
                     "transition-all duration-200",
                     isCollapsed && "justify-center px-2",
                     isActive
                       ? "bg-fjord-500 text-white shadow-sm"
-                      : "text-fjord-600 dark:text-fjord-300 hover:bg-fjord-50 dark:hover:bg-fjord-800/50 hover:text-fjord-700 dark:hover:text-fjord-100"
+                      : "text-fjord-600 hover:bg-fjord-50 hover:text-fjord-700 dark:text-fjord-300 dark:hover:bg-fjord-800/50 dark:hover:text-fjord-100"
                   )}
                   title={isCollapsed ? item.label : undefined}
                 >
-                  <Icon
-                    className={cn("w-5 h-5 flex-shrink-0", isCollapsed && "w-5 h-5")}
-                  />
+                  <Icon className={cn("h-5 w-5 flex-shrink-0", isCollapsed && "h-5 w-5")} />
                   {!isCollapsed && <span>{item.label}</span>}
                 </Link>
               </li>
@@ -116,16 +113,13 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Bottom Section */}
       <div
         className={cn(
-          "border-t border-fjord-100/50 dark:border-fjord-700/30 p-3",
+          "border-t border-fjord-100/50 p-3 dark:border-fjord-700/30",
           "flex flex-col gap-2"
         )}
       >
         {/* Theme & Language */}
         <div
-          className={cn(
-            "flex items-center",
-            isCollapsed ? "flex-col gap-2" : "justify-between"
-          )}
+          className={cn("flex items-center", isCollapsed ? "flex-col gap-2" : "justify-between")}
         >
           <ThemeSwitcher />
           <LanguageSwitcher />
@@ -135,18 +129,18 @@ export function Sidebar({ className }: SidebarProps) {
         <button
           onClick={toggleCollapse}
           className={cn(
-            "flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium w-full",
-            "text-fjord-500 dark:text-fjord-400 hover:bg-fjord-50 dark:hover:bg-fjord-800/50",
+            "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium",
+            "text-fjord-500 hover:bg-fjord-50 dark:text-fjord-400 dark:hover:bg-fjord-800/50",
             "transition-all duration-200",
             isCollapsed && "justify-center px-2"
           )}
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
-            <PanelLeft className="w-5 h-5" />
+            <PanelLeft className="h-5 w-5" />
           ) : (
             <>
-              <PanelLeftClose className="w-5 h-5" />
+              <PanelLeftClose className="h-5 w-5" />
               <span>{t("collapse")}</span>
             </>
           )}

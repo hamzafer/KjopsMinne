@@ -386,9 +386,7 @@ async def get_waste_analytics(
             InventoryLot.household_id == household_id,
             InventoryEvent.event_type == "discard",
         )
-        .options(
-            selectinload(InventoryEvent.lot).selectinload(InventoryLot.ingredient)
-        )
+        .options(selectinload(InventoryEvent.lot).selectinload(InventoryLot.ingredient))
         .order_by(InventoryEvent.created_at.desc())
     )
 
@@ -504,7 +502,7 @@ async def get_spend_trend(
     # Meal costs by period (use MealPlan.cooked_at for the trunc)
     meal_trunc_func = func.date_trunc(
         "day" if granularity == "daily" else "week" if granularity == "weekly" else "month",
-        MealPlan.cooked_at
+        MealPlan.cooked_at,
     )
 
     meal_query = (
@@ -619,10 +617,12 @@ async def get_restock_predictions(
             ing_id = row.ingredient_id
             if ing_id not in events_by_ingredient:
                 events_by_ingredient[ing_id] = []
-            events_by_ingredient[ing_id].append({
-                "quantity_delta": row.quantity_delta,
-                "created_at": row.created_at,
-            })
+            events_by_ingredient[ing_id].append(
+                {
+                    "quantity_delta": row.quantity_delta,
+                    "created_at": row.created_at,
+                }
+            )
     else:
         events_by_ingredient = {}
 
@@ -650,9 +650,7 @@ async def get_restock_predictions(
         )
 
     # Sort by days until empty (soonest first, None at end)
-    predictions.sort(
-        key=lambda p: (p.days_until_empty is None, p.days_until_empty or 999)
-    )
+    predictions.sort(key=lambda p: (p.days_until_empty is None, p.days_until_empty or 999))
 
     return RestockPredictionsResponse(
         predictions=predictions,

@@ -1195,9 +1195,7 @@ async def create_meal_plans(recipe_map: dict[str, uuid.UUID]) -> list[uuid.UUID]
                 actual_cost = (base_cost * Decimal(servings) / Decimal("4")).quantize(
                     Decimal("0.01")
                 )
-                cost_per_serving = (actual_cost / Decimal(servings)).quantize(
-                    Decimal("0.01")
-                )
+                cost_per_serving = (actual_cost / Decimal(servings)).quantize(Decimal("0.01"))
 
             meal_plan = MealPlan(
                 id=uuid.uuid4(),
@@ -1330,23 +1328,75 @@ async def create_consumption_events():
         # Format: (ing_key, consumptions: list of (days_ago, quantity))
         consumption_data = [
             # Milk - consumed regularly
-            ("melk", [(1, Decimal("200")), (3, Decimal("150")), (5, Decimal("200")),
-                      (7, Decimal("150")), (10, Decimal("200")), (14, Decimal("200"))]),
+            (
+                "melk",
+                [
+                    (1, Decimal("200")),
+                    (3, Decimal("150")),
+                    (5, Decimal("200")),
+                    (7, Decimal("150")),
+                    (10, Decimal("200")),
+                    (14, Decimal("200")),
+                ],
+            ),
             # Eggs - consumed frequently
-            ("egg", [(2, Decimal("2")), (4, Decimal("3")), (6, Decimal("2")),
-                     (9, Decimal("2")), (12, Decimal("3")), (15, Decimal("2"))]),
+            (
+                "egg",
+                [
+                    (2, Decimal("2")),
+                    (4, Decimal("3")),
+                    (6, Decimal("2")),
+                    (9, Decimal("2")),
+                    (12, Decimal("3")),
+                    (15, Decimal("2")),
+                ],
+            ),
             # Bread - consumed daily
-            ("brod", [(1, Decimal("0.2")), (2, Decimal("0.2")), (3, Decimal("0.15")),
-                      (4, Decimal("0.15")), (5, Decimal("0.2")), (6, Decimal("0.1"))]),
+            (
+                "brod",
+                [
+                    (1, Decimal("0.2")),
+                    (2, Decimal("0.2")),
+                    (3, Decimal("0.15")),
+                    (4, Decimal("0.15")),
+                    (5, Decimal("0.2")),
+                    (6, Decimal("0.1")),
+                ],
+            ),
             # Cheese - consumed frequently
-            ("ost", [(2, Decimal("30")), (5, Decimal("50")), (8, Decimal("40")),
-                     (12, Decimal("30")), (15, Decimal("50"))]),
+            (
+                "ost",
+                [
+                    (2, Decimal("30")),
+                    (5, Decimal("50")),
+                    (8, Decimal("40")),
+                    (12, Decimal("30")),
+                    (15, Decimal("50")),
+                ],
+            ),
             # Bananas - consumed quickly
-            ("banan", [(1, Decimal("1")), (2, Decimal("1")), (3, Decimal("1")),
-                       (4, Decimal("1")), (5, Decimal("2"))]),
+            (
+                "banan",
+                [
+                    (1, Decimal("1")),
+                    (2, Decimal("1")),
+                    (3, Decimal("1")),
+                    (4, Decimal("1")),
+                    (5, Decimal("2")),
+                ],
+            ),
             # Coffee - consumed daily
-            ("kaffe", [(1, Decimal("10")), (2, Decimal("12")), (3, Decimal("10")),
-                       (5, Decimal("12")), (7, Decimal("10")), (10, Decimal("12"))]),
+            (
+                "kaffe",
+                [
+                    (1, Decimal("10")),
+                    (2, Decimal("12")),
+                    (3, Decimal("10")),
+                    (5, Decimal("12")),
+                    (7, Decimal("10")),
+                    (10, Decimal("12")),
+                ],
+            ),
         ]
 
         event_count = 0

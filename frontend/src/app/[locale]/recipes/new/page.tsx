@@ -1,8 +1,9 @@
 "use client";
 
+import { ArrowLeft, ChefHat } from "lucide-react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { ArrowLeft, ChefHat } from "lucide-react";
+
 import { RecipeForm } from "@/components/recipes/RecipeForm";
 import { cn } from "@/lib/utils";
 
@@ -14,33 +15,33 @@ export default function NewRecipePage() {
   const t = useTranslations("Recipes");
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8">
+    <div className="mx-auto max-w-3xl px-6 py-8">
       {/* Header */}
       <div className="mb-8 animate-slide-up">
         <Link
           href={`/${locale}/recipes`}
           className={cn(
-            "inline-flex items-center gap-2 mb-4",
+            "mb-4 inline-flex items-center gap-2",
             "text-fjord-500 hover:text-fjord-700 dark:hover:text-fjord-300",
             "transition-colors"
           )}
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="h-4 w-4" />
           {t("backToRecipes")}
         </Link>
 
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-forest-500 to-forest-600 flex items-center justify-center shadow-lg shadow-forest-500/20">
-            <ChefHat className="w-6 h-6 text-white" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-forest-500 to-forest-600 shadow-lg shadow-forest-500/20">
+            <ChefHat className="h-6 w-6 text-white" />
           </div>
-          <h1 className="text-2xl font-display font-semibold text-fjord-800 dark:text-fjord-100">
+          <h1 className="font-display text-2xl font-semibold text-fjord-800 dark:text-fjord-100">
             {t("newTitle")}
           </h1>
         </div>
       </div>
 
       {/* Form */}
-      <div className="paper-card p-6 animate-slide-up" style={{ animationDelay: '50ms' }}>
+      <div className="paper-card animate-slide-up p-6" style={{ animationDelay: "50ms" }}>
         <RecipeForm householdId={HOUSEHOLD_ID} />
       </div>
     </div>
