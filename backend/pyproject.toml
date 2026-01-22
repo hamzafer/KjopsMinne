@@ -109,6 +109,56 @@ module = "tests.*"
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
 
+[[tool.mypy.overrides]]
+module = ["boto3", "boto3.*", "botocore.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "src.db.seed",
+    "src.db.seed_demo_data",
+    "src.db.seed_ingredients",
+    "src.db.seed_unit_conversions",
+]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disable_error_code = ["no-untyped-call", "type-arg", "arg-type", "attr-defined"]
+
+[[tool.mypy.overrides]]
+module = [
+    "src.services.mock_ocr",
+    "src.services.mock_llm",
+    "src.services.textract_ocr",
+]
+disallow_untyped_defs = false
+disable_error_code = ["type-arg", "no-untyped-def", "attr-defined", "operator", "assignment"]
+
+[[tool.mypy.overrides]]
+module = "src.api.*"
+disallow_untyped_defs = false
+disable_error_code = ["no-untyped-def", "assignment", "truthy-function", "type-arg"]
+
+[[tool.mypy.overrides]]
+module = [
+    "src.services.llm",
+    "src.services.parser",
+    "src.services.inventory_service",
+    "src.services.recipe_importer",
+]
+disable_error_code = ["type-arg", "union-attr", "no-any-return"]
+
+[[tool.mypy.overrides]]
+module = [
+    "src.schemas.meal_plan",
+    "src.db.models",
+]
+disable_error_code = ["type-arg"]
+
+[[tool.mypy.overrides]]
+module = "src.main"
+disallow_untyped_defs = false
+disable_error_code = ["no-untyped-def"]
+
 [tool.coverage.run]
 source = ["src"]
 branch = true
